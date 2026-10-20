@@ -1,0 +1,499 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>IGINGAL — الحلقة الأولى (Paper-cut Motion)</title>
+<style>
+  @font-face { font-family: Amiri; src: url(fonts/Amiri-Regular.ttf); font-weight: 400; }
+  @font-face { font-family: Amiri; src: url(fonts/Amiri-Bold.ttf); font-weight: 700; }
+  @font-face { font-family: Kufi; src: url(fonts/ReemKufi-Bold.ttf); font-weight: 700; }
+  @font-face { font-family: Cunei; src: url(fonts/NotoSansCuneiform-Regular.ttf); }
+
+  :root {
+    --paper: #efe4cf; --paper2: #f7f0e1; --ink: #2b2118; --clay: #c98a5a;
+    --terra: #a5532f; --indigo: #23314a; --teal: #4f7f86; --reed: #6b7a3a; --gold: #d9a441;
+  }
+  html, body { margin: 0; background: #000; }
+  #stage { position: relative; width: 1920px; height: 1080px; overflow: hidden; background: var(--paper); }
+  .scene { position: absolute; inset: 0; opacity: 0; }
+  .scene svg.art { position: absolute; inset: 0; width: 1920px; height: 1080px; }
+  .cunei { font-family: Cunei; }
+  .strip {
+    position: absolute; padding: 18px 44px 26px; background: var(--paper2); color: var(--ink);
+    font-family: Amiri; font-size: 50px; line-height: 1.5; white-space: nowrap;
+    box-shadow: 0 10px 0 rgba(0,0,0,.06), 0 14px 26px rgba(40,25,10,.28);
+    clip-path: polygon(0 4%, 3% 0, 18% 3%, 34% 0, 52% 4%, 70% 0, 88% 3%, 100% 0, 99% 50%, 100% 96%, 84% 100%, 66% 96%, 47% 100%, 29% 97%, 12% 100%, 0 96%, 1% 52%);
+  }
+  .strip.dark { background: var(--indigo); color: var(--paper2); }
+  .strip.terra { background: var(--terra); color: var(--paper2); }
+  .strip.small { font-size: 34px; padding: 12px 32px 18px; }
+  .title { font-family: Kufi; font-weight: 700; }
+  .w { display: inline-block; white-space: pre; }
+  .tag { position: absolute; font-family: Kufi; font-size: 32px; color: var(--paper2); background: var(--ink);
+         padding: 8px 22px 12px; letter-spacing: 0; }
+  #grain { position: absolute; inset: 0; pointer-events: none; mix-blend-mode: multiply; opacity: .55; }
+  #vignette { position: absolute; inset: 0; pointer-events: none;
+    background: radial-gradient(ellipse at center, rgba(0,0,0,0) 55%, rgba(30,15,0,.38) 100%); }
+  #wipe { position: absolute; top: -40px; height: 1160px; width: 2400px; left: 2000px; }
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<script>
+// ---------- deterministic helpers ----------
+const W = 1920, H = 1080, NS = 'http://www.w3.org/2000/svg';
+let seed = 7;
+const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const prog = (t, a, b) => clamp((t - a) / (b - a));
+const ease = x => x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+const eOut = x => 1 - Math.pow(1 - x, 3);
+const back = x => { const c = 1.4; return 1 + (c + 1) * Math.pow(x - 1, 3) + c * Math.pow(x - 1, 2); };
+
+const stage = document.getElementById('stage');
+const el = (tag, attrs = {}, parent) => {
+  const e = document.createElementNS(NS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(e);
+  return e;
+};
+const div = (cls, html, parent, style = {}) => {
+  const d = document.createElement('div');
+  d.className = cls; if (html != null) d.innerHTML = html;
+  Object.assign(d.style, style); parent.appendChild(d); return d;
+};
+// split text into word spans for word-by-word reveal (keeps Arabic letters joined inside each word)
+const words = (cls, text, parent, style) => {
+  const d = div(cls, '', parent, style);
+  text.split(' ').forEach((w, i, a) => {
+    const s = document.createElement('span'); s.className = 'w';
+    s.textContent = w + (i < a.length - 1 ? ' ' : ''); d.appendChild(s);
+  });
+  return d;
+};
+const revealWords = (d, p) => {
+  const sp = d.querySelectorAll('.w'), n = sp.length;
+  sp.forEach((s, i) => {
+    const q = eOut(clamp(p * n - i));
+    s.style.opacity = q; s.style.transform = `translateY(${(1 - q) * 18}px)`;
+  });
+};
+// show a paper strip: slide up + settle, hold, fade
+const strip = (d, t, a, b, rot = 0) => {
+  const pin = eOut(prog(t, a, a + .7)), pout = prog(t, b - .5, b);
+  d.style.opacity = pin * (1 - pout);
+  d.style.transform = `translateY(${(1 - pin) * 40 - pout * 20}px) rotate(${rot * (1 - pin * .6)}deg)`;
+};
+
+// torn-edge polyline along a curve
+function tornTop(y0, amp, jag, step, fn) {
+  let d = `M0 ${H + 50} L0 ${y0}`;
+  for (let x = 0; x <= W + step; x += step) {
+    const y = fn(x) + (rnd() - .5) * jag;
+    d += ` L${x} ${y}`;
+  }
+  return d + ` L${W + 60} ${H + 50} Z`;
+}
+function tornRect(x, y, w, h, j = 6, step = 22) {
+  const pts = [];
+  for (let i = 0; i <= w; i += step) pts.push([x + i, y + (rnd() - .5) * j]);
+  for (let i = 0; i <= h; i += step) pts.push([x + w + (rnd() - .5) * j, y + i]);
+  for (let i = w; i >= 0; i -= step) pts.push([x + i, y + h + (rnd() - .5) * j]);
+  for (let i = h; i >= 0; i -= step) pts.push([x + (rnd() - .5) * j, y + i]);
+  return 'M' + pts.map(p => p.join(' ')).join(' L') + ' Z';
+}
+function tornCircle(cx, cy, r, j = 5, n = 70) {
+  let d = '';
+  for (let i = 0; i < n; i++) {
+    const a = i / n * Math.PI * 2, rr = r + (rnd() - .5) * j;
+    d += (i ? ' L' : 'M') + (cx + Math.cos(a) * rr).toFixed(1) + ' ' + (cy + Math.sin(a) * rr).toFixed(1);
+  }
+  return d + ' Z';
+}
+function newSvg(parent) {
+  const s = el('svg', { class: 'art', viewBox: `0 0 ${W} ${H}` }, parent);
+  const defs = el('defs', {}, s);
+  const f = el('filter', { id: 'sh' + (++newSvg.n), x: '-20%', y: '-20%', width: '140%', height: '160%' }, defs);
+  el('feDropShadow', { dx: 0, dy: 9, stdDeviation: 9, 'flood-color': '#2a1606', 'flood-opacity': .35 }, f);
+  s.sh = `url(#sh${newSvg.n})`;
+  return s;
+}
+newSvg.n = 0;
+const layer = (svg, d, fill) => el('path', { d, fill, filter: svg.sh }, svg);
+const cam = (g, s, x = 0, y = 0) =>
+  g.setAttribute('transform', `translate(${960 + x} ${540 + y}) scale(${s}) translate(-960 -540)`);
+
+// ---------- paper grain (generated once) ----------
+(function grain() {
+  const c = document.createElement('canvas'); c.width = c.height = 600;
+  const g = c.getContext('2d'), img = g.createImageData(600, 600);
+  for (let i = 0; i < img.data.length; i += 4) {
+    const v = 225 + rnd() * 30; img.data[i] = v; img.data[i + 1] = v - 4; img.data[i + 2] = v - 12; img.data[i + 3] = 255;
+  }
+  g.putImageData(img, 0, 0);
+  g.strokeStyle = 'rgba(120,90,50,.10)';
+  for (let i = 0; i < 900; i++) {           // paper fibers
+    g.lineWidth = rnd() * 1.2; g.beginPath();
+    const x = rnd() * 600, y = rnd() * 600, a = rnd() * 6.28, l = 6 + rnd() * 22;
+    g.moveTo(x, y); g.quadraticCurveTo(x + rnd() * 8, y + rnd() * 8, x + Math.cos(a) * l, y + Math.sin(a) * l); g.stroke();
+  }
+  window.GRAIN = c.toDataURL();
+})();
+
+// =====================================================================
+// SCENES — each: {start, end, build(root) -> update(lt, t)}
+// =====================================================================
+const scenes = [];
+const scene = (start, end, build, bg) => {
+  const root = div('scene', null, stage, { background: bg || 'var(--paper)' });
+  scenes.push({ start, end, root, update: build(root) });
+};
+
+// ---- S0 · HOOK: night desert of paper layers + the question ----
+scene(0, 11, root => {
+  const s = newSvg(root), g = el('g', {}, s);
+  el('rect', { x: -100, y: -100, width: 2200, height: 1300, fill: '#1d2740' }, g);
+  const stars = [];
+  for (let i = 0; i < 70; i++) stars.push(el('circle', { cx: rnd() * W, cy: rnd() * 560, r: 1.5 + rnd() * 2.5, fill: '#f3e3b8' }, g));
+  const moon = layer(s, tornCircle(1500, 260, 90), '#efd9a4'); g.appendChild(moon);
+  const cols = ['#2f3c5c', '#3f4a66', '#6a5a55', '#8a6a4f'];
+  const dunes = cols.map((c, i) => {
+    const base = 640 + i * 110, ph = rnd() * 6;
+    const p = layer(s, tornTop(base, 0, 7, 24, x => base + Math.sin(x / (260 + i * 60) + ph) * (50 - i * 6)), c);
+    g.appendChild(p); return p;
+  });
+  const q = words('strip title', 'هل تكفي كلمتان قديمتان', root, { top: '250px', right: '50%', fontSize: '74px' });
+  const q2 = words('strip title', 'لتغيّرا طريقة نظرنا إلى الأشياء؟', root, { top: '390px', right: '50%', fontSize: '74px' });
+  return lt => {
+    cam(g, 1 + lt * .006);
+    stars.forEach((st, i) => st.setAttribute('opacity', .4 + .6 * Math.abs(Math.sin(lt * .9 + i))));
+    moon.setAttribute('transform', `translate(0 ${(1 - eOut(prog(lt, 0, 3))) * 200})`);
+    dunes.forEach((d, i) => {
+      const p = eOut(prog(lt, .2 + i * .35, 2 + i * .35));
+      d.setAttribute('transform', `translate(${(lt - 5) * (i + 1) * -2} ${(1 - p) * 500})`);
+    });
+    [q, q2].forEach((d, i) => {
+      const a = 2.2 + i * 1.6;
+      d.style.opacity = prog(lt, a, a + .3);
+      d.style.transform = `translateX(50%) rotate(${i ? 1 : -1.2}deg)`;
+      revealWords(d, prog(lt, a, a + 1.4));
+    });
+  };
+});
+
+// ---- S1 · THE TWO WORDS on a clay tablet ----
+scene(11, 24, root => {
+  const s = newSvg(root), g = el('g', {}, s);
+  el('rect', { x: -100, y: -100, width: 2200, height: 1300, fill: '#e9dcc2' }, g);
+  const tab = el('g', {}, g);
+  layer(s, tornRect(560, 150, 800, 560, 14, 26), '#a8683f'); tab.appendChild(s.lastChild);
+  layer(s, tornRect(585, 172, 750, 515, 10, 26), '#c98a5a'); tab.appendChild(s.lastChild);
+  const mk = (x, ch, lat, ar) => {
+    const gg = el('g', {}, tab);
+    el('text', { x, y: 470, 'text-anchor': 'middle', 'font-size': 230, class: 'cunei', fill: '#5a2c14', opacity: .9 }, gg).textContent = ch;
+    el('text', { x: x + 3, y: 473, 'text-anchor': 'middle', 'font-size': 230, class: 'cunei', fill: '#e8b88f', opacity: .35 }, gg).textContent = ch;
+    el('text', { x, y: 600, 'text-anchor': 'middle', 'font-size': 58, 'font-family': 'Kufi', fill: '#3a1c0c' }, gg).textContent = lat;
+    return gg;
+  };
+  const igi = mk(1150, '𒅆', 'igi', ''), gal = mk(770, '𒃲', 'gal', '');
+  const l1 = div('strip title', 'igi = «العين»', root, { top: '760px', left: '1140px' });
+  const l2 = div('strip title', 'gal = «الكبير»', root, { top: '760px', left: '470px' });
+  const n1 = words('strip small', 'لغة كفّت عن أن تكون لغة كلام يومي قبل نحو أربعة آلاف عام…', root, { top: '60px', right: '50%' });
+  const n2 = words('strip small dark', '…ثم بقيت قرونًا لغةً للكتبة والمعابد', root, { top: '920px', right: '50%' });
+  return lt => {
+    const p = back(prog(lt, 0, 1.4));
+    tab.setAttribute('transform', `translate(0 ${(1 - p) * 700}) rotate(${(1 - p) * -8} 960 430)`);
+    cam(g, 1.02 + lt * .004);
+    [igi, gal].forEach((x, i) => {
+      const q = eOut(prog(lt, 1.4 + i * 1.6, 2.2 + i * 1.6));
+      x.setAttribute('opacity', q);
+      x.setAttribute('transform', `translate(0 ${(1 - q) * -30})`);
+    });
+    strip(l1, lt, 2.2, 12.6, 2); strip(l2, lt, 3.8, 12.6, -2);
+    strip(n1, lt, 6.2, 12.6); n1.style.transform += ' translateX(50%)'; revealWords(n1, prog(lt, 6.2, 8));
+    strip(n2, lt, 8.8, 12.6); n2.style.transform += ' translateX(50%)'; revealWords(n2, prog(lt, 8.8, 10.2));
+    // these two strips replace the tablet labels' space: dim labels when notes arrive
+  };
+});
+
+// ---- S2 · THE PLACE: paper marshes of southern Mesopotamia ----
+scene(24, 40, root => {
+  const s = newSvg(root), g = el('g', {}, s);
+  el('rect', { x: -100, y: -100, width: 2200, height: 1300, fill: '#f0c98e' }, g);
+  const sun = layer(s, tornCircle(980, 430, 150), '#e9a24a'); g.appendChild(sun);
+  const far = layer(s, tornTop(560, 0, 6, 30, x => 560 + Math.sin(x / 300) * 20), '#c78a5c'); g.appendChild(far);
+  const mid = layer(s, tornTop(620, 0, 6, 26, x => 615 + Math.sin(x / 210 + 1) * 14), '#9c6a4c'); g.appendChild(mid);
+  const waters = ['#6d9a9c', '#4f7f86', '#3c6670'].map((c, i) => {
+    const base = 690 + i * 95;
+    const p = layer(s, tornTop(base, 0, 4, 20, x => base + Math.sin(x / 70 + i) * 8), c); g.appendChild(p); return p;
+  });
+  // reed boat
+  const boat = el('g', {}, g);
+  layer(s, 'M-150 0 Q0 60 150 0 Q130 -10 120 -30 Q0 20 -120 -30 Q-130 -10 -150 0 Z', '#4a3322'); boat.appendChild(s.lastChild);
+  layer(s, 'M10 -30 L22 -170 L30 -170 L22 -30 Z', '#3a2618'); boat.appendChild(s.lastChild);
+  // reeds clusters, left & right foreground
+  const reeds = [];
+  [[0, 520], [1430, 1920]].forEach(([a, b]) => {
+    for (let i = 0; i < 26; i++) {
+      const x = a + rnd() * (b - a), h = 280 + rnd() * 330, w = 10 + rnd() * 8, gg = el('g', {}, g);
+      const c = ['#6b7a3a', '#55632c', '#7f8c45'][i % 3];
+      layer(s, `M${x - w / 2} 1090 Q${x} ${1090 - h * .6} ${x + 4} ${1090 - h} Q${x + w * .3} ${1090 - h * .5} ${x + w / 2} 1090 Z`, c); gg.appendChild(s.lastChild);
+      layer(s, `M${x + 2} ${1090 - h} m-9 0 a 9 26 0 1 0 18 0 a 9 26 0 1 0 -18 0`, '#6a4a2c'); gg.appendChild(s.lastChild);
+      reeds.push({ gg, x, ph: rnd() * 6 });
+    }
+  });
+  const tag = div('tag', 'المكان: جنوب بلاد الرافدين (العراق اليوم)  ·  الزمن: من نحو 3350 ق.م.', root, { top: '50px', right: '60px' });
+  const a1 = words('strip', 'قبل أكثر من خمسة آلاف عام… مجتمعات تحتاج أن تُحصي وتسجّل وتتذكّر', root, { top: '840px', right: '50%' });
+  const a2 = words('strip', 'لغة لا تنتمي إلى أي عائلة لغوية معروفة: السومرية', root, { top: '840px', right: '50%' });
+  const a3 = words('strip terra', 'ولا نعرف عنها إلا ما كُتب بالطين', root, { top: '840px', right: '50%' });
+  return lt => {
+    cam(g, 1.12 - lt * .006, 0, 10 - lt * .6);          // slow pull-out: reveal the place
+    sun.setAttribute('transform', `translate(0 ${-lt * 4})`);
+    waters.forEach((w, i) => w.setAttribute('transform', `translate(${Math.sin(lt * .8 + i) * 14} 0)`));
+    boat.setAttribute('transform', `translate(${1350 - lt * 38} ${775 + Math.sin(lt * 1.6) * 5}) rotate(${Math.sin(lt * 1.3) * 2})`);
+    reeds.forEach(r => r.gg.setAttribute('transform', `rotate(${Math.sin(lt * 1.1 + r.ph) * 1.6} ${r.x} 1090)`));
+    tag.style.opacity = prog(lt, .6, 1.2) * (1 - prog(lt, 15, 15.6));
+    tag.style.transform = `translateY(${(1 - eOut(prog(lt, .6, 1.2))) * -30}px)`;
+    [[a1, 1.5, 6.5], [a2, 6.8, 10.8], [a3, 11.1, 15.4]].forEach(([d, a, b]) => {
+      strip(d, lt, a, b); d.style.transform += ' translateX(50%)'; revealWords(d, prog(lt, a, a + 1.6));
+    });
+  };
+});
+
+// ---- S3 · THE HISTORICAL FACT: dictionary cards + sources ----
+scene(40, 56, root => {
+  const s = newSvg(root), g = el('g', {}, s);
+  el('rect', { x: -100, y: -100, width: 2200, height: 1300, fill: '#dfe3d6' }, g);
+  for (let i = 0; i < 14; i++) el('line', { x1: 0, x2: W, y1: 80 + i * 75, y2: 80 + i * 75, stroke: '#b9c4b4', 'stroke-width': 2 }, g);
+  const card = (x, y, rot, glyph, latin, lines, col) => {
+    const gg = el('g', {}, g);
+    layer(s, tornRect(x, y, 600, 430, 8, 24), col); gg.appendChild(s.lastChild);
+    el('text', { x: x + 470, y: y + 210, 'text-anchor': 'middle', 'font-size': 170, class: 'cunei', fill: '#3a2414' }, gg).textContent = glyph;
+    el('text', { x: x + 470, y: y + 320, 'text-anchor': 'middle', 'font-size': 56, 'font-family': 'Kufi', fill: '#3a2414' }, gg).textContent = latin;
+    lines.forEach((l, i) => {
+      const t = el('text', { x: x + 330, y: y + 140 + i * 80, 'text-anchor': 'start', 'font-size': 54, 'font-family': 'Amiri', 'font-weight': 700, fill: '#2b2118', direction: 'rtl' }, gg);
+      t.textContent = l;
+    });
+    gg.rot = rot; return gg;
+  };
+  const c1 = card(1080, 150, 2, '𒅆', 'igi', ['العين', 'الوجه', 'الجهة الأمامية'], '#f7f0e1');
+  const c2 = card(240, 170, -2, '𒃲', 'gal', ['الكبير'], '#f2e3c4');
+  const st1 = div('tag', 'ETCSL · أكسفورد', root, { top: '620px', left: '1180px', fontSize: '30px', background: '#a5532f' });
+  const st2 = div('tag', 'ePSD · بنسلفانيا', root, { top: '620px', left: '330px', fontSize: '30px', background: '#a5532f' });
+  const n1 = words('strip small', 'اجتماع الكلمتين بمعنى «العين العظيمة»: لا نعرف له استعمالًا موثّقًا', root, { top: '740px', right: '50%' });
+  const n2 = words('strip dark', 'IGINGAL صياغة أنشأناها نحن من مفردتين سومريتين صحيحتين', root, { top: '850px', right: '50%' });
+  const n3 = words('strip small terra', 'ولا نزعم أنها عبارة سومرية معروفة', root, { top: '960px', right: '50%' });
+  return lt => {
+    cam(g, 1 + lt * .004);
+    [c1, c2].forEach((c, i) => {
+      const p = back(prog(lt, .2 + i * .5, 1.4 + i * .5));
+      c.setAttribute('transform', `translate(0 ${(1 - p) * -900}) rotate(${c.rot * p + (1 - p) * 12} 960 400)`);
+    });
+    [st1, st2].forEach((d, i) => {
+      const p = prog(lt, 2.4 + i * .4, 2.7 + i * .4);
+      d.style.opacity = p * (1 - prog(lt, 15.2, 15.6));
+      d.style.transform = `scale(${1 + (1 - p) * 1.4}) rotate(${i ? 5 : -5}deg)`;     // stamp
+    });
+    [[n1, 4, 15.6], [n2, 7.5, 15.6], [n3, 10.5, 15.6]].forEach(([d, a, b]) => {
+      strip(d, lt, a, b); d.style.transform += ' translateX(50%)'; revealWords(d, prog(lt, a, a + 1.8));
+    });
+  };
+});
+
+// ---- S4 · LUGAL: lu + gal = king ----
+scene(56, 69, root => {
+  const s = newSvg(root), g = el('g', {}, s);
+  el('rect', { x: -100, y: -100, width: 2200, height: 1300, fill: '#2a3550' }, g);
+  layer(s, tornCircle(960, 470, 470, 10, 90), '#334062'); g.appendChild(s.lastChild);
+  const tile = (x, glyph, lat, ar, col) => {
+    const gg = el('g', {}, g);
+    layer(s, tornRect(x - 160, 240, 320, 380, 8, 22), col); gg.appendChild(s.lastChild);
+    el('text', { x, y: 450, 'text-anchor': 'middle', 'font-size': 170, class: 'cunei', fill: '#4a220e' }, gg).textContent = glyph;
+    el('text', { x, y: 530, 'text-anchor': 'middle', 'font-size': 46, 'font-family': 'Kufi', fill: '#4a220e' }, gg).textContent = lat;
+    el('text', { x, y: 595, 'text-anchor': 'middle', 'font-size': 44, 'font-family': 'Amiri', 'font-weight': 700, fill: '#2b2118' }, gg).textContent = ar;
+    return gg;
+  };
+  // read right-to-left: lu + gal = lugal
+  const tLu = tile(1550, '𒇽', 'lú', 'الرجل', '#e7c39a');
+  const tGal = tile(1000, '𒃲', 'gal', 'الكبير', '#e7c39a');
+  const tKing = tile(400, '𒈗', 'lugal', 'الملك', '#d9a441');
+  const sym = (x, ch) => { const t = el('text', { x, y: 470, 'text-anchor': 'middle', 'font-size': 110, 'font-family': 'Kufi', fill: '#f7f0e1' }, g); t.textContent = ch; return t; };
+  const plus = sym(1275, '+'), eq = sym(700, '=');
+  const crown = el('g', {}, g);
+  layer(s, 'M300 225 L300 150 L345 190 L400 120 L455 190 L500 150 L500 225 Z', '#f0c24f'); crown.appendChild(s.lastChild);
+  const n1 = words('strip', 'اللغة جعلت صفة «الكبير» جزءًا من مفهوم الملك نفسه', root, { top: '790px', right: '50%' });
+  return lt => {
+    cam(g, 1 + lt * .005);
+    [[tLu, .3], [plus, 1.2], [tGal, 1.6], [eq, 3.2], [tKing, 3.6]].forEach(([e, a]) => {
+      const p = back(prog(lt, a, a + .9));
+      e.setAttribute('opacity', clamp(p));
+      e.setAttribute('transform', `translate(0 ${(1 - p) * 120})`);
+    });
+    const c = back(prog(lt, 5, 6));
+    crown.setAttribute('opacity', clamp(c));
+    crown.setAttribute('transform', `translate(0 ${(1 - c) * -200 + Math.sin(lt * 1.5) * 4})`);
+    strip(n1, lt, 6.5, 12.6); n1.style.transform += ' translateX(50%)'; revealWords(n1, prog(lt, 6.5, 8.5));
+  };
+});
+
+// ---- S5+S6 · NAMES ARE NOT NEUTRAL → field of attention (one continuous eye, match-cut) ----
+scene(69, 94, root => {
+  const s = newSvg(root), g = el('g', {}, s);
+  el('rect', { x: -100, y: -100, width: 2200, height: 1300, fill: '#efe4cf' }, g);
+  const rings = [];
+  ['#e3d2b3', '#d7bf98', '#c9a77c', '#b98b5e', '#a5532f'].forEach((c, i) => {
+    const p = layer(s, tornCircle(960, 420, 900 - i * 150, 12, 100), c); g.appendChild(p); rings.push(p);
+  });
+  const eye = el('g', {}, g);
+  const almond = 'M560 420 Q960 120 1360 420 Q960 720 560 420 Z';
+  const clip = el('clipPath', { id: 'eyeclip' }, s.querySelector('defs')); el('path', { d: almond }, clip);
+  layer(s, almond, '#2b2118'); eye.appendChild(s.lastChild);
+  const inner = el('g', { 'clip-path': 'url(#eyeclip)' }, eye);
+  el('path', { d: 'M560 420 Q960 135 1360 420 Q960 705 560 420 Z', fill: '#f7f0e1' }, inner);
+  const iris = el('g', {}, inner);
+  layer(s, tornCircle(960, 420, 165, 6), '#4f7f86'); iris.appendChild(s.lastChild);
+  layer(s, tornCircle(960, 420, 115, 5), '#23314a'); iris.appendChild(s.lastChild);
+  el('text', { x: 960, y: 470, 'text-anchor': 'middle', 'font-size': 120, class: 'cunei', fill: '#d9a441' }, iris).textContent = '𒅆';
+  const lidT = el('path', { d: 'M500 0 L1420 0 L1420 420 L500 420 Z', fill: '#c98a5a' }, inner);
+  const lidB = el('path', { d: 'M500 420 L1420 420 L1420 900 L500 900 Z', fill: '#a8683f' }, inner);
+  const h1 = words('strip title', 'الفكرة الخطيرة: الأسماء ليست محايدة', root, { top: '60px', right: '50%', fontSize: '64px' });
+  const a1 = words('strip', 'من يسمّي شيئًا يقرّر ما الذي سيراه الناس فيه', root, { top: '800px', right: '50%' });
+  const a2 = words('strip', 'التزامنا: أن نقول أين ينتهي النص القديم وأين يبدأ تأمّلنا', root, { top: '800px', right: '50%' });
+  const b1 = words('strip dark', 'اللغة لا تنقل الواقع فقط… بل ترسم مجالًا للانتباه', root, { top: '800px', right: '50%' });
+  const lab = div('tag', 'قراءة فلسفية معاصرة — ليست رأيًا ورد في نص سومري', root, { top: '930px', right: '50%', background: '#a5532f' });
+  const b2 = words('strip', 'كل مفردة نتعلّمها تفتح لنا شيئًا لم نكن نراه', root, { top: '800px', right: '50%' });
+  return lt => {
+    // eye opens 1–3s, blinks once at 12.5s, then rings expand as "field of attention"
+    let open = ease(prog(lt, 1, 3));
+    const blink = prog(lt, 12.3, 12.9); if (blink > 0 && blink < 1) open *= Math.abs(Math.cos(blink * Math.PI));
+    lidT.setAttribute('transform', `translate(0 ${-open * 330})`);
+    lidB.setAttribute('transform', `translate(0 ${open * 330})`);
+    iris.setAttribute('transform', `translate(${Math.sin(lt * .5) * 40 * prog(lt, 3, 5) * (1 - prog(lt, 12, 13))} 0)`);
+    const e = eOut(prog(lt, 0, 1.2));
+    eye.setAttribute('transform', `translate(960 420) scale(${.6 + .4 * e}) translate(-960 -420)`);
+    eye.setAttribute('opacity', e);
+    const field = ease(prog(lt, 13, 18));
+    rings.forEach((r, i) => {
+      const p = eOut(prog(lt, i * .2, 1.4 + i * .2));
+      const sc = p * (1 + field * (.15 + i * .07)) + Math.sin(lt * .8 + i) * .005;
+      r.setAttribute('transform', `translate(960 420) scale(${sc}) translate(-960 -420)`);
+    });
+    cam(g, 1 + lt * .003);
+    strip(h1, lt, 2.6, 12.4); h1.style.transform += ' translateX(50%)'; revealWords(h1, prog(lt, 2.6, 4));
+    [[a1, 4.2, 8.2], [a2, 8.4, 12.4], [b1, 13.5, 18.5], [b2, 19, 24.6]].forEach(([d, a, b]) => {
+      strip(d, lt, a, b); d.style.transform += ' translateX(50%)'; revealWords(d, prog(lt, a, a + 1.8));
+    });
+    strip(lab, lt, 14.6, 18.5); lab.style.transform += ' translateX(50%)';
+  };
+});
+
+// ---- S7 · TODAY: a flood of paper "screens" → four questions ----
+scene(94, 106, root => {
+  const s = newSvg(root), g = el('g', {}, s);
+  el('rect', { x: -100, y: -100, width: 2200, height: 1300, fill: '#23314a' }, g);
+  const cards = [];
+  for (let i = 0; i < 44; i++) {
+    const x = rnd() * W, w = 110 + rnd() * 90, h = w * 1.7, gg = el('g', {}, g);
+    layer(s, tornRect(-w / 2, -h / 2, w, h, 5, 18), ['#f7f0e1', '#e7c39a', '#4f7f86', '#d9a441', '#c98a5a'][i % 5]); gg.appendChild(s.lastChild);
+    el('rect', { x: -w / 2 + 12, y: -h / 2 + 16, width: w - 24, height: h * .55, fill: 'rgba(35,49,74,.35)' }, gg);
+    cards.push({ gg, x, sp: 120 + rnd() * 200, off: rnd() * 1600, rot: (rnd() - .5) * 40, vr: (rnd() - .5) * 30 });
+  }
+  const t0 = words('strip small', 'نمرّ كل يوم بمئات الصور والمقاطع… ونظن أننا «رأينا»', root, { top: '70px', right: '50%' });
+  const qs = ['من كتب هذا؟', 'ولماذا؟', 'وما الدليل؟', 'وماذا بقي غير مكتوب؟'].map((q, i) =>
+    div('strip title', q, root, { top: `${270 + i * 140}px`, right: `${420 + i * 110}px`, fontSize: '60px' }));
+  const t1 = words('strip small terra', 'هذا ما سنفعله في الحلقات الآتية: من الطين إلى الشاشة', root, { top: '900px', right: '50%' });
+  return lt => {
+    const slow = 1 - .85 * ease(prog(lt, 3.5, 5.5));      // the flood slows down: "a slower kind of seeing"
+    cards.forEach(c => {
+      const y = ((c.off + lt * c.sp * slow + lt * 40) % 1600) - 300;
+      c.gg.setAttribute('transform', `translate(${c.x} ${y}) rotate(${c.rot + lt * c.vr * slow})`);
+      c.gg.setAttribute('opacity', 1 - .7 * prog(lt, 4, 6));
+    });
+    strip(t0, lt, .5, 5); t0.style.transform += ' translateX(50%)'; revealWords(t0, prog(lt, .5, 2.2));
+    qs.forEach((d, i) => strip(d, lt, 5.2 + i * .9, 11.6, i % 2 ? 2 : -2));
+    strip(t1, lt, 9.3, 11.6); t1.style.transform += ' translateX(50%)'; revealWords(t1, prog(lt, 9.3, 10.6));
+  };
+});
+
+// ---- S8 · CLOSING: last question + logo ----
+scene(106, 119, root => {
+  const s = newSvg(root), g = el('g', {}, s);
+  el('rect', { x: -100, y: -100, width: 2200, height: 1300, fill: '#e9dcc2' }, g);
+  const rays = [];
+  for (let i = 0; i < 18; i++) {
+    const a = i / 18 * Math.PI * 2, gg = el('g', {}, g);
+    el('path', { d: `M960 470 L${960 + Math.cos(a - .09) * 1400} ${470 + Math.sin(a - .09) * 1400} L${960 + Math.cos(a + .09) * 1400} ${470 + Math.sin(a + .09) * 1400} Z`, fill: i % 2 ? '#e1cfae' : '#ead9b9' }, gg);
+    rays.push(gg);
+  }
+  const logo = el('g', {}, g);
+  layer(s, tornRect(560, 250, 800, 420, 12, 24), '#a8683f'); logo.appendChild(s.lastChild);
+  layer(s, tornRect(582, 270, 756, 380, 9, 24), '#c98a5a'); logo.appendChild(s.lastChild);
+  el('text', { x: 960, y: 430, 'text-anchor': 'middle', 'font-size': 150, class: 'cunei', fill: '#4a220e' }, logo).textContent = '𒅆𒅅';
+  el('text', { x: 960, y: 625, 'text-anchor': 'middle', 'font-size': 92, 'font-family': 'Kufi', 'letter-spacing': 12, fill: '#2b2118' }, logo).textContent = 'IGINGAL';
+  const q1 = words('strip', 'إن كان لك أن تضيف كلمةً واحدة إلى اسم هذه السلسلة…', root, { top: '330px', right: '50%' });
+  const q2 = words('strip title', 'فما هي؟', root, { top: '480px', right: '50%', fontSize: '80px' });
+  const tag = words('strip', 'العين الكبيرة التي نعدك بها… هي عادةُ سؤالٍ لا تتعب', root, { top: '760px', right: '50%' });
+  const cta = div('tag', 'اكتب رأيك في التعليقات', root, { top: '900px', right: '50%', fontSize: '36px', background: '#a5532f' });
+  return lt => {
+    rays.forEach((r, i) => r.setAttribute('transform', `rotate(${lt * 2} 960 470)`));
+    strip(q1, lt, .4, 5.4); q1.style.transform += ' translateX(50%)'; revealWords(q1, prog(lt, .4, 2.4));
+    strip(q2, lt, 2.6, 5.4, -3); q2.style.transform += ' translateX(50%)';
+    const p = back(prog(lt, 5.6, 7));
+    logo.setAttribute('opacity', clamp(p));
+    logo.setAttribute('transform', `translate(960 460) scale(${.5 + .5 * p}) rotate(${(1 - p) * 10}) translate(-960 -460)`);
+    strip(tag, lt, 7.4, 13); tag.style.transform += ' translateX(50%)'; revealWords(tag, prog(lt, 7.4, 9.4));
+    strip(cta, lt, 9.8, 13); cta.style.transform += ' translateX(50%)';
+    stage.style.filter = `brightness(${1 - prog(lt, 12, 13)})`;   // fade to black
+  };
+});
+
+const DURATION = 119;
+
+// ---------- transitions between scenes ----------
+// 'tear' = torn paper sheet sweeps across (mask); 'fade' = paper dissolve
+const transitions = { 11: 'tear', 24: 'fade', 40: 'tear', 56: 'fade', 69: 'tear', 94: 'fade', 106: 'tear' };
+const wipe = document.createElementNS(NS, 'svg');
+wipe.id = 'wipe'; wipe.setAttribute('viewBox', '0 0 2400 1160');
+{
+  let d = 'M120 0';
+  for (let y = 0; y <= 1160; y += 26) d += ` L${120 + (rnd() - .5) * 50} ${y}`;
+  for (let y = 1160; y >= 0; y -= 26) d += ` L${2280 + (rnd() - .5) * 50} ${y}`;
+  const f = el('filter', { id: 'wsh', x: '-10%', y: '-10%', width: '120%', height: '120%' }, el('defs', {}, wipe));
+  el('feDropShadow', { dx: 0, dy: 0, stdDeviation: 14, 'flood-color': '#2a1606', 'flood-opacity': .5 }, f);
+  el('path', { d: d + ' Z', fill: '#d8c3a0', filter: 'url(#wsh)' }, wipe);
+  el('path', { d: d + ' Z', fill: '#cdb38b', opacity: .5, transform: 'translate(30 0)' }, wipe);
+}
+stage.appendChild(wipe);
+div('', '', stage).id = 'grain';
+document.getElementById('grain').style.backgroundImage = `url(${GRAIN})`;
+div('', '', stage).id = 'vignette';
+
+window.renderAt = function (t) {
+  stage.style.filter = '';
+  let wipeX = 2000;
+  scenes.forEach(sc => {
+    const tr = transitions[sc.start], trOut = transitions[sc.end];
+    let op = 0;
+    const fadeIn = tr === 'fade' ? .9 : 0;
+    if (t >= sc.start - fadeIn && t < sc.end + (trOut === 'fade' ? 0 : 0)) {
+      op = tr === 'fade' ? prog(t, sc.start - fadeIn, sc.start) : 1;
+      if (sc.start === 0) op = prog(t, 0, .8);
+    }
+    sc.root.style.opacity = op;
+    sc.root.style.display = op > 0 ? 'block' : 'none';
+    if (op > 0) sc.update(Math.max(0, t - sc.start), t);
+  });
+  // tear wipe: sheet slides from right to left (RTL reading direction), covering the cut point at its middle
+  for (const k in transitions) {
+    if (transitions[k] !== 'tear') continue;
+    const p = prog(t, +k - .7, +k + .7);
+    if (p > 0 && p < 1) wipeX = 1980 - ease(p) * 4400;
+  }
+  wipe.style.left = wipeX + 'px';
+};
+window.DURATION = DURATION;
+Promise.all(['40px Amiri', 'bold 40px Amiri', 'bold 40px Kufi', '40px Cunei'].map(f => document.fonts.load(f, 'اb𒅆')))
+  .then(() => document.fonts.ready).then(() => { window.READY = true; renderAt(0); });
+</script>
+</body>
+</html>
