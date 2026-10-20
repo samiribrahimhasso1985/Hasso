@@ -1,5 +1,5 @@
 // Renders index.html frame-by-frame with Playwright and pipes the frames into ffmpeg.
-// Usage: node render.js [out.mp4] [fps]          — full render
+// Usage: node render.js [out.mp4] [fps] [--v]     — full render (--v = vertical 9:16)
 //        node render.js --stills 5,15,30 dir     — PNG stills at given seconds
 const { chromium } = require('playwright');
 const { spawn } = require('child_process');
@@ -7,10 +7,12 @@ const path = require('path');
 const fs = require('fs');
 
 (async () => {
-  const args = process.argv.slice(2);
+  let args = process.argv.slice(2);
+  const vertical = args.includes('--v');            // 9:16 version
+  args = args.filter(a => a !== '--v');
   const browser = await chromium.launch();
-  const page = await browser.newPage({ viewport: { width: 1920, height: 1080 } });
-  await page.goto('file://' + path.join(__dirname, 'index.html'));
+  const page = await browser.newPage({ viewport: vertical ? { width: 1080, height: 1920 } : { width: 1920, height: 1080 } });
+  await page.goto('file://' + path.join(__dirname, 'index.html') + (vertical ? '?v=1' : ''));
   await page.waitForFunction(() => window.READY === true);
   const stage = await page.$('#stage');
 

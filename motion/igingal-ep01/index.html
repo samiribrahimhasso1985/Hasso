@@ -4,105 +4,115 @@
 <meta charset="utf-8">
 <title>IGINGAL — الحلقة الأولى (Paper-cut Motion)</title>
 <style>
-  @font-face { font-family: Amiri; src: url(fonts/Amiri-Regular.ttf); font-weight: 400; }
-  @font-face { font-family: Amiri; src: url(fonts/Amiri-Bold.ttf); font-weight: 700; }
-  @font-face { font-family: Kufi; src: url(fonts/ReemKufi-Bold.ttf); font-weight: 700; }
+  @font-face { font-family: Plex; src: url(fonts/PlexArabic-Regular.ttf); font-weight: 400; }
+  @font-face { font-family: Plex; src: url(fonts/PlexArabic-Bold.ttf); font-weight: 700; }
+  @font-face { font-family: Cinzel; src: url(fonts/Cinzel-Bold.ttf); font-weight: 700; }
   @font-face { font-family: Cunei; src: url(fonts/NotoSansCuneiform-Regular.ttf); }
 
-  :root {
-    --paper: #efe4cf; --paper2: #f7f0e1; --ink: #2b2118; --clay: #c98a5a;
-    --terra: #a5532f; --indigo: #23314a; --teal: #4f7f86; --reed: #6b7a3a; --gold: #d9a441;
-  }
   html, body { margin: 0; background: #000; }
-  #stage { position: relative; width: 1920px; height: 1080px; overflow: hidden; background: var(--paper); }
+  #stage { position: relative; width: 1920px; height: 1080px; overflow: hidden; background: #0b0806; }
   .scene { position: absolute; inset: 0; opacity: 0; }
-  .scene svg.art { position: absolute; inset: 0; width: 1920px; height: 1080px; }
+  .scene svg.art { position: absolute; left: 0; top: 0; }
   .cunei { font-family: Cunei; }
-  .strip {
-    position: absolute; padding: 18px 44px 26px; background: var(--paper2); color: var(--ink);
-    font-family: Amiri; font-size: 50px; line-height: 1.5; white-space: nowrap;
-    box-shadow: 0 10px 0 rgba(0,0,0,.06), 0 14px 26px rgba(40,25,10,.28);
+  .cinzel { font-family: Cinzel; font-weight: 700; }
+
+  /* text blocks are always horizontally centred; only their top changes with orientation */
+  .t { position: absolute; left: 0; right: 0; margin: 0 auto; width: fit-content; max-width: 1500px; text-align: center; }
+  .cap {
+    padding: 16px 46px 22px; background: rgba(18, 12, 8, .86); color: #f3e6c8;
+    font-family: Plex; font-size: 46px; line-height: 1.55;
+    box-shadow: 0 14px 30px rgba(0,0,0,.55), inset 0 2px 0 rgba(227,178,90,.55);
     clip-path: polygon(0 4%, 3% 0, 18% 3%, 34% 0, 52% 4%, 70% 0, 88% 3%, 100% 0, 99% 50%, 100% 96%, 84% 100%, 66% 96%, 47% 100%, 29% 97%, 12% 100%, 0 96%, 1% 52%);
   }
-  .strip.dark { background: var(--indigo); color: var(--paper2); }
-  .strip.terra { background: var(--terra); color: var(--paper2); }
-  .strip.small { font-size: 34px; padding: 12px 32px 18px; }
-  .title { font-family: Kufi; font-weight: 700; }
+  .cap.gold { background: #c99a45; color: #1a120a; box-shadow: 0 14px 30px rgba(0,0,0,.55); }
+  .cap.small { font-size: 36px; padding: 12px 34px 16px; }
+  .ttl { font-family: Plex; font-weight: 700; font-size: 70px; color: #ecc36f; line-height: 1.4;
+         text-shadow: 0 0 24px rgba(236,170,70,.55), 0 4px 14px rgba(0,0,0,.8); }
+  .tag { font-family: Plex; font-weight: 700; font-size: 30px; color: #ecc36f; padding: 8px 26px 12px;
+         border: 2px solid rgba(236,195,111,.7); background: rgba(10,7,5,.6); }
   .w { display: inline-block; white-space: pre; }
-  .tag { position: absolute; font-family: Kufi; font-size: 32px; color: var(--paper2); background: var(--ink);
-         padding: 8px 22px 12px; letter-spacing: 0; }
-  #grain { position: absolute; inset: 0; pointer-events: none; mix-blend-mode: multiply; opacity: .55; }
+  .v .t { max-width: 920px; }
+  .v .cap { font-size: 44px; }
+  .v .cap.small { font-size: 36px; }
+  .v .ttl { font-size: 62px; }
+
+  #dust { position: absolute; left: 0; top: 0; pointer-events: none; }
+  #fx { position: absolute; inset: 0; pointer-events: none; opacity: 0; }
+  #grain { position: absolute; inset: 0; pointer-events: none; mix-blend-mode: overlay; opacity: .35; }
   #vignette { position: absolute; inset: 0; pointer-events: none;
-    background: radial-gradient(ellipse at center, rgba(0,0,0,0) 55%, rgba(30,15,0,.38) 100%); }
-  #wipe { position: absolute; top: -40px; height: 1160px; width: 2400px; left: 2000px; }
+    background: radial-gradient(ellipse at center, rgba(0,0,0,0) 50%, rgba(0,0,0,.6) 100%); }
+  #wipe { position: absolute; top: -40px; height: 1160px; width: 2400px; }
 </style>
 </head>
 <body>
 <div id="stage"></div>
 <script>
-// ---------- deterministic helpers ----------
+// ===================== setup =====================
 const W = 1920, H = 1080, NS = 'http://www.w3.org/2000/svg';
-let seed = 7;
+// ?v=1 → vertical 9:16. The art is drawn in the same 1920×1080 space and viewed through a tall window.
+const V = new URLSearchParams(location.search).get('v') === '1';
+const SW = V ? 1080 : 1920, SH = V ? 1920 : 1080;
+const VIEW = V ? '360 -526 1200 2133' : `0 0 ${W} ${H}`;
+const hv = (h, v) => V ? v : h;
+
+let seed = 11;
 const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
 const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
 const prog = (t, a, b) => clamp((t - a) / (b - a));
 const ease = x => x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
 const eOut = x => 1 - Math.pow(1 - x, 3);
-const back = x => { const c = 1.4; return 1 + (c + 1) * Math.pow(x - 1, 3) + c * Math.pow(x - 1, 2); };
+const back = x => { const c = 1.3; return 1 + (c + 1) * Math.pow(x - 1, 3) + c * Math.pow(x - 1, 2); };
 
 const stage = document.getElementById('stage');
+if (V) { document.body.classList.add('v'); stage.style.width = SW + 'px'; stage.style.height = SH + 'px'; }
+
 const el = (tag, attrs = {}, parent) => {
   const e = document.createElementNS(NS, tag);
   for (const k in attrs) e.setAttribute(k, attrs[k]);
   if (parent) parent.appendChild(e);
   return e;
 };
-const div = (cls, html, parent, style = {}) => {
+const txt = (parent, s, attrs) => { const t = el('text', attrs, parent); t.textContent = s; return t; };
+
+// centred text block; tops given for horizontal and vertical layouts
+function T(root, cls, text, hTop, vTop, wordReveal = true) {
   const d = document.createElement('div');
-  d.className = cls; if (html != null) d.innerHTML = html;
-  Object.assign(d.style, style); parent.appendChild(d); return d;
-};
-// split text into word spans for word-by-word reveal (keeps Arabic letters joined inside each word)
-const words = (cls, text, parent, style) => {
-  const d = div(cls, '', parent, style);
-  text.split(' ').forEach((w, i, a) => {
+  d.className = 't ' + cls; d.style.top = hv(hTop, vTop) + 'px';
+  if (wordReveal) text.split(' ').forEach((w, i, a) => {
     const s = document.createElement('span'); s.className = 'w';
     s.textContent = w + (i < a.length - 1 ? ' ' : ''); d.appendChild(s);
   });
+  else d.textContent = text;
+  root.appendChild(d); d.style.opacity = 0;
   return d;
-};
-const revealWords = (d, p) => {
-  const sp = d.querySelectorAll('.w'), n = sp.length;
-  sp.forEach((s, i) => {
-    const q = eOut(clamp(p * n - i));
-    s.style.opacity = q; s.style.transform = `translateY(${(1 - q) * 18}px)`;
-  });
-};
-// show a paper strip: slide up + settle, hold, fade
-const strip = (d, t, a, b, rot = 0) => {
-  const pin = eOut(prog(t, a, a + .7)), pout = prog(t, b - .5, b);
+}
+// show a block between a and b: rise + settle, word-by-word, fade out
+function show(d, t, a, b, rot = 0) {
+  const pin = eOut(prog(t, a, a + .6)), pout = prog(t, b - .45, b);
   d.style.opacity = pin * (1 - pout);
-  d.style.transform = `translateY(${(1 - pin) * 40 - pout * 20}px) rotate(${rot * (1 - pin * .6)}deg)`;
-};
-
-// torn-edge polyline along a curve
-function tornTop(y0, amp, jag, step, fn) {
-  let d = `M0 ${H + 50} L0 ${y0}`;
-  for (let x = 0; x <= W + step; x += step) {
-    const y = fn(x) + (rnd() - .5) * jag;
-    d += ` L${x} ${y}`;
+  d.style.transform = `translateY(${(1 - pin) * 34 - pout * 16}px) rotate(${rot}deg)`;
+  const sp = d.querySelectorAll('.w'), n = sp.length;
+  if (n) {
+    const p = prog(t, a, a + Math.min(1.8, .25 + n * .16));
+    sp.forEach((s, i) => { const q = eOut(clamp(p * n - i)); s.style.opacity = q; s.style.transform = `translateY(${(1 - q) * 14}px)`; });
   }
-  return d + ` L${W + 60} ${H + 50} Z`;
+}
+
+// ---------- torn paper geometry ----------
+function ridge(y0, fn, jag = 6, step = 22, bottom = H + 900) {
+  let d = `M-60 ${bottom} L-60 ${fn(-60)}`;
+  for (let x = -60; x <= W + 80; x += step) d += ` L${x} ${(fn(x) + (rnd() - .5) * jag).toFixed(1)}`;
+  return d + ` L${W + 80} ${bottom} Z`;
 }
 function tornRect(x, y, w, h, j = 6, step = 22) {
-  const pts = [];
-  for (let i = 0; i <= w; i += step) pts.push([x + i, y + (rnd() - .5) * j]);
-  for (let i = 0; i <= h; i += step) pts.push([x + w + (rnd() - .5) * j, y + i]);
-  for (let i = w; i >= 0; i -= step) pts.push([x + i, y + h + (rnd() - .5) * j]);
-  for (let i = h; i >= 0; i -= step) pts.push([x + (rnd() - .5) * j, y + i]);
-  return 'M' + pts.map(p => p.join(' ')).join(' L') + ' Z';
+  const p = [];
+  for (let i = 0; i <= w; i += step) p.push([x + i, y + (rnd() - .5) * j]);
+  for (let i = 0; i <= h; i += step) p.push([x + w + (rnd() - .5) * j, y + i]);
+  for (let i = w; i >= 0; i -= step) p.push([x + i, y + h + (rnd() - .5) * j]);
+  for (let i = h; i >= 0; i -= step) p.push([x + (rnd() - .5) * j, y + i]);
+  return 'M' + p.map(q => q[0].toFixed(1) + ' ' + q[1].toFixed(1)).join(' L') + ' Z';
 }
-function tornCircle(cx, cy, r, j = 5, n = 70) {
+function tornCircle(cx, cy, r, j = 5, n = 80) {
   let d = '';
   for (let i = 0; i < n; i++) {
     const a = i / n * Math.PI * 2, rr = r + (rnd() - .5) * j;
@@ -110,389 +120,560 @@ function tornCircle(cx, cy, r, j = 5, n = 70) {
   }
   return d + ' Z';
 }
-function newSvg(parent) {
-  const s = el('svg', { class: 'art', viewBox: `0 0 ${W} ${H}` }, parent);
-  const defs = el('defs', {}, s);
-  const f = el('filter', { id: 'sh' + (++newSvg.n), x: '-20%', y: '-20%', width: '140%', height: '160%' }, defs);
-  el('feDropShadow', { dx: 0, dy: 9, stdDeviation: 9, 'flood-color': '#2a1606', 'flood-opacity': .35 }, f);
-  s.sh = `url(#sh${newSvg.n})`;
+let svgN = 0;
+function newSvg(root) {
+  const s = el('svg', { class: 'art', viewBox: VIEW, preserveAspectRatio: 'xMidYMid slice', width: SW, height: SH }, root);
+  const defs = el('defs', {}, s), id = ++svgN;
+  const f = el('filter', { id: 'sh' + id, x: '-20%', y: '-20%', width: '140%', height: '160%' }, defs);
+  el('feDropShadow', { dx: 0, dy: 10, stdDeviation: 10, 'flood-color': '#000', 'flood-opacity': .6 }, f);
+  const gl = el('filter', { id: 'gl' + id, x: '-50%', y: '-50%', width: '200%', height: '200%' }, defs);
+  el('feGaussianBlur', { stdDeviation: 14, result: 'b' }, gl);
+  const m = el('feMerge', {}, gl); el('feMergeNode', { in: 'b' }, m); el('feMergeNode', { in: 'b' }, m); el('feMergeNode', { in: 'SourceGraphic' }, m);
+  s.sh = `url(#sh${id})`; s.gl = `url(#gl${id})`; s.defs = s.querySelector('defs'); s.id_ = id;
   return s;
 }
-newSvg.n = 0;
-const layer = (svg, d, fill) => el('path', { d, fill, filter: svg.sh }, svg);
-const cam = (g, s, x = 0, y = 0) =>
-  g.setAttribute('transform', `translate(${960 + x} ${540 + y}) scale(${s}) translate(-960 -540)`);
+const P = (svg, parent, d, fill, extra = {}) => el('path', Object.assign({ d, fill, filter: svg.sh }, extra), parent);
+const cam = (g, s, x = 0, y = 0, cx = 960, cy = 540) =>
+  g.setAttribute('transform', `translate(${cx + x} ${cy + y}) scale(${s}) translate(${-cx} ${-cy})`);
+function grad(svg, id, stops, vertical = true) {
+  const g = el('linearGradient', { id: id + svg.id_, x1: 0, y1: 0, x2: vertical ? 0 : 1, y2: vertical ? 1 : 0 }, svg.defs);
+  stops.forEach(([o, c]) => el('stop', { offset: o, 'stop-color': c }, g));
+  return `url(#${id + svg.id_})`;
+}
+function rgrad(svg, id, stops) {
+  const g = el('radialGradient', { id: id + svg.id_ }, svg.defs);
+  stops.forEach(([o, c, op = 1]) => el('stop', { offset: o, 'stop-color': c, 'stop-opacity': op }, g));
+  return `url(#${id + svg.id_})`;
+}
+const bg = (svg, g, fill) => el('rect', { x: -200, y: -900, width: 2400, height: 3000, fill }, g);
+function sunsetSky(svg, g, horizon = 560) {
+  bg(svg, g, grad(svg, 'sky', [[0, '#07060a'], [.45, '#2a1408'], [.78, '#8a4413'], [1, '#e08a2c']]));
+  el('rect', { x: -200, y: horizon, width: 2400, height: 2000, fill: '#e08a2c' }, g);
+}
+// cuneiform-like wedge mark (carved): dark shape + light lower edge
+function wedge(parent, x, y, s, rot, dark = '#3a2210', light = '#d9a066') {
+  const g = el('g', { transform: `translate(${x} ${y}) rotate(${rot})` }, parent);
+  const d = `M0 0 L${s * 1.3} ${-s * .5} L${s * 1.3} ${s * .5} Z M${s * 1.1} ${-s * .09} L${s * 3.2} ${-s * .05} L${s * 3.2} ${s * .07} L${s * 1.1} ${s * .09} Z`;
+  el('path', { d, fill: light, transform: 'translate(2 2.5)', opacity: .55 }, g);
+  el('path', { d, fill: dark }, g);
+  return g;
+}
+function tabletRows(parent, x0, y0, w, h, rows, s = 16) {
+  for (let r = 0; r < rows; r++) {
+    const y = y0 + (r + .6) * h / rows;
+    el('rect', { x: x0, y: y + h / rows * .42, width: w, height: 2, fill: '#5a3418', opacity: .5 }, parent);
+    let x = x0 + 10;
+    while (x < x0 + w - s * 3.4) {
+      const k = rnd();
+      if (k < .45) wedge(parent, x, y, s * (.7 + rnd() * .5), 0);
+      else if (k < .8) wedge(parent, x + s, y - s * 1.6, s * (.6 + rnd() * .4), 90);
+      else wedge(parent, x, y, s * .6, 45);
+      x += s * (1.6 + rnd() * 1.6);
+    }
+  }
+}
+function ziggurat(svg, parent, cx, base, w, h, fill = '#140c07', rim = '#e9a24a') {
+  const g = el('g', {}, parent), tiers = 4;
+  for (let i = 0; i < tiers; i++) {
+    const tw = w * (1 - i * .22), th = h / tiers, y = base - (i + 1) * th;
+    P(svg, g, tornRect(cx - tw / 2, y, tw, th + 2, 3, 18), fill);
+    el('rect', { x: cx - tw / 2, y, width: tw, height: 3, fill: rim, opacity: .55 }, g);
+  }
+  P(svg, g, tornRect(cx - w * .06, base - h * .55, w * .12, h * .55, 2, 12), fill);   // stairway
+  return g;
+}
 
-// ---------- paper grain (generated once) ----------
-(function grain() {
-  const c = document.createElement('canvas'); c.width = c.height = 600;
-  const g = c.getContext('2d'), img = g.createImageData(600, 600);
-  for (let i = 0; i < img.data.length; i += 4) {
-    const v = 225 + rnd() * 30; img.data[i] = v; img.data[i + 1] = v - 4; img.data[i + 2] = v - 12; img.data[i + 3] = 255;
-  }
-  g.putImageData(img, 0, 0);
-  g.strokeStyle = 'rgba(120,90,50,.10)';
-  for (let i = 0; i < 900; i++) {           // paper fibers
-    g.lineWidth = rnd() * 1.2; g.beginPath();
-    const x = rnd() * 600, y = rnd() * 600, a = rnd() * 6.28, l = 6 + rnd() * 22;
-    g.moveTo(x, y); g.quadraticCurveTo(x + rnd() * 8, y + rnd() * 8, x + Math.cos(a) * l, y + Math.sin(a) * l); g.stroke();
-  }
-  window.GRAIN = c.toDataURL();
+// ---------- shared overlays ----------
+const GRAIN = (() => {
+  const c = document.createElement('canvas'); c.width = c.height = 512;
+  const g = c.getContext('2d'), img = g.createImageData(512, 512);
+  for (let i = 0; i < img.data.length; i += 4) { const v = 100 + rnd() * 80; img.data[i] = img.data[i + 1] = img.data[i + 2] = v; img.data[i + 3] = 255; }
+  g.putImageData(img, 0, 0); return c.toDataURL();
 })();
 
-// =====================================================================
-// SCENES — each: {start, end, build(root) -> update(lt, t)}
-// =====================================================================
+// ===================== scenes =====================
 const scenes = [];
-const scene = (start, end, build, bg) => {
-  const root = div('scene', null, stage, { background: bg || 'var(--paper)' });
-  scenes.push({ start, end, root, update: build(root) });
+// tr = transition INTO this scene: dissolve | black | glow | tear | burn | slide
+const scene = (start, end, tr, dust, build) => {
+  const root = document.createElement('div'); root.className = 'scene'; stage.appendChild(root);
+  scenes.push({ start, end, tr, dust, root, update: build(root) });
 };
 
-// ---- S0 · HOOK: night desert of paper layers + the question ----
-scene(0, 11, root => {
+// 1 · OPENING — black, golden dust gathers
+scene(0, 5, 'black', 1, root => {
   const s = newSvg(root), g = el('g', {}, s);
-  el('rect', { x: -100, y: -100, width: 2200, height: 1300, fill: '#1d2740' }, g);
-  const stars = [];
-  for (let i = 0; i < 70; i++) stars.push(el('circle', { cx: rnd() * W, cy: rnd() * 560, r: 1.5 + rnd() * 2.5, fill: '#f3e3b8' }, g));
-  const moon = layer(s, tornCircle(1500, 260, 90), '#efd9a4'); g.appendChild(moon);
-  const cols = ['#2f3c5c', '#3f4a66', '#6a5a55', '#8a6a4f'];
-  const dunes = cols.map((c, i) => {
-    const base = 640 + i * 110, ph = rnd() * 6;
-    const p = layer(s, tornTop(base, 0, 7, 24, x => base + Math.sin(x / (260 + i * 60) + ph) * (50 - i * 6)), c);
-    g.appendChild(p); return p;
-  });
-  const q = words('strip title', 'هل تكفي كلمتان قديمتان', root, { top: '250px', right: '50%', fontSize: '74px' });
-  const q2 = words('strip title', 'لتغيّرا طريقة نظرنا إلى الأشياء؟', root, { top: '390px', right: '50%', fontSize: '74px' });
+  bg(s, g, '#050403');
+  const glow = el('ellipse', { cx: 960, cy: 540, rx: 700, ry: 420, fill: rgrad(s, 'og', [[0, '#7a4a18', .55], [1, '#000', 0]]) }, g);
+  const a = T(root, 'tag', 'من الطين… إلى الشاشة', 500, 900, false);
   return lt => {
-    cam(g, 1 + lt * .006);
-    stars.forEach((st, i) => st.setAttribute('opacity', .4 + .6 * Math.abs(Math.sin(lt * .9 + i))));
-    moon.setAttribute('transform', `translate(0 ${(1 - eOut(prog(lt, 0, 3))) * 200})`);
-    dunes.forEach((d, i) => {
-      const p = eOut(prog(lt, .2 + i * .35, 2 + i * .35));
-      d.setAttribute('transform', `translate(${(lt - 5) * (i + 1) * -2} ${(1 - p) * 500})`);
-    });
-    [q, q2].forEach((d, i) => {
-      const a = 2.2 + i * 1.6;
-      d.style.opacity = prog(lt, a, a + .3);
-      d.style.transform = `translateX(50%) rotate(${i ? 1 : -1.2}deg)`;
-      revealWords(d, prog(lt, a, a + 1.4));
-    });
+    glow.setAttribute('opacity', ease(prog(lt, .5, 4)));
+    cam(g, 1 + lt * .02);
+    show(a, lt, 1.6, 4.8);
   };
 });
 
-// ---- S1 · THE TWO WORDS on a clay tablet ----
-scene(11, 24, root => {
+// 2 · THE QUESTION — macro eye with a ziggurat reflected in the pupil
+scene(5, 13, 'black', .5, root => {
   const s = newSvg(root), g = el('g', {}, s);
-  el('rect', { x: -100, y: -100, width: 2200, height: 1300, fill: '#e9dcc2' }, g);
-  const tab = el('g', {}, g);
-  layer(s, tornRect(560, 150, 800, 560, 14, 26), '#a8683f'); tab.appendChild(s.lastChild);
-  layer(s, tornRect(585, 172, 750, 515, 10, 26), '#c98a5a'); tab.appendChild(s.lastChild);
-  const mk = (x, ch, lat, ar) => {
-    const gg = el('g', {}, tab);
-    el('text', { x, y: 470, 'text-anchor': 'middle', 'font-size': 230, class: 'cunei', fill: '#5a2c14', opacity: .9 }, gg).textContent = ch;
-    el('text', { x: x + 3, y: 473, 'text-anchor': 'middle', 'font-size': 230, class: 'cunei', fill: '#e8b88f', opacity: .35 }, gg).textContent = ch;
-    el('text', { x, y: 600, 'text-anchor': 'middle', 'font-size': 58, 'font-family': 'Kufi', fill: '#3a1c0c' }, gg).textContent = lat;
+  bg(s, g, '#120a05');
+  P(s, g, ridge(0, x => 120 + Math.sin(x / 300) * 30, 8), '#2a170b');          // brow / skin layers
+  P(s, g, 'M200 540 Q960 40 1720 540 Q960 1040 200 540 Z', '#3a2312');
+  P(s, g, 'M260 540 Q960 110 1660 540 Q960 970 260 540 Z', '#d8c3a0');           // sclera
+  const iris = el('g', {}, g);
+  P(s, iris, tornCircle(960, 540, 330, 8), '#5a2e0e');
+  P(s, iris, tornCircle(960, 540, 300, 8), '#a0561a');
+  for (let i = 0; i < 90; i++) {                                                  // iris fibres
+    const a = i / 90 * Math.PI * 2, r1 = 130 + rnd() * 30, r2 = 250 + rnd() * 45;
+    el('line', { x1: 960 + Math.cos(a) * r1, y1: 540 + Math.sin(a) * r1, x2: 960 + Math.cos(a) * r2, y2: 540 + Math.sin(a) * r2,
+      stroke: rnd() < .5 ? '#e0a050' : '#6a3510', 'stroke-width': 3 + rnd() * 5, opacity: .7 }, iris);
+  }
+  P(s, iris, tornCircle(960, 540, 150, 6), '#0a0604');
+  const refl = el('g', { opacity: .9 }, iris);
+  el('rect', { x: 870, y: 470, width: 180, height: 120, fill: '#e9a24a', opacity: .25, rx: 10 }, refl);
+  ziggurat(s, refl, 960, 590, 150, 90, '#2a1406', '#ffd27a');
+  el('ellipse', { cx: 1040, cy: 450, rx: 34, ry: 22, fill: '#fff4dc', opacity: .85 }, iris);
+  const lidT = P(s, g, 'M150 -100 L1770 -100 L1770 540 Q960 40 150 540 Z', '#24130a');
+  const lidB = P(s, g, 'M150 1180 L1770 1180 L1770 540 Q960 1040 150 540 Z', '#1c0f07');
+  const q1 = T(root, 'ttl', 'هل تكفي كلمتان قديمتان', 70, 300);
+  const q2 = T(root, 'ttl', 'لتغيّرا طريقة نظرنا إلى الأشياء؟', 860, 1500);
+  return lt => {
+    const open = ease(prog(lt, .2, 1.8));
+    lidT.setAttribute('transform', `translate(0 ${-(1 - open) * -360})`);
+    lidB.setAttribute('transform', `translate(0 ${(1 - open) * -360})`);
+    cam(g, 1 + lt * .035);
+    iris.setAttribute('transform', `translate(${Math.sin(lt * .7) * 12} 0)`);
+    show(q1, lt, 1.8, 7.6); show(q2, lt, 3.2, 7.6);
+  };
+});
+
+// 3 · WHAT IF I TOLD YOU — clay tablet in raking light
+scene(13, 21, 'dissolve', .4, root => {
+  const s = newSvg(root), g = el('g', {}, s);
+  bg(s, g, '#0d0805');
+  const tab = el('g', { transform: 'rotate(-8 960 540)' }, g);
+  P(s, tab, tornRect(260, hv(170, -250), 1400, hv(760, 1550), 16, 26), '#6b3d1c');
+  P(s, tab, tornRect(285, hv(195, -225), 1350, hv(710, 1500), 12, 26), '#9a6234');
+  tabletRows(tab, 320, hv(220, -200), 1280, hv(660, 1450), hv(7, 15), 20);
+  el('rect', { x: -200, y: -900, width: 2400, height: 3000, fill: grad(s, 'rk', [[0, '#ffb35c'], [.5, '#000'], [1, '#000']], false), opacity: .35, 'mix-blend-mode': 'overlay' }, g);
+  el('rect', { x: -200, y: -900, width: 2400, height: 3000, fill: grad(s, 'sh3', [[0, 'rgba(0,0,0,0)'], [.6, 'rgba(0,0,0,.2)'], [1, 'rgba(0,0,0,.85)']], false) }, g);
+  const a = T(root, 'cap', 'ماذا لو أخبرتك…', 820, 1420);
+  const b = T(root, 'cap', 'أن اسم هذه السلسلة مركّب من كلمتين سومريتين؟', 820, 1420);
+  return lt => {
+    cam(g, 1.15 - lt * .01, 60 - lt * 15, 0);
+    show(a, lt, .8, 3.6); show(b, lt, 3.8, 7.6);
+  };
+});
+
+// 4 · IGI and GAL — two glyphs lit in gold
+scene(21, 30, 'glow', .8, root => {
+  const s = newSvg(root), g = el('g', {}, s);
+  bg(s, g, '#0f0905');
+  P(s, g, tornRect(hv(140, 420), hv(140, -380), hv(1640, 1080), hv(800, 1880), 14, 30), '#24150b');
+  const pos = V ? [[960, 120], [960, 860]] : [[620, 470], [1300, 470]];
+  const div = el('rect', V ? { x: 560, y: 470, width: 800, height: 3, fill: '#e3b25a' } : { x: 958, y: 220, width: 3, height: 560, fill: '#e3b25a' }, g);
+  const mk = ([x, y], ch, lat, ar) => {
+    const gg = el('g', {}, g);
+    txt(gg, ch, { x, y, 'text-anchor': 'middle', 'font-size': 300, class: 'cunei', fill: '#f0c26a', filter: s.gl });
+    txt(gg, lat, { x, y: y + 150, 'text-anchor': 'middle', 'font-size': 84, class: 'cinzel', fill: '#f0c26a' });
+    txt(gg, ar, { x, y: y + 250, 'text-anchor': 'middle', 'font-size': 64, 'font-family': 'Plex', 'font-weight': 700, fill: '#f3e6c8' });
     return gg;
   };
-  const igi = mk(1150, '𒅆', 'igi', ''), gal = mk(770, '𒃲', 'gal', '');
-  const l1 = div('strip title', 'igi = «العين»', root, { top: '760px', left: '1140px' });
-  const l2 = div('strip title', 'gal = «الكبير»', root, { top: '760px', left: '470px' });
-  const n1 = words('strip small', 'لغة كفّت عن أن تكون لغة كلام يومي قبل نحو أربعة آلاف عام…', root, { top: '60px', right: '50%' });
-  const n2 = words('strip small dark', '…ثم بقيت قرونًا لغةً للكتبة والمعابد', root, { top: '920px', right: '50%' });
+  const igi = mk(pos[0], '𒅆', 'IGI', '«العين»'), gal = mk(pos[1], '𒃲', 'GAL', '«الكبير»');
+  const c = T(root, 'cap small', 'في السومرية: igi «العين» و gal «الكبير»', 900, 1640);
   return lt => {
-    const p = back(prog(lt, 0, 1.4));
-    tab.setAttribute('transform', `translate(0 ${(1 - p) * 700}) rotate(${(1 - p) * -8} 960 430)`);
-    cam(g, 1.02 + lt * .004);
+    cam(g, 1 + lt * .01);
     [igi, gal].forEach((x, i) => {
-      const q = eOut(prog(lt, 1.4 + i * 1.6, 2.2 + i * 1.6));
-      x.setAttribute('opacity', q);
-      x.setAttribute('transform', `translate(0 ${(1 - q) * -30})`);
+      const q = eOut(prog(lt, .6 + i * 1.8, 1.8 + i * 1.8));
+      x.setAttribute('opacity', q); x.setAttribute('transform', `translate(0 ${(1 - q) * 40})`);
     });
-    strip(l1, lt, 2.2, 12.6, 2); strip(l2, lt, 3.8, 12.6, -2);
-    strip(n1, lt, 6.2, 12.6); n1.style.transform += ' translateX(50%)'; revealWords(n1, prog(lt, 6.2, 8));
-    strip(n2, lt, 8.8, 12.6); n2.style.transform += ' translateX(50%)'; revealWords(n2, prog(lt, 8.8, 10.2));
-    // these two strips replace the tablet labels' space: dim labels when notes arrive
+    div.setAttribute('opacity', prog(lt, .2, 1));
+    show(c, lt, 4.8, 8.6);
   };
 });
 
-// ---- S2 · THE PLACE: paper marshes of southern Mesopotamia ----
-scene(24, 40, root => {
+// 5 · FROM THE NAME TO HISTORY — aerial marshes at sunset
+scene(30, 38, 'dissolve', .5, root => {
   const s = newSvg(root), g = el('g', {}, s);
-  el('rect', { x: -100, y: -100, width: 2200, height: 1300, fill: '#f0c98e' }, g);
-  const sun = layer(s, tornCircle(980, 430, 150), '#e9a24a'); g.appendChild(sun);
-  const far = layer(s, tornTop(560, 0, 6, 30, x => 560 + Math.sin(x / 300) * 20), '#c78a5c'); g.appendChild(far);
-  const mid = layer(s, tornTop(620, 0, 6, 26, x => 615 + Math.sin(x / 210 + 1) * 14), '#9c6a4c'); g.appendChild(mid);
-  const waters = ['#6d9a9c', '#4f7f86', '#3c6670'].map((c, i) => {
-    const base = 690 + i * 95;
-    const p = layer(s, tornTop(base, 0, 4, 20, x => base + Math.sin(x / 70 + i) * 8), c); g.appendChild(p); return p;
-  });
-  // reed boat
-  const boat = el('g', {}, g);
-  layer(s, 'M-150 0 Q0 60 150 0 Q130 -10 120 -30 Q0 20 -120 -30 Q-130 -10 -150 0 Z', '#4a3322'); boat.appendChild(s.lastChild);
-  layer(s, 'M10 -30 L22 -170 L30 -170 L22 -30 Z', '#3a2618'); boat.appendChild(s.lastChild);
-  // reeds clusters, left & right foreground
-  const reeds = [];
-  [[0, 520], [1430, 1920]].forEach(([a, b]) => {
-    for (let i = 0; i < 26; i++) {
-      const x = a + rnd() * (b - a), h = 280 + rnd() * 330, w = 10 + rnd() * 8, gg = el('g', {}, g);
-      const c = ['#6b7a3a', '#55632c', '#7f8c45'][i % 3];
-      layer(s, `M${x - w / 2} 1090 Q${x} ${1090 - h * .6} ${x + 4} ${1090 - h} Q${x + w * .3} ${1090 - h * .5} ${x + w / 2} 1090 Z`, c); gg.appendChild(s.lastChild);
-      layer(s, `M${x + 2} ${1090 - h} m-9 0 a 9 26 0 1 0 18 0 a 9 26 0 1 0 -18 0`, '#6a4a2c'); gg.appendChild(s.lastChild);
-      reeds.push({ gg, x, ph: rnd() * 6 });
+  sunsetSky(s, g, 330);
+  el('circle', { cx: 960, cy: 320, r: 260, fill: rgrad(s, 'sg', [[0, '#ffd27a', 1], [.25, '#f0a040', .8], [1, '#e08a2c', 0]]) }, g);
+  P(s, g, ridge(0, x => 330 + Math.sin(x / 140) * 6, 4), '#3a200d');
+  P(s, g, ridge(0, x => 360 + Math.sin(x / 200 + 2) * 8, 4), '#2a170a');
+  for (let k = 0; k < 6; k++) {                                                   // winding gold channels
+    const cx = 200 + k * 300 + rnd() * 100, ph = rnd() * 6;
+    let d = '';
+    for (let y = 340; y <= 1700; y += 20) {
+      const depth = (y - 330) / 750, x = cx + (cx - 960) * depth * .8 + Math.sin(y / 70 + ph) * 40 * depth;
+      d += (d ? ' L' : 'M') + x.toFixed(1) + ' ' + y;
     }
-  });
-  const tag = div('tag', 'المكان: جنوب بلاد الرافدين (العراق اليوم)  ·  الزمن: من نحو 3350 ق.م.', root, { top: '50px', right: '60px' });
-  const a1 = words('strip', 'قبل أكثر من خمسة آلاف عام… مجتمعات تحتاج أن تُحصي وتسجّل وتتذكّر', root, { top: '840px', right: '50%' });
-  const a2 = words('strip', 'لغة لا تنتمي إلى أي عائلة لغوية معروفة: السومرية', root, { top: '840px', right: '50%' });
-  const a3 = words('strip terra', 'ولا نعرف عنها إلا ما كُتب بالطين', root, { top: '840px', right: '50%' });
+    el('path', { d, fill: 'none', stroke: '#f0b257', 'stroke-width': 4 + k % 3 * 4, 'stroke-linecap': 'round', opacity: .85, filter: s.gl }, g);
+  }
+  for (let i = 0; i < 70; i++) {                                                  // reed clumps
+    const y = 380 + rnd() * 1300, sz = 6 + (y - 330) / 30;
+    P(s, g, tornCircle(rnd() * W, y, sz, sz * .4, 14), i % 2 ? '#16100a' : '#22180c');
+  }
+  const tag = T(root, 'tag', 'من نحو 3350 ق.م. إلى اليوم', 470, 1000, false);
+  const a = T(root, 'cap', 'لغةٌ كفّت عن الكلام اليومي قبل نحو أربعة آلاف عام…', 820, 1400);
+  const b = T(root, 'cap gold', '…ثم بقيت قرونًا لغةً للكتبة والمعابد', 820, 1400);
   return lt => {
-    cam(g, 1.12 - lt * .006, 0, 10 - lt * .6);          // slow pull-out: reveal the place
-    sun.setAttribute('transform', `translate(0 ${-lt * 4})`);
-    waters.forEach((w, i) => w.setAttribute('transform', `translate(${Math.sin(lt * .8 + i) * 14} 0)`));
-    boat.setAttribute('transform', `translate(${1350 - lt * 38} ${775 + Math.sin(lt * 1.6) * 5}) rotate(${Math.sin(lt * 1.3) * 2})`);
-    reeds.forEach(r => r.gg.setAttribute('transform', `rotate(${Math.sin(lt * 1.1 + r.ph) * 1.6} ${r.x} 1090)`));
-    tag.style.opacity = prog(lt, .6, 1.2) * (1 - prog(lt, 15, 15.6));
-    tag.style.transform = `translateY(${(1 - eOut(prog(lt, .6, 1.2))) * -30}px)`;
-    [[a1, 1.5, 6.5], [a2, 6.8, 10.8], [a3, 11.1, 15.4]].forEach(([d, a, b]) => {
-      strip(d, lt, a, b); d.style.transform += ' translateX(50%)'; revealWords(d, prog(lt, a, a + 1.6));
-    });
+    cam(g, 1.18 - lt * .015, 0, lt * 6, 960, 330);
+    show(tag, lt, .5, 7.6); show(a, lt, 1.2, 4.6); show(b, lt, 4.8, 7.6);
   };
 });
 
-// ---- S3 · THE HISTORICAL FACT: dictionary cards + sources ----
-scene(40, 56, root => {
+// 6 · BIRTH OF WRITING — a hand presses wedges into clay
+scene(38, 46, 'black', .3, root => {
   const s = newSvg(root), g = el('g', {}, s);
-  el('rect', { x: -100, y: -100, width: 2200, height: 1300, fill: '#dfe3d6' }, g);
-  for (let i = 0; i < 14; i++) el('line', { x1: 0, x2: W, y1: 80 + i * 75, y2: 80 + i * 75, stroke: '#b9c4b4', 'stroke-width': 2 }, g);
-  const card = (x, y, rot, glyph, latin, lines, col) => {
+  bg(s, g, '#1a0e06');
+  P(s, g, tornRect(-100, -900, 2200, 3000, 10, 30), '#8a5229');
+  el('rect', { x: -200, y: -900, width: 2400, height: 3000, fill: rgrad(s, 'sp', [[0, '#ffb35c', .35], [1, '#000', .75]]) }, g);
+  tabletRows(g, 160, hv(120, -380), 1600, hv(300, 300), hv(2, 2), 22);
+  const marks = el('g', {}, g), MX = 520, MY = hv(560, 560), N = 9, pts = [];
+  for (let i = 0; i < N; i++) {
+    const x = MX + i * 100 + (i % 3 === 2 ? 20 : 0), vertical = i % 3 === 1;
+    const m = wedge(marks, vertical ? x + 20 : x, vertical ? MY - 40 : MY, 26, vertical ? 90 : 0);
+    m.setAttribute('opacity', 0); pts.push({ m, x: vertical ? x + 20 : x, y: vertical ? MY - 40 : MY });
+  }
+  const hand = el('g', {}, g);
+  el('path', { d: 'M-150 -330 L32 54 L22 58 L-162 -324 Z', fill: '#c8a060' }, hand);           // reed stylus
+  // paper-cut hand: forearm, palm and fingers wrapped round the stylus
+  const limb = (x1, y1, x2, y2, w, c) => el('path', { d: `M${x1} ${y1} L${x2} ${y2}`, stroke: c, 'stroke-width': w, 'stroke-linecap': 'round', filter: s.sh }, hand);
+  limb(-230, -230, -620, -560, 170, '#8a5632');
+  el('ellipse', { cx: -150, cy: -170, rx: 125, ry: 90, fill: '#b07a4a', transform: 'rotate(-35 -150 -170)', filter: s.sh }, hand);
+  limb(-150, -150, -40, -95, 46, '#9a6438');
+  limb(-120, -110, -15, -40, 48, '#b07a4a');
+  limb(-200, -60, -70, -40, 42, '#c48a56');
+  el('path', { d: 'M-250 -230 C -200 -280 -120 -270 -60 -220', fill: 'none', stroke: '#ffcf86', 'stroke-width': 4, opacity: .6 }, hand);   // rim light
+  const tag = T(root, 'tag', 'جنوب بلاد الرافدين — العراق اليوم', 60, 330, false);
+  const a = T(root, 'cap', 'في الجنوب الذي يسمّيه العراقيون اليوم الأهوار والسهل الرسوبي…', 840, 1420);
+  return lt => {
+    cam(g, 1.08 + lt * .01, 0, 0, 960, 560);
+    const k = clamp(lt / 7) * N, i = Math.min(N - 1, Math.floor(k)), f = k - Math.floor(k);
+    const press = Math.sin(clamp(f / .5) * Math.PI);                                // down & up each step
+    const p = pts[i];
+    hand.setAttribute('transform', `translate(${p.x - 30 + f * 40} ${p.y - 55 + (1 - press) * -40})`);
+    pts.forEach((q, j) => q.m.setAttribute('opacity', j < i || (j === i && f > .25) ? 1 : 0));
+    show(tag, lt, .4, 7.6); show(a, lt, 1.4, 7.6);
+  };
+});
+
+// 7 · SOCIETIES & NEED — a Sumerian city at dusk
+scene(46, 54, 'slide', .5, root => {
+  const s = newSvg(root), g = el('g', {}, s);
+  sunsetSky(s, g, 620);
+  el('circle', { cx: 1250, cy: 560, r: 300, fill: rgrad(s, 'sg', [[0, '#ffd27a', .9], [.3, '#f0a040', .6], [1, '#e08a2c', 0]]) }, g);
+  const far = el('g', {}, g), mid = el('g', {}, g), near = el('g', {}, g);
+  ziggurat(s, far, 900, 640, 560, 330, '#2a160a');
+  for (let i = 0; i < 22; i++) P(s, mid, tornRect(-60 + i * 95, 600 - rnd() * 60, 80 + rnd() * 40, 200, 3, 16), '#1c0f07');
+  P(s, mid, ridge(0, x => 660 + Math.sin(x / 300) * 6, 3), '#120a05');
+  P(s, mid, ridge(0, x => 700, 2, 30, H + 900), '#b86a24');                          // river
+  for (let i = 0; i < 12; i++) el('rect', { x: rnd() * W, y: 720 + rnd() * 900, width: 80 + rnd() * 160, height: 3, fill: '#ffd27a', opacity: .5 }, mid);
+  const boats = [0, 1, 2].map(i => {
+    const b = el('g', {}, near);
+    P(s, b, 'M-110 0 Q0 40 110 0 Q95 -8 88 -24 Q0 14 -88 -24 Q-95 -8 -110 0 Z', '#0d0704');
+    el('path', { d: 'M-20 -10 L-60 -140 L-55 -140 L-15 -10 Z', fill: '#0d0704' }, b);
+    el('circle', { cx: 10, cy: -46, r: 12, fill: '#0d0704' }, b);
+    P(s, b, 'M-4 -34 L24 -34 L30 -4 L-8 -4 Z', '#0d0704');
+    return b;
+  });
+  for (let i = 0; i < 30; i++) {
+    const x = rnd() * W, h = 120 + rnd() * 200;
+    el('path', { d: `M${x} ${H + 600} L${x + 4} ${hv(1080, 1600) - h} L${x + 9} ${H + 600} Z`, fill: '#0a0603' }, near);
+  }
+  const a = T(root, 'cap', 'قبل أكثر من خمسة آلاف عام…', 820, 1420);
+  const b = T(root, 'cap gold', 'مجتمعات تحتاج إلى أن تُحصي وتسجّل وتتذكّر', 820, 1420);
+  return lt => {
+    far.setAttribute('transform', `translate(${-lt * 4} 0)`);
+    mid.setAttribute('transform', `translate(${-lt * 9} 0)`);
+    boats.forEach((b, i) => b.setAttribute('transform', `translate(${300 + i * 550 + lt * (18 + i * 6)} ${hv(820, 1000) + i * hv(70, 160) + Math.sin(lt * 1.5 + i) * 4})`));
+    cam(g, 1.05 + lt * .006);
+    show(a, lt, .6, 3.8); show(b, lt, 4, 7.6);
+  };
+});
+
+// 8 · THE HISTORICAL FACT — dictionary cards + sources
+scene(54, 63, 'tear', .3, root => {
+  const s = newSvg(root), g = el('g', {}, s);
+  bg(s, g, '#160d07');
+  P(s, g, tornRect(hv(60, 380), hv(40, -480), hv(1800, 1160), hv(1000, 2060), 10, 30), '#2b190c');
+  const card = (x, y, rot, glyph, latin, lines) => {
     const gg = el('g', {}, g);
-    layer(s, tornRect(x, y, 600, 430, 8, 24), col); gg.appendChild(s.lastChild);
-    el('text', { x: x + 470, y: y + 210, 'text-anchor': 'middle', 'font-size': 170, class: 'cunei', fill: '#3a2414' }, gg).textContent = glyph;
-    el('text', { x: x + 470, y: y + 320, 'text-anchor': 'middle', 'font-size': 56, 'font-family': 'Kufi', fill: '#3a2414' }, gg).textContent = latin;
-    lines.forEach((l, i) => {
-      const t = el('text', { x: x + 330, y: y + 140 + i * 80, 'text-anchor': 'start', 'font-size': 54, 'font-family': 'Amiri', 'font-weight': 700, fill: '#2b2118', direction: 'rtl' }, gg);
-      t.textContent = l;
-    });
+    P(s, gg, tornRect(x, y, 620, 450, 8, 24), '#e9dcc2');
+    txt(gg, glyph, { x: x + 470, y: y + 220, 'text-anchor': 'middle', 'font-size': 170, class: 'cunei', fill: '#3a2414' });
+    txt(gg, latin, { x: x + 470, y: y + 330, 'text-anchor': 'middle', 'font-size': 56, class: 'cinzel', fill: '#7a4a18' });
+    lines.forEach((l, i) => txt(gg, l, { x: x + 330, y: y + 150 + i * 82, 'text-anchor': 'start', direction: 'rtl', 'font-size': 52, 'font-family': 'Plex', 'font-weight': 700, fill: '#2b2118' }));
     gg.rot = rot; return gg;
   };
-  const c1 = card(1080, 150, 2, '𒅆', 'igi', ['العين', 'الوجه', 'الجهة الأمامية'], '#f7f0e1');
-  const c2 = card(240, 170, -2, '𒃲', 'gal', ['الكبير'], '#f2e3c4');
-  const st1 = div('tag', 'ETCSL · أكسفورد', root, { top: '620px', left: '1180px', fontSize: '30px', background: '#a5532f' });
-  const st2 = div('tag', 'ePSD · بنسلفانيا', root, { top: '620px', left: '330px', fontSize: '30px', background: '#a5532f' });
-  const n1 = words('strip small', 'اجتماع الكلمتين بمعنى «العين العظيمة»: لا نعرف له استعمالًا موثّقًا', root, { top: '740px', right: '50%' });
-  const n2 = words('strip dark', 'IGINGAL صياغة أنشأناها نحن من مفردتين سومريتين صحيحتين', root, { top: '850px', right: '50%' });
-  const n3 = words('strip small terra', 'ولا نزعم أنها عبارة سومرية معروفة', root, { top: '960px', right: '50%' });
-  return lt => {
-    cam(g, 1 + lt * .004);
-    [c1, c2].forEach((c, i) => {
-      const p = back(prog(lt, .2 + i * .5, 1.4 + i * .5));
-      c.setAttribute('transform', `translate(0 ${(1 - p) * -900}) rotate(${c.rot * p + (1 - p) * 12} 960 400)`);
-    });
-    [st1, st2].forEach((d, i) => {
-      const p = prog(lt, 2.4 + i * .4, 2.7 + i * .4);
-      d.style.opacity = p * (1 - prog(lt, 15.2, 15.6));
-      d.style.transform = `scale(${1 + (1 - p) * 1.4}) rotate(${i ? 5 : -5}deg)`;     // stamp
-    });
-    [[n1, 4, 15.6], [n2, 7.5, 15.6], [n3, 10.5, 15.6]].forEach(([d, a, b]) => {
-      strip(d, lt, a, b); d.style.transform += ' translateX(50%)'; revealWords(d, prog(lt, a, a + 1.8));
-    });
-  };
-});
-
-// ---- S4 · LUGAL: lu + gal = king ----
-scene(56, 69, root => {
-  const s = newSvg(root), g = el('g', {}, s);
-  el('rect', { x: -100, y: -100, width: 2200, height: 1300, fill: '#2a3550' }, g);
-  layer(s, tornCircle(960, 470, 470, 10, 90), '#334062'); g.appendChild(s.lastChild);
-  const tile = (x, glyph, lat, ar, col) => {
-    const gg = el('g', {}, g);
-    layer(s, tornRect(x - 160, 240, 320, 380, 8, 22), col); gg.appendChild(s.lastChild);
-    el('text', { x, y: 450, 'text-anchor': 'middle', 'font-size': 170, class: 'cunei', fill: '#4a220e' }, gg).textContent = glyph;
-    el('text', { x, y: 530, 'text-anchor': 'middle', 'font-size': 46, 'font-family': 'Kufi', fill: '#4a220e' }, gg).textContent = lat;
-    el('text', { x, y: 595, 'text-anchor': 'middle', 'font-size': 44, 'font-family': 'Amiri', 'font-weight': 700, fill: '#2b2118' }, gg).textContent = ar;
-    return gg;
-  };
-  // read right-to-left: lu + gal = lugal
-  const tLu = tile(1550, '𒇽', 'lú', 'الرجل', '#e7c39a');
-  const tGal = tile(1000, '𒃲', 'gal', 'الكبير', '#e7c39a');
-  const tKing = tile(400, '𒈗', 'lugal', 'الملك', '#d9a441');
-  const sym = (x, ch) => { const t = el('text', { x, y: 470, 'text-anchor': 'middle', 'font-size': 110, 'font-family': 'Kufi', fill: '#f7f0e1' }, g); t.textContent = ch; return t; };
-  const plus = sym(1275, '+'), eq = sym(700, '=');
-  const crown = el('g', {}, g);
-  layer(s, 'M300 225 L300 150 L345 190 L400 120 L455 190 L500 150 L500 225 Z', '#f0c24f'); crown.appendChild(s.lastChild);
-  const n1 = words('strip', 'اللغة جعلت صفة «الكبير» جزءًا من مفهوم الملك نفسه', root, { top: '790px', right: '50%' });
+  const c1 = card(hv(1060, 650), hv(150, 60), 2, '𒅆', 'IGI', ['العين', 'الوجه', 'الجهة الأمامية']);
+  const c2 = card(hv(240, 650), hv(170, -440), -2, '𒃲', 'GAL', ['الكبير']);
+  const st = T(root, 'tag', 'ETCSL · ePSD — معاجم السومرية', 660, 1010, false);
+  const a = T(root, 'cap', 'هذا ما تثبته معاجم السومرية وقوائم المفردات', 820, 1180);
+  const b = T(root, 'cap small', 'أما «العين العظيمة» كعبارة واحدة: فلا نعرف لها استعمالًا موثّقًا', 820, 1420);
   return lt => {
     cam(g, 1 + lt * .005);
-    [[tLu, .3], [plus, 1.2], [tGal, 1.6], [eq, 3.2], [tKing, 3.6]].forEach(([e, a]) => {
-      const p = back(prog(lt, a, a + .9));
-      e.setAttribute('opacity', clamp(p));
-      e.setAttribute('transform', `translate(0 ${(1 - p) * 120})`);
+    [c2, c1].forEach((c, i) => {
+      const p = back(prog(lt, .3 + i * .5, 1.4 + i * .5));
+      c.setAttribute('transform', `translate(0 ${(1 - p) * -1000}) rotate(${c.rot * p + (1 - p) * 12} 960 400)`);
     });
-    const c = back(prog(lt, 5, 6));
-    crown.setAttribute('opacity', clamp(c));
-    crown.setAttribute('transform', `translate(0 ${(1 - c) * -200 + Math.sin(lt * 1.5) * 4})`);
-    strip(n1, lt, 6.5, 12.6); n1.style.transform += ' translateX(50%)'; revealWords(n1, prog(lt, 6.5, 8.5));
+    show(st, lt, 2.2, 8.6, -1.5); show(a, lt, 2.8, hv(5.6, 8.6)); show(b, lt, hv(5.8, 4.8), 8.6);
   };
 });
 
-// ---- S5+S6 · NAMES ARE NOT NEUTRAL → field of attention (one continuous eye, match-cut) ----
-scene(69, 94, root => {
+// 9 · THE MODERN NAME — IGI + GAL fuse into IGINGAL
+scene(63, 71, 'glow', 1, root => {
   const s = newSvg(root), g = el('g', {}, s);
-  el('rect', { x: -100, y: -100, width: 2200, height: 1300, fill: '#efe4cf' }, g);
-  const rings = [];
-  ['#e3d2b3', '#d7bf98', '#c9a77c', '#b98b5e', '#a5532f'].forEach((c, i) => {
-    const p = layer(s, tornCircle(960, 420, 900 - i * 150, 12, 100), c); g.appendChild(p); rings.push(p);
-  });
-  const eye = el('g', {}, g);
-  const almond = 'M560 420 Q960 120 1360 420 Q960 720 560 420 Z';
-  const clip = el('clipPath', { id: 'eyeclip' }, s.querySelector('defs')); el('path', { d: almond }, clip);
-  layer(s, almond, '#2b2118'); eye.appendChild(s.lastChild);
-  const inner = el('g', { 'clip-path': 'url(#eyeclip)' }, eye);
-  el('path', { d: 'M560 420 Q960 135 1360 420 Q960 705 560 420 Z', fill: '#f7f0e1' }, inner);
-  const iris = el('g', {}, inner);
-  layer(s, tornCircle(960, 420, 165, 6), '#4f7f86'); iris.appendChild(s.lastChild);
-  layer(s, tornCircle(960, 420, 115, 5), '#23314a'); iris.appendChild(s.lastChild);
-  el('text', { x: 960, y: 470, 'text-anchor': 'middle', 'font-size': 120, class: 'cunei', fill: '#d9a441' }, iris).textContent = '𒅆';
-  const lidT = el('path', { d: 'M500 0 L1420 0 L1420 420 L500 420 Z', fill: '#c98a5a' }, inner);
-  const lidB = el('path', { d: 'M500 420 L1420 420 L1420 900 L500 900 Z', fill: '#a8683f' }, inner);
-  const h1 = words('strip title', 'الفكرة الخطيرة: الأسماء ليست محايدة', root, { top: '60px', right: '50%', fontSize: '64px' });
-  const a1 = words('strip', 'من يسمّي شيئًا يقرّر ما الذي سيراه الناس فيه', root, { top: '800px', right: '50%' });
-  const a2 = words('strip', 'التزامنا: أن نقول أين ينتهي النص القديم وأين يبدأ تأمّلنا', root, { top: '800px', right: '50%' });
-  const b1 = words('strip dark', 'اللغة لا تنقل الواقع فقط… بل ترسم مجالًا للانتباه', root, { top: '800px', right: '50%' });
-  const lab = div('tag', 'قراءة فلسفية معاصرة — ليست رأيًا ورد في نص سومري', root, { top: '930px', right: '50%', background: '#a5532f' });
-  const b2 = words('strip', 'كل مفردة نتعلّمها تفتح لنا شيئًا لم نكن نراه', root, { top: '800px', right: '50%' });
+  bg(s, g, '#0a0604');
+  el('ellipse', { cx: 960, cy: 470, rx: 800, ry: 520, fill: rgrad(s, 'mg', [[0, '#6a3a10', .7], [1, '#000', 0]]) }, g);
+  const plat = P(s, g, 'M560 760 L1360 760 L1460 860 L460 860 Z', '#3a210c');
+  const gIgi = txt(g, '𒅆', { x: 0, y: 0, 'text-anchor': 'middle', 'font-size': 230, class: 'cunei', fill: '#f0c26a', filter: s.gl });
+  const gGal = txt(g, '𒃲', { x: 0, y: 0, 'text-anchor': 'middle', 'font-size': 230, class: 'cunei', fill: '#f0c26a', filter: s.gl });
+  const plus = txt(g, '+', { x: 960, y: 380, 'text-anchor': 'middle', 'font-size': 120, class: 'cinzel', fill: '#f0c26a' });
+  const name = txt(g, 'IGINGAL', { x: 960, y: 690, 'text-anchor': 'middle', 'font-size': hv(170, 150), class: 'cinzel', 'letter-spacing': 10, fill: '#f3cf7d', filter: s.gl });
+  const a = T(root, 'cap', 'IGINGAL صياغة أنشأناها نحن من مفردتين سومريتين صحيحتين', 900, 1400);
+  const b = T(root, 'cap gold', 'ولا نزعم أنها عبارة سومرية معروفة', 900, 1400);
   return lt => {
-    // eye opens 1–3s, blinks once at 12.5s, then rings expand as "field of attention"
-    let open = ease(prog(lt, 1, 3));
-    const blink = prog(lt, 12.3, 12.9); if (blink > 0 && blink < 1) open *= Math.abs(Math.cos(blink * Math.PI));
-    lidT.setAttribute('transform', `translate(0 ${-open * 330})`);
-    lidB.setAttribute('transform', `translate(0 ${open * 330})`);
-    iris.setAttribute('transform', `translate(${Math.sin(lt * .5) * 40 * prog(lt, 3, 5) * (1 - prog(lt, 12, 13))} 0)`);
-    const e = eOut(prog(lt, 0, 1.2));
-    eye.setAttribute('transform', `translate(960 420) scale(${.6 + .4 * e}) translate(-960 -420)`);
-    eye.setAttribute('opacity', e);
-    const field = ease(prog(lt, 13, 18));
+    const m = ease(prog(lt, 1.8, 3.2)), sx = hv(330, 260) * (1 - m);
+    [[gIgi, -1], [gGal, 1]].forEach(([e, k]) => {
+      e.setAttribute('transform', `translate(${960 + k * sx} ${420 - m * 40})`);
+      e.setAttribute('opacity', prog(lt, .2, .9) * (1 - m));
+    });
+    plus.setAttribute('opacity', prog(lt, .6, 1) * (1 - m));
+    name.setAttribute('opacity', prog(lt, 2.6, 3.4));
+    name.setAttribute('transform', `translate(960 690) scale(${.85 + .15 * eOut(prog(lt, 2.6, 3.8))}) translate(-960 -690)`);
+    plat.setAttribute('opacity', prog(lt, 2.6, 3.4));
+    cam(g, 1 + lt * .008);
+    show(a, lt, 3.6, 5.9); show(b, lt, 6, 7.7);
+  };
+});
+
+// 10 · AN ISOLATED LANGUAGE — lone figure by the river at dusk
+scene(71, 78, 'dissolve', .4, root => {
+  const s = newSvg(root), g = el('g', {}, s);
+  sunsetSky(s, g, 540);
+  el('circle', { cx: 700, cy: 520, r: 220, fill: rgrad(s, 'sg', [[0, '#ffe1a0', 1], [.25, '#f0a040', .7], [1, '#e08a2c', 0]]) }, g);
+  P(s, g, ridge(0, x => 540 + Math.sin(x / 260) * 10, 4), '#2a160a');
+  P(s, g, ridge(0, x => 590, 2, 30), '#a85a1a');
+  const shim = el('g', {}, g);
+  for (let i = 0; i < 26; i++) el('rect', { x: 600 + rnd() * 200 - (i * 4), y: 600 + i * 24, width: 120 + rnd() * 140, height: 4, fill: '#ffd27a', opacity: .6 }, shim);
+  P(s, g, ridge(0, x => 820 + Math.sin(x / 120) * 20 + (x > 1100 ? -60 : 0), 6), '#0e0804');
+  const fig = el('g', {}, g);
+  el('circle', { cx: 1330, cy: 640, r: 20, fill: '#0e0804' }, fig);
+  P(s, fig, 'M1312 660 L1348 660 L1362 770 L1350 780 L1340 840 L1320 840 L1312 780 L1298 770 Z', '#0e0804');
+  el('path', { d: 'M1360 600 L1300 860 L1306 860 L1366 600 Z', fill: '#0e0804' }, fig);       // staff
+  const a = T(root, 'cap', 'لغة لا تنتمي إلى أي عائلة لغوية معروفة: السومرية', 860, 1420);
+  const b = T(root, 'cap gold', 'ولا نعرف عنها إلا ما كُتب بالطين', 860, 1420);
+  return lt => {
+    cam(g, 1.1 - lt * .012, 0, 0, 1330, 700);
+    shim.setAttribute('transform', `translate(${Math.sin(lt * 2) * 10} 0)`);
+    show(a, lt, .6, 3.8); show(b, lt, 4, 6.7);
+  };
+});
+
+// 11 · THE SYMBOL AND THE KING — lú + gal = lugal
+scene(78, 86, 'dissolve', .4, root => {
+  const s = newSvg(root), g = el('g', {}, s);
+  bg(s, g, '#1a0f07');
+  for (let r = -10; r < 22; r++) for (let c = -1; c < 13; c++)                         // relief wall of bricks
+    P(s, g, tornRect(c * 170 + (r % 2) * 85, r * 90, 164, 84, 3, 20), r % 3 ? '#3a2312' : '#33200f', { filter: '' });
+  el('rect', { x: -200, y: -900, width: 2400, height: 3000, fill: rgrad(s, 'v', [[0, '#000', 0], [1, '#000', .8]]) }, g);
+  const tile = (x, y, glyph, lat, ar, col) => {
+    const gg = el('g', {}, g);
+    P(s, gg, tornRect(x - 170, y - 230, 340, 400, 8, 22), col);
+    txt(gg, glyph, { x, y: y - 20, 'text-anchor': 'middle', 'font-size': 170, class: 'cunei', fill: '#3a1c0c' });
+    txt(gg, lat, { x, y: y + 65, 'text-anchor': 'middle', 'font-size': 46, class: 'cinzel', fill: '#3a1c0c' });
+    txt(gg, ar, { x, y: y + 130, 'text-anchor': 'middle', 'font-size': 44, 'font-family': 'Plex', 'font-weight': 700, fill: '#2b2118' });
+    return gg;
+  };
+  const L = V ? { lu: [1200, 0], gal: [720, 0], plus: [960, -10], eq: [960, 380], king: [960, 760] }
+              : { lu: [1560, 470], gal: [1000, 470], plus: [1280, 460], eq: [720, 460], king: [420, 470] };
+  const tLu = tile(...L.lu, '𒇽', 'LÚ', 'الرجل', '#e7c39a');
+  const tGal = tile(...L.gal, '𒃲', 'GAL', 'الكبير', '#e7c39a');
+  const tKing = tile(...L.king, '𒈗', 'LUGAL', 'الملك', '#e3b25a');
+  const plus = txt(g, '+', { x: L.plus[0], y: L.plus[1] + 40, 'text-anchor': 'middle', 'font-size': 120, class: 'cinzel', fill: '#f0c26a' });
+  const eq = txt(g, '=', { x: L.eq[0], y: L.eq[1] + 40, 'text-anchor': 'middle', 'font-size': 120, class: 'cinzel', fill: '#f0c26a' });
+  const crown = el('g', { filter: s.gl }, g);
+  el('path', { d: `M${L.king[0] - 100} ${L.king[1] - 250} l0 -75 l45 40 l55 -70 l55 70 l45 -40 l0 75 Z`, fill: '#f0c24f' }, crown);
+  const a = T(root, 'cap', 'اللغة جعلت صفة «الكبير» جزءًا من مفهوم الملك نفسه', 860, 1440);
+  return lt => {
+    cam(g, 1 + lt * .008);
+    [[tLu, .2], [plus, .9], [tGal, 1.2], [eq, 2.3], [tKing, 2.7]].forEach(([e, a0]) => {
+      const p = back(prog(lt, a0, a0 + .8));
+      e.setAttribute('opacity', clamp(p)); e.setAttribute('transform', `translate(0 ${(1 - p) * 100})`);
+    });
+    const c = back(prog(lt, 3.6, 4.5));
+    crown.setAttribute('opacity', clamp(c)); crown.setAttribute('transform', `translate(0 ${(1 - c) * -160 + Math.sin(lt * 1.5) * 4})`);
+    show(a, lt, 4.4, 7.7);
+  };
+});
+
+// 12 · THE DANGEROUS IDEA — a scribe facing the ziggurat at sunset
+scene(86, 95, 'slide', .5, root => {
+  const s = newSvg(root), g = el('g', {}, s);
+  sunsetSky(s, g, 640);
+  el('circle', { cx: 760, cy: 560, r: 320, fill: rgrad(s, 'sg', [[0, '#ffe1a0', 1], [.25, '#f0a040', .7], [1, '#e08a2c', 0]]) }, g);
+  const far = el('g', {}, g);
+  ziggurat(s, far, 760, 660, 620, 380, '#2a160a');
+  P(s, g, ridge(0, x => 660 + Math.sin(x / 250) * 8, 4), '#22120a');
+  P(s, g, ridge(0, x => 900 - (x - 1300) * .12 + Math.sin(x / 90) * 6, 6), '#0e0804');
+  const man = el('g', {}, g);
+  el('circle', { cx: 1360, cy: 650, r: 38, fill: '#0e0804' }, man);
+  P(s, man, 'M1322 690 C1290 730 1280 810 1300 870 L1270 960 L1490 960 L1450 870 C1460 810 1430 710 1400 690 Z', '#0e0804');
+  P(s, man, 'M1310 760 L1240 820 L1250 840 L1330 790 Z', '#0e0804');
+  el('rect', { x: 1200, y: 800, width: 70, height: 50, fill: '#0e0804', transform: 'rotate(-20 1235 825)' }, man);
+  el('path', { d: 'M1322 690 C1290 730 1280 810 1300 870', fill: 'none', stroke: '#f0a040', 'stroke-width': 3, opacity: .7 }, man);
+  const h = T(root, 'ttl', 'الفكرة الخطيرة: الأسماء ليست محايدة', 70, 300);
+  const a = T(root, 'cap', 'من يسمّي شيئًا يقرّر ما الذي سيراه الناس فيه', 860, 1440);
+  const b = T(root, 'cap gold', 'التزامنا: أن نقول أين ينتهي النص القديم وأين يبدأ تأمّلنا', 860, 1440);
+  return lt => {
+    cam(g, 1.04 + lt * .008, 0, 0, 1000, 700);
+    far.setAttribute('transform', `translate(${lt * 3} 0)`);
+    show(h, lt, .5, 8.6); show(a, lt, 1.6, 5); show(b, lt, 5.2, 8.6);
+  };
+});
+
+// 13 · PHILOSOPHICAL READING — river horizon, ripples = field of attention
+scene(95, 103, 'dissolve', .4, root => {
+  const s = newSvg(root), g = el('g', {}, s);
+  sunsetSky(s, g, 500);
+  el('circle', { cx: 960, cy: 490, r: 260, fill: rgrad(s, 'sg', [[0, '#ffe1a0', 1], [.25, '#f0a040', .7], [1, '#e08a2c', 0]]) }, g);
+  P(s, g, ridge(0, x => 500 + Math.sin(x / 200) * 6, 3), '#24130a');
+  P(s, g, ridge(0, x => 520, 2, 30), '#8a4a16');
+  const shim = el('g', {}, g);
+  for (let i = 0; i < 30; i++) el('rect', { x: 860 + rnd() * 120 - i * 3, y: 530 + i * 26, width: 80 + i * 6, height: 4, fill: '#ffd27a', opacity: .55 }, shim);
+  const rings = [0, 1, 2, 3, 4].map(() => el('ellipse', { cx: 960, cy: 780, rx: 10, ry: 3, fill: 'none', stroke: '#ffd27a', 'stroke-width': 3 }, g));
+  const a = T(root, 'cap', 'اللغة لا تنقل الواقع فقط… بل ترسم مجالًا للانتباه', 860, 1440);
+  const lab = T(root, 'tag', 'قراءة فلسفية معاصرة — ليست رأيًا ورد في نص سومري', 980, 1600, false);
+  const b = T(root, 'cap gold', 'كل مفردة نتعلّمها تفتح لنا شيئًا لم نكن نراه', 860, 1440);
+  return lt => {
+    cam(g, 1 + lt * .01, 0, 0, 960, 520);
+    shim.setAttribute('transform', `translate(${Math.sin(lt * 2.2) * 8} 0)`);
     rings.forEach((r, i) => {
-      const p = eOut(prog(lt, i * .2, 1.4 + i * .2));
-      const sc = p * (1 + field * (.15 + i * .07)) + Math.sin(lt * .8 + i) * .005;
-      r.setAttribute('transform', `translate(960 420) scale(${sc}) translate(-960 -420)`);
+      const p = ((lt - 1 - i * 1.1) / 5.5); const q = clamp(p);
+      r.setAttribute('rx', 20 + q * 900); r.setAttribute('ry', 6 + q * 160);
+      r.setAttribute('opacity', p > 0 && p < 1 ? (1 - q) * .8 : 0);
     });
-    cam(g, 1 + lt * .003);
-    strip(h1, lt, 2.6, 12.4); h1.style.transform += ' translateX(50%)'; revealWords(h1, prog(lt, 2.6, 4));
-    [[a1, 4.2, 8.2], [a2, 8.4, 12.4], [b1, 13.5, 18.5], [b2, 19, 24.6]].forEach(([d, a, b]) => {
-      strip(d, lt, a, b); d.style.transform += ' translateX(50%)'; revealWords(d, prog(lt, a, a + 1.8));
-    });
-    strip(lab, lt, 14.6, 18.5); lab.style.transform += ' translateX(50%)';
+    show(a, lt, .6, 4.4); show(lab, lt, 1.2, 4.4); show(b, lt, 4.6, 7.6);
   };
 });
 
-// ---- S7 · TODAY: a flood of paper "screens" → four questions ----
-scene(94, 106, root => {
+// 14 · TODAY — night city, a flood of glowing screens, a face lit by them
+scene(103, 111, 'burn', .2, root => {
   const s = newSvg(root), g = el('g', {}, s);
-  el('rect', { x: -100, y: -100, width: 2200, height: 1300, fill: '#23314a' }, g);
-  const cards = [];
-  for (let i = 0; i < 44; i++) {
-    const x = rnd() * W, w = 110 + rnd() * 90, h = w * 1.7, gg = el('g', {}, g);
-    layer(s, tornRect(-w / 2, -h / 2, w, h, 5, 18), ['#f7f0e1', '#e7c39a', '#4f7f86', '#d9a441', '#c98a5a'][i % 5]); gg.appendChild(s.lastChild);
-    el('rect', { x: -w / 2 + 12, y: -h / 2 + 16, width: w - 24, height: h * .55, fill: 'rgba(35,49,74,.35)' }, gg);
-    cards.push({ gg, x, sp: 120 + rnd() * 200, off: rnd() * 1600, rot: (rnd() - .5) * 40, vr: (rnd() - .5) * 30 });
+  bg(s, g, grad(s, 'ns', [[0, '#04060c'], [.7, '#0d1424'], [1, '#1a2238']]));
+  const city = el('g', {}, g);
+  for (let i = 0; i < 26; i++) {
+    const w = 60 + rnd() * 90, h = 200 + rnd() * 420, x = -40 + i * 78, y = 1000 - h;
+    P(s, city, tornRect(x, y, w, h + 900, 2, 30), i % 2 ? '#0a0e18' : '#0d1220');
+    for (let k = 0; k < h / 30; k++) if (rnd() < .35) el('rect', { x: x + 8 + rnd() * (w - 20), y: y + 12 + k * 28, width: 8, height: 12, fill: rnd() < .7 ? '#f0b257' : '#7fb0ff', opacity: .8 }, city);
   }
-  const t0 = words('strip small', 'نمرّ كل يوم بمئات الصور والمقاطع… ونظن أننا «رأينا»', root, { top: '70px', right: '50%' });
+  const scr = [];
+  for (let i = 0; i < 34; i++) {
+    const gg = el('g', {}, g), w = 150 + rnd() * 130, h = w * .62;
+    el('rect', { x: -w / 2, y: -h / 2, width: w, height: h, rx: 6, fill: ['#2a5aa8', '#a85a2a', '#6a3aa8', '#2a8a9a', '#c08a2a'][i % 5], opacity: .85 }, gg);
+    el('rect', { x: -w / 2 + 8, y: -h / 2 + 8, width: w - 16, height: h - 16, rx: 4, fill: '#fff', opacity: .12 }, gg);
+    scr.push({ gg, x: 200 + rnd() * 1500, y: hv(120, -400) + rnd() * hv(700, 1700), sp: .4 + rnd() * .8, ph: rnd() * 6 });
+  }
+  const face = el('g', { transform: `translate(${hv(0, -200)} ${hv(0, 300)})` }, g);
+  P(s, face, 'M1640 180 C1540 190 1490 280 1500 380 L1462 450 L1500 472 L1494 520 L1514 536 L1500 562 C1510 604 1552 624 1602 614 L1612 1300 L2000 1300 L2000 180 Z', '#05070c');
+  el('path', { d: 'M1640 180 C1540 190 1490 280 1500 380 L1462 450 L1500 472 L1494 520 L1514 536 L1500 562 C1510 604 1552 624 1602 614', fill: 'none', stroke: '#7fb0ff', 'stroke-width': 4, opacity: .8 }, face);
+  const a = T(root, 'cap', 'اليوم تمرّ بنا مئات الصور والمقاطع… ونظن أننا «رأينا»', 860, 1460);
   const qs = ['من كتب هذا؟', 'ولماذا؟', 'وما الدليل؟', 'وماذا بقي غير مكتوب؟'].map((q, i) =>
-    div('strip title', q, root, { top: `${270 + i * 140}px`, right: `${420 + i * 110}px`, fontSize: '60px' }));
-  const t1 = words('strip small terra', 'هذا ما سنفعله في الحلقات الآتية: من الطين إلى الشاشة', root, { top: '900px', right: '50%' });
+    T(root, 'ttl', q, hv(140 + i * 140, 350 + i * 150), hv(140 + i * 140, 350 + i * 150), false));
+  if (!V) qs.forEach((q, i) => { q.style.right = `${700 - i * 120}px`; q.style.left = 'auto'; q.style.margin = '0'; });
   return lt => {
-    const slow = 1 - .85 * ease(prog(lt, 3.5, 5.5));      // the flood slows down: "a slower kind of seeing"
-    cards.forEach(c => {
-      const y = ((c.off + lt * c.sp * slow + lt * 40) % 1600) - 300;
-      c.gg.setAttribute('transform', `translate(${c.x} ${y}) rotate(${c.rot + lt * c.vr * slow})`);
-      c.gg.setAttribute('opacity', 1 - .7 * prog(lt, 4, 6));
+    cam(g, 1 + lt * .012);
+    scr.forEach(c => {
+      const k = (lt * c.sp + c.ph) % 4 / 4;
+      c.gg.setAttribute('transform', `translate(${c.x + (c.x - 960) * k * .6} ${c.y + (c.y - 500) * k * .4}) scale(${.4 + k * 1.2})`);
+      c.gg.setAttribute('opacity', Math.sin(k * Math.PI) * (1 - .6 * prog(lt, 3.6, 4.6)));
     });
-    strip(t0, lt, .5, 5); t0.style.transform += ' translateX(50%)'; revealWords(t0, prog(lt, .5, 2.2));
-    qs.forEach((d, i) => strip(d, lt, 5.2 + i * .9, 11.6, i % 2 ? 2 : -2));
-    strip(t1, lt, 9.3, 11.6); t1.style.transform += ' translateX(50%)'; revealWords(t1, prog(lt, 9.3, 10.6));
+    show(a, lt, .4, 3.6);
+    qs.forEach((q, i) => show(q, lt, 3.8 + i * .7, 7.6, i % 2 ? 1.5 : -1.5));
   };
 });
 
-// ---- S8 · CLOSING: last question + logo ----
-scene(106, 119, root => {
+// 15 · CLOSING — last question, golden logo
+scene(111, 119.5, 'dissolve', 1, root => {
   const s = newSvg(root), g = el('g', {}, s);
-  el('rect', { x: -100, y: -100, width: 2200, height: 1300, fill: '#e9dcc2' }, g);
-  const rays = [];
-  for (let i = 0; i < 18; i++) {
-    const a = i / 18 * Math.PI * 2, gg = el('g', {}, g);
-    el('path', { d: `M960 470 L${960 + Math.cos(a - .09) * 1400} ${470 + Math.sin(a - .09) * 1400} L${960 + Math.cos(a + .09) * 1400} ${470 + Math.sin(a + .09) * 1400} Z`, fill: i % 2 ? '#e1cfae' : '#ead9b9' }, gg);
-    rays.push(gg);
-  }
+  bg(s, g, '#070504');
+  el('ellipse', { cx: 960, cy: 470, rx: 760, ry: 460, fill: rgrad(s, 'cg', [[0, '#5a3210', .75], [1, '#000', 0]]) }, g);
   const logo = el('g', {}, g);
-  layer(s, tornRect(560, 250, 800, 420, 12, 24), '#a8683f'); logo.appendChild(s.lastChild);
-  layer(s, tornRect(582, 270, 756, 380, 9, 24), '#c98a5a'); logo.appendChild(s.lastChild);
-  el('text', { x: 960, y: 430, 'text-anchor': 'middle', 'font-size': 150, class: 'cunei', fill: '#4a220e' }, logo).textContent = '𒅆𒅅';
-  el('text', { x: 960, y: 625, 'text-anchor': 'middle', 'font-size': 92, 'font-family': 'Kufi', 'letter-spacing': 12, fill: '#2b2118' }, logo).textContent = 'IGINGAL';
-  const q1 = words('strip', 'إن كان لك أن تضيف كلمةً واحدة إلى اسم هذه السلسلة…', root, { top: '330px', right: '50%' });
-  const q2 = words('strip title', 'فما هي؟', root, { top: '480px', right: '50%', fontSize: '80px' });
-  const tag = words('strip', 'العين الكبيرة التي نعدك بها… هي عادةُ سؤالٍ لا تتعب', root, { top: '760px', right: '50%' });
-  const cta = div('tag', 'اكتب رأيك في التعليقات', root, { top: '900px', right: '50%', fontSize: '36px', background: '#a5532f' });
+  txt(logo, '𒅆𒅅', { x: 960, y: 420, 'text-anchor': 'middle', 'font-size': 180, class: 'cunei', fill: '#f0c26a', filter: s.gl });
+  txt(logo, 'IGINGAL', { x: 960, y: 670, 'text-anchor': 'middle', 'font-size': 140, class: 'cinzel', 'letter-spacing': 14, fill: '#f3cf7d', filter: s.gl });
+  const q = T(root, 'ttl', 'إن كان لك أن تضيف كلمةً واحدة إلى اسم هذه السلسلة… فما هي؟', 420, 760);
+  const tg = T(root, 'cap', 'العين الكبيرة التي نعدك بها ليست عينًا أكبر من غيرها… هي عادةُ سؤالٍ لا تتعب', 790, 1340);
+  const cta = T(root, 'tag', 'اكتب رأيك في التعليقات', 950, 1620, false);
   return lt => {
-    rays.forEach((r, i) => r.setAttribute('transform', `rotate(${lt * 2} 960 470)`));
-    strip(q1, lt, .4, 5.4); q1.style.transform += ' translateX(50%)'; revealWords(q1, prog(lt, .4, 2.4));
-    strip(q2, lt, 2.6, 5.4, -3); q2.style.transform += ' translateX(50%)';
-    const p = back(prog(lt, 5.6, 7));
-    logo.setAttribute('opacity', clamp(p));
-    logo.setAttribute('transform', `translate(960 460) scale(${.5 + .5 * p}) rotate(${(1 - p) * 10}) translate(-960 -460)`);
-    strip(tag, lt, 7.4, 13); tag.style.transform += ' translateX(50%)'; revealWords(tag, prog(lt, 7.4, 9.4));
-    strip(cta, lt, 9.8, 13); cta.style.transform += ' translateX(50%)';
-    stage.style.filter = `brightness(${1 - prog(lt, 12, 13)})`;   // fade to black
+    show(q, lt, .3, 3.4);
+    const p = eOut(prog(lt, 3.4, 5));
+    logo.setAttribute('opacity', p);
+    logo.setAttribute('transform', `translate(960 520) scale(${.8 + .2 * p}) translate(-960 -520)`);
+    cam(g, 1 + lt * .01);
+    show(tg, lt, 4.6, 8.4); show(cta, lt, 5.6, 8.4);
   };
 });
 
-const DURATION = 119;
+const DURATION = 119.5;
 
-// ---------- transitions between scenes ----------
-// 'tear' = torn paper sheet sweeps across (mask); 'fade' = paper dissolve
-const transitions = { 11: 'tear', 24: 'fade', 40: 'tear', 56: 'fade', 69: 'tear', 94: 'fade', 106: 'tear' };
-const wipe = document.createElementNS(NS, 'svg');
-wipe.id = 'wipe'; wipe.setAttribute('viewBox', '0 0 2400 1160');
+// ===================== global layers & transitions =====================
+const dust = el('svg', { id: 'dust', width: SW, height: SH, viewBox: `0 0 ${SW} ${SH}` });
+stage.appendChild(dust);
+{ const f = el('filter', { id: 'dg' }, el('defs', {}, dust)); el('feGaussianBlur', { stdDeviation: 1.6 }, f); }
+const motes = [];
+for (let i = 0; i < 140; i++) motes.push({ c: el('circle', { r: .8 + rnd() * 3.2, fill: rnd() < .8 ? '#f6c46a' : '#fff0c8', filter: 'url(#dg)' }, dust),
+  x: rnd() * SW, y: rnd() * SH, vx: (rnd() - .5) * 14, vy: 6 + rnd() * 22, ph: rnd() * 6, f: .5 + rnd() * 2 });
+
+const wipe = el('svg', { id: 'wipe', viewBox: '0 0 2400 1160', preserveAspectRatio: 'none' });
 {
   let d = 'M120 0';
   for (let y = 0; y <= 1160; y += 26) d += ` L${120 + (rnd() - .5) * 50} ${y}`;
   for (let y = 1160; y >= 0; y -= 26) d += ` L${2280 + (rnd() - .5) * 50} ${y}`;
-  const f = el('filter', { id: 'wsh', x: '-10%', y: '-10%', width: '120%', height: '120%' }, el('defs', {}, wipe));
-  el('feDropShadow', { dx: 0, dy: 0, stdDeviation: 14, 'flood-color': '#2a1606', 'flood-opacity': .5 }, f);
-  el('path', { d: d + ' Z', fill: '#d8c3a0', filter: 'url(#wsh)' }, wipe);
-  el('path', { d: d + ' Z', fill: '#cdb38b', opacity: .5, transform: 'translate(30 0)' }, wipe);
+  el('path', { d: d + ' Z', fill: '#2a190c' }, wipe);
+  el('path', { d: 'M120 0' + d.slice(6) + ' Z', fill: 'none', stroke: '#e3b25a', 'stroke-width': 4, opacity: .7 }, wipe);
 }
+if (V) wipe.style.height = (SH + 80) + 'px';
 stage.appendChild(wipe);
-div('', '', stage).id = 'grain';
-document.getElementById('grain').style.backgroundImage = `url(${GRAIN})`;
-div('', '', stage).id = 'vignette';
+const fx = document.createElement('div'); fx.id = 'fx'; stage.appendChild(fx);
+const grain = document.createElement('div'); grain.id = 'grain'; grain.style.backgroundImage = `url(${GRAIN})`; stage.appendChild(grain);
+const vig = document.createElement('div'); vig.id = 'vignette'; stage.appendChild(vig);
 
 window.renderAt = function (t) {
-  stage.style.filter = '';
-  let wipeX = 2000;
-  scenes.forEach(sc => {
-    const tr = transitions[sc.start], trOut = transitions[sc.end];
-    let op = 0;
-    const fadeIn = tr === 'fade' ? .9 : 0;
-    if (t >= sc.start - fadeIn && t < sc.end + (trOut === 'fade' ? 0 : 0)) {
-      op = tr === 'fade' ? prog(t, sc.start - fadeIn, sc.start) : 1;
-      if (sc.start === 0) op = prog(t, 0, .8);
+  let dustLevel = 0, fxOp = 0, fxBg = '#000', wipeX = SW + 200;
+  scenes.forEach((sc, idx) => {
+    const tr = sc.tr, next = scenes[idx + 1];
+    const lead = tr === 'dissolve' ? .9 : tr === 'slide' ? .8 : 0;     // incoming overlaps the previous scene
+    let op = 0, tx = 0;
+    if (t >= sc.start - lead && t < sc.end) {
+      op = 1;
+      if (tr === 'dissolve') op = prog(t, sc.start - lead, sc.start);
+      if (tr === 'slide') tx = -(1 - ease(prog(t, sc.start - lead, sc.start))) * SW;   // enters from the left
     }
+    if (idx === scenes.length - 1) op *= 1 - prog(t, sc.end - 1.2, sc.end);
     sc.root.style.opacity = op;
     sc.root.style.display = op > 0 ? 'block' : 'none';
-    if (op > 0) sc.update(Math.max(0, t - sc.start), t);
+    sc.root.style.transform = tx ? `translateX(${tx}px)` : '';
+    if (op > 0) { sc.update(Math.max(0, t - sc.start)); dustLevel = Math.max(dustLevel, sc.dust * op); }
+    // boundary effects centred on the cut
+    const d = t - sc.start;
+    if (tr === 'black' && Math.abs(d) < .6) fxOp = Math.max(fxOp, 1 - Math.abs(d) / .6);
+    if (tr === 'glow' && Math.abs(d) < .5) { fxOp = Math.max(fxOp, .85 * (1 - Math.abs(d) / .5)); fxBg = 'radial-gradient(circle, #fff3d0 0%, #f0b257 45%, #6a3a10 100%)'; }
+    if (tr === 'burn' && Math.abs(d) < .6) { fxOp = Math.max(fxOp, .9 * (1 - Math.abs(d) / .6)); fxBg = 'radial-gradient(ellipse at 100% 50%, #fff0c0 0%, #f08a20 35%, #6a1a00 75%, #000 100%)'; }
+    if (tr === 'tear') { const p = prog(t, sc.start - .7, sc.start + .7); if (p > 0 && p < 1) wipeX = SW + 60 - ease(p) * (SW + 2480); }
   });
-  // tear wipe: sheet slides from right to left (RTL reading direction), covering the cut point at its middle
-  for (const k in transitions) {
-    if (transitions[k] !== 'tear') continue;
-    const p = prog(t, +k - .7, +k + .7);
-    if (p > 0 && p < 1) wipeX = 1980 - ease(p) * 4400;
-  }
+  if (t < .6) fxOp = 1 - t / .6;
+  fx.style.opacity = fxOp; fx.style.background = fxBg;
   wipe.style.left = wipeX + 'px';
+  dust.style.opacity = dustLevel;
+  motes.forEach(m => {
+    const x = ((m.x + t * m.vx + Math.sin(t * .6 + m.ph) * 25) % SW + SW) % SW;
+    const y = ((m.y - t * m.vy) % SH + SH) % SH;
+    m.c.setAttribute('cx', x.toFixed(1)); m.c.setAttribute('cy', y.toFixed(1));
+    m.c.setAttribute('opacity', (.35 + .65 * Math.abs(Math.sin(t * m.f + m.ph))).toFixed(2));
+  });
+  grain.style.backgroundPosition = `${(t * 997) % 512 | 0}px ${(t * 613) % 512 | 0}px`;
 };
 window.DURATION = DURATION;
-Promise.all(['40px Amiri', 'bold 40px Amiri', 'bold 40px Kufi', '40px Cunei'].map(f => document.fonts.load(f, 'اb𒅆')))
+window.TRANSITIONS = scenes.filter(s => ['tear', 'slide', 'burn', 'glow'].includes(s.tr)).map(s => s.start);
+Promise.all(['40px Plex', 'bold 40px Plex', 'bold 40px Cinzel', '40px Cunei'].map(f => document.fonts.load(f, 'اbA𒅆')))
   .then(() => document.fonts.ready).then(() => { window.READY = true; renderAt(0); });
 </script>
 </body>
