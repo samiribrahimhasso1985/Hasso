@@ -95,6 +95,20 @@ title=Image.new('L',(W,H),0); d=ImageDraw.Draw(title)
 d.text((W/2,H/2),TXT,font=font,fill=255,anchor='mm',direction='rtl',language='ar')
 title=np.asarray(title)/255.
 ivory=np.array([0.96,0.92,0.82])
+SCENE_END,AR_END=6.4,7.92                    # end card owns the final 2 s (7.92-9.92)
+def spaced(d,cx,cy,txt,fnt,track):
+    ws=[d.textlength(ch,font=fnt) for ch in txt]; tot=sum(ws)+track*(len(txt)-1); x0=cx-tot/2
+    for ch,w in zip(txt,ws): d.text((x0,cy),ch,font=fnt,fill=255,anchor='lm'); x0+=w+track
+def card_layer(txt,size,cy,track=0,face='EBGaramond12-Italic.otf'):
+    im=Image.new('L',(W,H),0); d=ImageDraw.Draw(im)
+    fnt=ImageFont.truetype('/usr/share/fonts/opentype/ebgaramond/'+face,size)
+    if track: spaced(d,W/2,cy,txt,fnt,track)
+    else: d.text((W/2,cy),txt,font=fnt,fill=255,anchor='mm')
+    return np.asarray(im)/255.
+end_lines=[  # (layer, fade-in start)
+    (card_layer('Coming Soon\u2026',54,H/2-125,track=6),8.00),
+    (card_layer('A Story You\u2019ve Never Heard Before',104,H/2,face='EBGaramond12-Regular.otf'),8.30),
+    (card_layer('Ibrahim Hasso',40,H/2+118,track=9,face='EBGaramond12-Regular.otf'),8.70)]
 
 ff=subprocess.Popen(['ffmpeg','-y','-loglevel','error',
   '-f','rawvideo','-pix_fmt','rgb24','-s',f'{W}x{H}','-r',str(FPS),'-i','-','-i',AUD,
@@ -103,8 +117,9 @@ ff=subprocess.Popen(['ffmpeg','-y','-loglevel','error',
 
 wimg=Image.fromarray((world*255).astype(np.uint8))
 for f in range(N):
-    t=f/FPS
-    if t<7.3:
+    tr=f/FPS
+    t=tr*7.3/SCENE_END                       # scenes play slightly faster to make room
+    if tr<SCENE_END:
         z,cx,cy=camera(t)
         vw,vh=WW/z,WH/z
         cx=np.clip(cx,vw/2,WW-vw/2); cy=np.clip(cy,vh/2,WH-vh/2)
@@ -157,8 +172,15 @@ for f in range(N):
         img=img+rng.normal(0,0.022,(H,W))[...,None]
         fade=ease(t/0.6)*(1-ease((t-6.6)/0.7))
         img=img.clip(0,1)*fade
-    else:
-        a=ease((t-7.45)/0.8)
+    elif tr<AR_END:
+        a=ease((tr-6.5)/0.45)*(1-ease((tr-7.5)/0.38))
         img=title[...,None]*ivory*a
+    else:
+        img=np.zeros((H,W,3))
+        for lay,st in end_lines:
+            a=ease((tr-st)/0.55)
+            if a<=0: continue
+            sh=int(round((1-a)*10))           # slight upward drift while fading in
+            img=img+np.roll(lay,sh,axis=0)[...,None]*ivory*a
     ff.stdin.write((np.clip(img,0,1)*255).astype(np.uint8).tobytes())
 ff.stdin.close(); ff.wait()
