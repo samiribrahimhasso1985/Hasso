@@ -3,6 +3,7 @@
   check                      فحص النظام والمتطلبات
   analyze <file> [options]   المرحلة 1: تحليل وتفريغ الفيديو
   status <project_folder>    عرض حالة مشروع
+  resolve-check              فحص الاتصال بـ DaVinci Resolve Studio (قراءة فقط)
 """
 
 from __future__ import annotations
@@ -71,6 +72,19 @@ def _open(path: Path) -> None:
         log.warning("تعذّر فتح المتصفح تلقائياً (%s). افتح الملف يدوياً: %s", e, path)
 
 
+def cmd_resolve_check(args, cfg) -> int:
+    from .resolve_bridge import check
+    info = check()
+    log.info("✓ تم الاتصال بـ DaVinci Resolve")
+    log.info("  المنتج: %s | الإصدار: %s", info["product"], info["version"])
+    log.info("  الصفحة الحالية: %s", info["page"])
+    log.info("  المشروع المفتوح: %s (عدد الخطوط الزمنية: %s)",
+             info["current_project"], info["timeline_count"])
+    log.info("  Python: %s", info["python"])
+    log.info("(هذا الفحص للقراءة فقط – لم يتم تعديل أي شيء في DaVinci)")
+    return 0
+
+
 def cmd_status(args, cfg) -> int:
     from .project import Project
     p = Project.open(Path(args.project))
@@ -103,6 +117,7 @@ def main(argv=None) -> int:
     a.add_argument("--backend", choices=["auto", "whisperx", "faster_whisper"])
     a.add_argument("--device", choices=["auto", "cpu", "cuda"])
     a.add_argument("--open", action="store_true", help="فتح صفحة المراجعة بعد الانتهاء")
+    sub.add_parser("resolve-check")
     s = sub.add_parser("status")
     s.add_argument("project")
     args = ap.parse_args(argv)
@@ -110,7 +125,8 @@ def main(argv=None) -> int:
     setup_logging(verbose=args.verbose)
     try:
         cfg = load_config(Path(args.config) if args.config else None)
-        return {"check": cmd_check, "analyze": cmd_analyze, "status": cmd_status}[args.cmd](args, cfg)
+        return {"check": cmd_check, "analyze": cmd_analyze, "status": cmd_status,
+                "resolve-check": cmd_resolve_check}[args.cmd](args, cfg)
     except VPAError as e:
         log.debug("".join(traceback.format_exception(e)))
         log.error("✗ %s", e.message_ar)
