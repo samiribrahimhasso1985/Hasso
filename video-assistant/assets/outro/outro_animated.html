@@ -21,13 +21,12 @@
   html, body { margin: 0; background: #000; overflow: hidden; }
   #stage { position: relative; background: #000; overflow: hidden; }
   .abs { position: absolute; left: 0; right: 0; }
-  #glow { position: absolute; inset: 0;
+  #glow { position: absolute; inset: 0; mix-blend-mode: screen; pointer-events: none;
           background: radial-gradient(ellipse at 50% 46%, rgba(200,160,90,.10), rgba(0,0,0,0) 55%); }
   #logo { position: absolute; left: 50%; transform: translateX(-50%); }
   #logo img { position: absolute; inset: 0; width: 100%; height: 100%; }
-  #sheen { position: absolute; inset: 0;
-           -webkit-mask: url(../brand/logo_calligraphy_white.png) center / 100% 100% no-repeat;
-           mask: url(../brand/logo_calligraphy_white.png) center / 100% 100% no-repeat; }
+  /* multiply over the stage: tints only the white letters, black stays black */
+  #sheen { position: absolute; left: 50%; mix-blend-mode: multiply; pointer-events: none; }
   .band { position: absolute; left: 0; overflow: hidden; }
   .band svg { position: absolute; top: 0; height: 100%; }
   #words { position: absolute; left: 0; right: 0; display: flex; justify-content: center;
@@ -41,14 +40,14 @@
 </head>
 <body>
 <div id="stage">
-  <div id="glow"></div>
   <div class="band" id="band1"></div>
   <div class="band" id="band2"></div>
   <div id="logo">
     <img id="latin" src="../brand/logo_latin_white.png" alt="">
     <img id="cal" src="../brand/logo_calligraphy_white.png" alt="">
-    <div id="sheen"></div>
   </div>
+  <div id="sheen"></div>
+  <div id="glow"></div>
   <div id="words">
     <div class="wd" id="w0"><div class="cu">𒅆</div><div class="tr">igi</div><div class="ar">يرى</div></div>
     <div class="arrow" id="a0">←</div>
@@ -74,6 +73,8 @@ const logoH = logoW * 210 / 736;          // crop aspect of the logo layers
 const logoTop = vertical ? H * 0.36 : H * 0.24;
 const logo = document.getElementById('logo');
 Object.assign(logo.style, { width: logoW + 'px', height: logoH + 'px', top: logoTop + 'px' });
+const sheenEl = document.getElementById('sheen');
+Object.assign(sheenEl.style, { width: logoW + 'px', height: logoH + 'px', top: logoTop + 'px' });
 
 const b1Top = logoTop + logoH + U * (vertical ? 6 : 4);
 const b1H = U * (vertical ? 16 : 14);
@@ -159,10 +160,10 @@ window.render = function (t) {
   els.cal.style.opacity = out;
   // slow cinematic push-in on the whole logo
   const sc = 0.96 + 0.06 * clamp(t / DUR);
-  logo.style.transform = `translateX(-50%) scale(${sc})`;
+  logo.style.transform = sheenEl.style.transform = `translateX(-50%) scale(${sc})`;
   // golden sheen sweeping across the calligraphy after it is revealed
   const sx = -40 + 180 * win(t, 2.0, 3.0);
-  els.sheen.style.background = `linear-gradient(105deg, transparent ${sx - 12}%, rgba(255,226,160,.9) ${sx}%, transparent ${sx + 12}%)`;
+  els.sheen.style.background = `linear-gradient(105deg, #fff ${sx - 14}%, #e8b860 ${sx}%, #fff ${sx + 14}%)`;
   els.sheen.style.opacity = (t > 1.9 && t < 3.1 ? 1 : 0) * out;
   // Latin wordmark fades in behind
   els.latin.style.opacity = 0.32 * win(t, 1.7, 2.6) * out;
