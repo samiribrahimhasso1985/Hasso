@@ -1,0 +1,5 @@
+# Stage 1 – speech recognition + Arabic word alignment.
+# setup_windows.bat installs PyTorch (CUDA build if an NVIDIA GPU exists) first.
+whisperx==3.8.6
+faster-whisper>=1.2.0
+pytest>=8

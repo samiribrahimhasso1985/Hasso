@@ -1,0 +1,28 @@
+{
+  "projects_root": "projects",
+  "copy_source": true,
+
+  "transcription": {
+    "backend": "auto",
+    "model": "large-v3",
+    "language": "ar",
+    "device": "auto",
+    "compute_type": "auto",
+    "batch_size": 8,
+    "initial_prompt": "هذا كلام باللهجة العراقية. شلونك، شكو ماكو، هواية، ديگولون، اكو، ماكو، هسة، شنو، ليش.",
+    "align_model": null
+  },
+
+  "uncertainty": {
+    "min_align_score": 0.45,
+    "min_word_probability": 0.5,
+    "max_word_duration_sec": 2.5,
+    "min_word_duration_sec": 0.04
+  },
+
+  "speech_coverage": {
+    "silence_threshold_db": -35,
+    "min_silence_sec": 0.4,
+    "min_uncovered_sec": 0.8
+  }
+}
