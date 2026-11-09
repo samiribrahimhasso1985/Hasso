@@ -1,0 +1,180 @@
+<!doctype html>
+<!--
+  Animated outro for "اكتشافات" (Iktishafat).
+  Rendered frame-by-frame by render_outro.js: window.render(t) draws time t (seconds).
+  URL params: ?w=1920&h=1080
+  Concept: the logo is "discovered" (revealed right-to-left) while a Mesopotamian
+  frieze drifts beneath it; three Sumerian words form the idea:
+  igi (to see) -> zu (to know) -> pàd (to find / discover).
+-->
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<style>
+  @font-face { font-family: Cairo; font-weight: 600; src: url(fonts/cairo-arabic-600-normal.woff2); }
+  @font-face { font-family: Cairo; font-weight: 600; src: url(fonts/cairo-latin-600-normal.woff2); }
+  @font-face { font-family: Cairo; font-weight: 400; src: url(fonts/cairo-arabic-400-normal.woff2); }
+  @font-face { font-family: Cairo; font-weight: 400; src: url(fonts/cairo-latin-400-normal.woff2); }
+  @font-face { font-family: Cun; src: url(fonts/noto-sans-cuneiform-cuneiform-400-normal.woff2); }
+  @font-face { font-family: Cun; src: url(fonts/noto-sans-cuneiform-latin-ext-400-normal.woff2); }
+  @font-face { font-family: Cun; src: url(fonts/noto-sans-cuneiform-latin-400-normal.woff2); }
+  html, body { margin: 0; background: #000; overflow: hidden; }
+  #stage { position: relative; background: #000; overflow: hidden; }
+  .abs { position: absolute; left: 0; right: 0; }
+  #glow { position: absolute; inset: 0;
+          background: radial-gradient(ellipse at 50% 46%, rgba(200,160,90,.10), rgba(0,0,0,0) 55%); }
+  #logo { position: absolute; left: 50%; transform: translateX(-50%); }
+  #logo img { position: absolute; inset: 0; width: 100%; height: 100%; }
+  #sheen { position: absolute; inset: 0;
+           -webkit-mask: url(../brand/logo_calligraphy_white.png) center / 100% 100% no-repeat;
+           mask: url(../brand/logo_calligraphy_white.png) center / 100% 100% no-repeat; }
+  .band { position: absolute; left: 0; overflow: hidden; }
+  .band svg { position: absolute; top: 0; height: 100%; }
+  #words { position: absolute; left: 0; right: 0; display: flex; justify-content: center;
+           direction: rtl; color: #fff; font-family: Cairo; }
+  .wd { text-align: center; }
+  .wd .cu { font-family: Cun; color: #e2c58f; line-height: 1.1; }
+  .wd .tr { font-family: Cun; font-style: italic; color: #bfb5a3; }
+  .wd .ar { font-weight: 600; direction: rtl; }
+  .arrow { color: #8a7a5c; align-self: center; font-family: Cairo; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="glow"></div>
+  <div class="band" id="band1"></div>
+  <div class="band" id="band2"></div>
+  <div id="logo">
+    <img id="latin" src="../brand/logo_latin_white.png" alt="">
+    <img id="cal" src="../brand/logo_calligraphy_white.png" alt="">
+    <div id="sheen"></div>
+  </div>
+  <div id="words">
+    <div class="wd" id="w0"><div class="cu">𒅆</div><div class="tr">igi</div><div class="ar">يرى</div></div>
+    <div class="arrow" id="a0">←</div>
+    <div class="wd" id="w1"><div class="cu">𒍪</div><div class="tr">zu</div><div class="ar">يعرف</div></div>
+    <div class="arrow" id="a1">←</div>
+    <div class="wd" id="w2"><div class="cu">𒅆𒊒</div><div class="tr">pàd</div><div class="ar">يكتشف</div></div>
+  </div>
+</div>
+<script>
+const P = new URLSearchParams(location.search);
+const W = +(P.get('w') || 1920), H = +(P.get('h') || 1080);
+const vertical = H > W;
+const U = Math.min(W, H) / 100;           // 1 unit = 1% of the short side
+const DUR = 6.0;
+const SAND = '#c9a86a';
+
+const stage = document.getElementById('stage');
+stage.style.width = W + 'px'; stage.style.height = H + 'px';
+
+// ---- layout ----------------------------------------------------------
+const logoW = vertical ? W * 0.78 : W * 0.50;
+const logoH = logoW * 210 / 736;          // crop aspect of the logo layers
+const logoTop = vertical ? H * 0.36 : H * 0.24;
+const logo = document.getElementById('logo');
+Object.assign(logo.style, { width: logoW + 'px', height: logoH + 'px', top: logoTop + 'px' });
+
+const b1Top = logoTop + logoH + U * (vertical ? 6 : 4);
+const b1H = U * (vertical ? 16 : 14);
+const b2Top = b1Top + b1H + U * 1.2;
+const b2H = U * 5;
+const band1 = document.getElementById('band1'), band2 = document.getElementById('band2');
+Object.assign(band1.style, { top: b1Top + 'px', height: b1H + 'px', width: W + 'px' });
+Object.assign(band2.style, { top: b2Top + 'px', height: b2H + 'px', width: W + 'px' });
+
+const words = document.getElementById('words');
+words.style.top = (b2Top + b2H + U * (vertical ? 7 : 4)) + 'px';
+words.style.gap = (U * (vertical ? 5 : 6)) + 'px';
+document.querySelectorAll('.cu').forEach(e => e.style.fontSize = (U * (vertical ? 7 : 6.5)) + 'px');
+document.querySelectorAll('.tr').forEach(e => e.style.fontSize = (U * 2.6) + 'px');
+document.querySelectorAll('.ar').forEach(e => e.style.fontSize = (U * 3.2) + 'px');
+document.querySelectorAll('.arrow').forEach(e => e.style.fontSize = (U * 4) + 'px');
+
+// ---- frieze 1: original line-art, Mesopotamian-inspired (not a historical image)
+function frieze(h) {
+  const tw = h * 4.2, s = h / 100, st = `stroke="${SAND}" fill="none" stroke-width="${1.6}" vector-effect="non-scaling-stroke"`;
+  // ziggurat (stepped temple)
+  const zig = `<g ${st} transform="translate(${10*s},0) scale(${s})">
+    <path d="M0 96 H110 M8 96 V78 H102 V96 M20 78 V60 H90 V78 M34 60 V44 H76 V60 M46 44 V32 H64 V44 M55 96 V60"/>
+    <path d="M50 32 h10 v-6 h-10 z"/></g>`;
+  // date palm
+  const palm = x => `<g ${st} transform="translate(${x*s},0) scale(${s})">
+    <path d="M30 96 C31 70 32 50 30 30"/>
+    <path d="M30 30 C18 22 8 26 2 36 M30 30 C42 22 52 26 58 36 M30 30 C24 16 14 12 6 14 M30 30 C36 16 46 12 54 14 M30 30 C30 18 32 10 34 4"/></g>`;
+  // rosette (common Sumerian motif)
+  const ros = x => { let p = ''; for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4;
+      p += `<ellipse cx="${30 + Math.cos(a)*11}" cy="${50 + Math.sin(a)*11}" rx="9" ry="4.5" transform="rotate(${i*45} ${30 + Math.cos(a)*11} ${50 + Math.sin(a)*11})"/>`; }
+    return `<g ${st} transform="translate(${x*s},0) scale(${s})"><circle cx="30" cy="50" r="26"/><circle cx="30" cy="50" r="4"/>${p}</g>`; };
+  // reed boat on the river
+  const boat = x => `<g ${st} transform="translate(${x*s},0) scale(${s})">
+    <path d="M0 80 C20 92 60 92 80 80 C70 84 10 84 0 80 Z M40 84 V58 M40 60 L58 74"/></g>`;
+  // two rivers (Tigris & Euphrates) as waves
+  let wave = '';
+  for (const y of [100 - 3, 100 - 9]) { let d = `M0 ${y*s}`; for (let x = 0; x <= tw; x += 20*s) d += ` q ${5*s} ${-3*s} ${10*s} 0 t ${10*s} 0`; wave += `<path d="${d}" stroke="${SAND}" fill="none" stroke-width="1.2" opacity=".7"/>`; }
+  const tile = zig + palm(135) + ros(205) + boat(285) + palm(360);
+  return { tw, svg: `<svg xmlns="http://www.w3.org/2000/svg" width="${tw}" height="${h}" viewBox="0 0 ${tw} ${h}">${wave}${tile}</svg>` };
+}
+// ---- frieze 2: band of real cuneiform signs (decorative texture)
+const SIGNS = '𒀭𒆠𒂗𒈗𒌓𒁾𒅆𒍪𒊒𒆳𒀀𒂍𒉌𒌋𒄑𒆍𒈨𒊕𒋛𒌉';
+function cuneiformBand(h) {
+  const fs = h * 0.72, n = SIGNS.length / 2;     // surrogate pairs
+  const tw = n * fs * 1.25;
+  let t = '';
+  [...SIGNS].forEach((c, i) => t += `<text x="${i * fs * 1.25}" y="${h * 0.8}" font-family="Cun" font-size="${fs}" fill="${SAND}">${c}</text>`);
+  return { tw, svg: `<svg xmlns="http://www.w3.org/2000/svg" width="${tw}" height="${h}">${t}</svg>` };
+}
+function fillBand(el, made) {
+  const copies = Math.ceil(W / made.tw) + 2;
+  el.innerHTML = Array.from({length: copies}, (_, i) => made.svg.replace('<svg ', `<svg style="left:${i * made.tw}px" `)).join('');
+  return made.tw;
+}
+const tw1 = fillBand(band1, frieze(b1H));
+const tw2 = fillBand(band2, cuneiformBand(b2H));
+
+// ---- animation -------------------------------------------------------
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const ease = x => { x = clamp(x); return x < .5 ? 4*x*x*x : 1 - Math.pow(-2*x + 2, 3) / 2; };
+const win = (t, a, b) => ease((t - a) / (b - a));
+const els = { cal: document.getElementById('cal'), latin: document.getElementById('latin'),
+              sheen: document.getElementById('sheen'), glow: document.getElementById('glow') };
+const wd = [0,1,2].map(i => document.getElementById('w' + i));
+const ar = [0,1].map(i => document.getElementById('a' + i));
+
+window.render = function (t) {
+  const out = 1 - win(t, DUR - 0.7, DUR);                     // global fade-out
+  // friezes: drift continuously in opposite directions, fade in early
+  const fIn = win(t, 0.0, 1.0) * out;
+  band1.style.opacity = 0.55 * fIn;
+  band2.style.opacity = 0.40 * fIn;
+  [...band1.children].forEach((s, i) => s.style.left = (i * tw1 - ((t * U * 3) % tw1)) + 'px');
+  [...band2.children].forEach((s, i) => s.style.left = (i * tw2 - tw2 + ((t * U * 5) % tw2)) + 'px');
+  els.glow.style.opacity = win(t, 0.3, 1.8) * out;
+
+  // calligraphy "discovered": soft wipe from right to left (reading direction)
+  const r = win(t, 0.5, 2.0);
+  const edge = (1 - r) * 120 - 10;                             // % from left, soft 10% edge
+  const m = `linear-gradient(to right, transparent ${edge}%, #000 ${edge + 10}%)`;
+  els.cal.style.webkitMaskImage = m; els.cal.style.maskImage = m;
+  els.cal.style.opacity = out;
+  // slow cinematic push-in on the whole logo
+  const sc = 0.96 + 0.06 * clamp(t / DUR);
+  logo.style.transform = `translateX(-50%) scale(${sc})`;
+  // golden sheen sweeping across the calligraphy after it is revealed
+  const sx = -40 + 180 * win(t, 2.0, 3.0);
+  els.sheen.style.background = `linear-gradient(105deg, transparent ${sx - 12}%, rgba(255,226,160,.9) ${sx}%, transparent ${sx + 12}%)`;
+  els.sheen.style.opacity = (t > 1.9 && t < 3.1 ? 1 : 0) * out;
+  // Latin wordmark fades in behind
+  els.latin.style.opacity = 0.32 * win(t, 1.7, 2.6) * out;
+
+  // Sumerian words: see -> know -> discover
+  const starts = [2.6, 3.1, 3.6];
+  wd.forEach((e, i) => { const k = win(t, starts[i], starts[i] + 0.5);
+    e.style.opacity = k * out; e.style.transform = `translateY(${(1 - k) * U * 2}px)`; });
+  ar.forEach((e, i) => e.style.opacity = win(t, starts[i] + 0.3, starts[i] + 0.7) * out);
+};
+window.DUR = DUR;
+window.render(0);
+</script>
+</body>
+</html>
