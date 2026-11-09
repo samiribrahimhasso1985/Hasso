@@ -1,0 +1,43 @@
+<!doctype html>
+<!-- Mockup: persistent logo (watermark) on a 9:16 edit, with platform safe zones.
+     ?zones=1 shows the areas covered by TikTok / Reels / Shorts UI. -->
+<html lang="ar" dir="rtl"><head><meta charset="utf-8"><style>
+@font-face{font-family:Cairo;font-weight:600;src:url(../outro/fonts/cairo-arabic-600-normal.woff2)}
+@font-face{font-family:Cairo;font-weight:400;src:url(../outro/fonts/cairo-arabic-400-normal.woff2)}
+html,body{margin:0;background:#000}
+#f{position:relative;width:1080px;height:1920px;overflow:hidden;font-family:Cairo;
+   background:radial-gradient(ellipse at 50% 38%,#5a4a3a 0%,#2b241e 45%,#14110e 100%)}
+/* placeholder for the speaker */
+.ph{position:absolute;left:50%;transform:translateX(-50%);background:#3b3129;opacity:.9}
+#head{top:520px;width:300px;height:360px;border-radius:50%}
+#body{top:860px;width:720px;height:1200px;border-radius:300px 300px 0 0}
+#lbl{position:absolute;top:1180px;width:100%;text-align:center;color:#8d7b68;font-size:44px}
+/* watermark */
+#wm{position:absolute;top:230px;right:64px;width:250px;opacity:.75;
+    filter:drop-shadow(0 2px 6px rgba(0,0,0,.55))}
+/* subtitle (dynamic word highlighting) */
+#sub{position:absolute;top:1290px;left:170px;right:170px;text-align:center;font-weight:600;font-size:80px;color:#fff;
+     text-shadow:var(--o)}
+#sub b{color:#FFD400;font-size:88px}
+/* safe zones */
+.z{position:absolute;background:rgba(255,40,40,.22);border:3px dashed rgba(255,90,90,.9);color:#fff;
+   font-size:30px;display:flex;align-items:center;justify-content:center;text-align:center;box-sizing:border-box}
+#zones{display:none}
+</style></head><body><div id="f">
+<div class="ph" id="body"></div><div class="ph" id="head"></div>
+<div id="lbl">فيديوك هنا</div>
+<div id="sub">شنو صار <b>بالضبط</b> بهاي</div>
+<img id="wm" src="../brand/logo_calligraphy_white.png" alt="">
+<div id="zones">
+  <div class="z" style="top:0;left:0;right:0;height:200px">أزرار المنصة العلوية</div>
+  <div class="z" style="top:760px;right:0;width:150px;height:760px">أزرار<br>التطبيق<br>(EN)</div>
+  <div class="z" style="top:760px;left:0;width:150px;height:760px">أزرار<br>التطبيق<br>(AR)</div>
+  <div class="z" style="top:1520px;left:0;right:0;height:400px">الوصف واسم الحساب</div>
+</div>
+</div>
+<script>
+// round outline: ring of text-shadows (CSS text-stroke makes spikes on Arabic joins)
+(()=>{const r=8,sh=[];for(let a=0;a<360;a+=20){const x=(r*Math.cos(a*Math.PI/180)).toFixed(1),y=(r*Math.sin(a*Math.PI/180)).toFixed(1);sh.push(`${x}px ${y}px 0 #000`)}
+document.documentElement.style.setProperty('--o',sh.join(','))})();
+if(new URLSearchParams(location.search).get('zones'))document.getElementById('zones').style.display='block';
+</script></body></html>
