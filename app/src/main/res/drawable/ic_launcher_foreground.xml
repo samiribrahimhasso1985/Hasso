@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Clapperboard top -->
+    <path
+        android:fillColor="#C9A227"
+        android:pathData="M32,38 L76,32 L78,40 L34,46 Z" />
+    <!-- Clapperboard body -->
+    <path
+        android:fillColor="#C9A227"
+        android:pathData="M32,48 L78,48 L78,76 L32,76 Z" />
+    <path
+        android:fillColor="#0B0B0D"
+        android:pathData="M38,56 L72,56 L72,59 L38,59 Z M38,64 L64,64 L64,67 L38,67 Z" />
+</vector>
