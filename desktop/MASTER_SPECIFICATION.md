@@ -30,11 +30,11 @@ Desktop ⇄ Engine: REST over loopback (`127.0.0.1:8765`), shared random token i
 Background #101010 · Panel #191919 · Secondary #222222 · Gold #C9A34F · Light gold #E8DCC6 ·
 Text #F5EFE3 · Muted #A9A39A.
 
-## Sections (31)
+## Sections (35)
 See `ROADMAP.md` for the phase each section is built in. Sections not yet built open a page
 that states exactly what is missing — they contain no non-functional buttons.
 
 ## Approval states
-DISCOVERED → PREVIEWED → PENDING_APPROVAL → APPROVED → DOWNLOADING → VERIFIED →
-ADDED_TO_PROJECT → ADDED_TO_TIMELINE, plus REJECTED. Transitions to APPROVED,
+DISCOVERED → PREVIEWED → PENDING_APPROVAL → APPROVED → DOWNLOADING → DOWNLOADED → VERIFIED →
+ ADDED_TO_PROJECT → ADDED_TO_TIMELINE, plus REJECTED and FAILED. A changed approved item returns to PENDING_APPROVAL. Transitions to APPROVED,
 ADDED_TO_PROJECT and ADDED_TO_TIMELINE require a user actor (enforced in `ApprovalWorkflow`).

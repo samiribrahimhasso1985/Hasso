@@ -1,26 +1,26 @@
-# ROADMAP
+# ROADMAP (development order of the master prompt, section 44)
 
 | Phase | Content | Status |
 | --- | --- | --- |
-| 0 | Project audit, backup, docs | ✅ Done |
-| 1 | Technology stack: solution, DI, SQLite, Python engine, tests, CI on Windows | ✅ Done |
-| 2 | Design system (cinematic dark/gold), live AR/DE/EN switching, RTL | ✅ Done (docking/multi-monitor: later) |
-| 3 | Main window + sidebar with 31 sections | ✅ Done (unbuilt sections show honest status page) |
-| 4 | Dashboard with real data | ✅ Done |
-| 5 | Episode Manager (create/edit/duplicate/archive/restore/search) | ✅ Done |
-| 6 | Script Studio (TXT/DOCX/PDF/SRT import, per-sentence breakdown) | Parser done; editor next |
-| 7 | AI Cinematic Director | Needs API key |
-| 8 | Storyboard Generator | Needs image provider key |
-| 9 | Sony FX3 Camera Hub | Needs Sony SDK + camera |
-| 10 | AI Lighting Director | Planned |
-| 11 | Media Import Center | Import core (hash, never overwrite) done; UI next |
-| 12 | AI Asset Discovery | Planned |
-| 13–14 | AI Editing Engine, Smart Take Evaluation | Planned (FFmpeg/OpenCV in engine) |
-| 15–17 | Continuity, Audio/Music, Color | Planned |
-| 18 | DaVinci Resolve 21 Bridge | Detection done; scripting needs Resolve installed |
-| 19–20 | Final Director, Creative Identity | Planned |
-| 21 | Storage Manager | Drive scan done; paths/migration next |
-| 22 | Smart Media Archive | Planned (no semantic search claim before indexing exists) |
-| 23 | AI Provider Manager | Engine provider listing done; DPAPI key store next |
-| 24 | Approval Center | State machine done; UI next |
-| 25 | Build & Test | CI build + tests + smoke run + installer |
+| 1 | Repository audit, environment, backup | ✅ |
+| 2 | Architecture + SQLite database | ✅ (Core / Data; more modules per phase) |
+| 3 | Desktop UI + navigation (35 sections, AR/DE/EN live, RTL, status bar) | ✅ (notification center, top bar: next) |
+| 4 | Dashboard + Episode Manager | ✅ |
+| 5 | Script Studio (TXT/DOCX/PDF/SRT, per-sentence table, script timeline) | Next — parser already done |
+| 6 | AI Provider Manager (Credential Manager key storage, routing, connection test) | Needs your API keys for live tests |
+| 7 | Media Import Center | Import core (read-only, SHA-256, no overwrite) done |
+| 8 | Sony FX3 camera architecture + presets | Needs Sony SDK + FX3 |
+| 9 | Storyboard + Cinematic Director | Needs API key |
+| 10 | Lighting Director + Live Director + Teleprompter | |
+| 11 | AI Editing Engine (FFmpeg, OpenCV, proxies, timeline V1–V4/A1–A3/S1) | |
+| 12 | Smart Take, Continuity, Shot Quality | |
+| 13 | Audio + Music + Subtitles | |
+| 14 | Color, Motion Graphics, Virtual Background, Thumbnail, Identity | |
+| 15 | DaVinci Resolve 21 Bridge | Detection done |
+| 16 | Final Director | |
+| 17 | Storage Manager + Archive | Drive scan done |
+| 18 | Approval Center + Security | State machine done (incl. DOWNLOADED, FAILED, re-review) |
+| 19 | Android companion API (pairing, sync) | |
+| 20 | Testing + installer | CI + installer already running from 0.1.0 |
+
+Explicitly excluded: "AI Lens Advisor".
