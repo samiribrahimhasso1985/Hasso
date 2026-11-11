@@ -92,8 +92,8 @@ public class KenBurnsTests
         var plan = KenBurnsPlanner.Plan(4000, 2250, 1080, 1920, motion, 6, 25, 1.25, 0.7, 0.4);
         AssertInside(plan.Start, 4000, 2250);
         AssertInside(plan.End, 4000, 2250);
-        Assert.Equal(1080.0 / 1920, plan.Start.Width / plan.Start.Height, 3);
-        Assert.Equal(1080.0 / 1920, plan.End.Width / plan.End.Height, 3);
+        Assert.Equal(1080.0 / 1920, plan.Start.Width / plan.Start.Height, 1e-6);
+        Assert.Equal(1080.0 / 1920, plan.End.Width / plan.End.Height, 1e-6);
         Assert.Equal(150, plan.FrameCount);
         Assert.Contains("1080", plan.FfmpegFilter);
     }
