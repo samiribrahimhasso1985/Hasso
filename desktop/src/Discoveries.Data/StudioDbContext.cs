@@ -15,6 +15,14 @@ public sealed class StudioDbContext(DbContextOptions<StudioDbContext> options) :
 
     protected override void OnModelCreating(ModelBuilder b)
     {
+        // Guid keys are created in code (Guid.NewGuid()); entities reached through navigation
+        // properties must therefore be treated as new rows, not as existing ones.
+        b.Entity<Episode>().Property(x => x.Id).ValueGeneratedNever();
+        b.Entity<Scene>().Property(x => x.Id).ValueGeneratedNever();
+        b.Entity<Shot>().Property(x => x.Id).ValueGeneratedNever();
+        b.Entity<MediaAsset>().Property(x => x.Id).ValueGeneratedNever();
+        b.Entity<ApprovalRecord>().Property(x => x.Id).ValueGeneratedNever();
+
         b.Entity<Episode>(e =>
         {
             e.HasKey(x => x.Id);
