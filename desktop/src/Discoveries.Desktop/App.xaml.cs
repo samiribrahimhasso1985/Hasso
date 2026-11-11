@@ -48,10 +48,16 @@ public partial class App : Application
         sc.AddSingleton<EpisodeManagerViewModel>();
         sc.AddSingleton<StorageViewModel>();
         sc.AddSingleton<SettingsViewModel>();
+        sc.AddSingleton<MultiExportViewModel>();
+        sc.AddSingleton(new Discoveries.Core.Export.ExportPresetStore(paths));
+        sc.AddSingleton(sp => new CostService(sp.GetRequiredService<IDbContextFactory<StudioDbContext>>()));
         _services = sc.BuildServiceProvider();
 
         using (var db = _services.GetRequiredService<IDbContextFactory<StudioDbContext>>().CreateDbContext())
-            DatabaseInitializer.Initialize(db);
+        {
+            var added = DatabaseInitializer.Initialize(db);
+            if (added.Count > 0) log.Info("Database upgraded, new tables: " + string.Join(", ", added));
+        }
 
         _services.GetRequiredService<LocalizationService>().SetLanguage(settings.UiLanguage);
         log.Info($"Started. Data folder: {paths.Root}");
@@ -105,6 +111,15 @@ public partial class App : Application
             await Task.Delay(300);
             await Idle();
             steps.Add($"duplicated + archived; list with archived = {ep.Episodes.Count}");
+
+            main.Navigate("multiexport");
+            await Idle();
+            var exp = (MultiExportViewModel)main.CurrentPage!;
+            exp.Presets[0].Fps = "30";
+            exp.SaveCommand.Execute(null);
+            if (new Discoveries.Core.Export.ExportPresetStore(paths).Load()[0].Fps != 30) throw new InvalidOperationException("Preset not saved");
+            exp.ResetCommand.Execute(null);
+            steps.Add($"export presets: {exp.Presets.Count} edited, saved, reset");
 
             main.Navigate("dashboard");
             var dash = (DashboardViewModel)main.CurrentPage!;

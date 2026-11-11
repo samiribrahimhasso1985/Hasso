@@ -15,6 +15,7 @@
         <DataTemplate DataType="{x:Type vm:EpisodeManagerViewModel}"><v:EpisodeManagerView /></DataTemplate>
         <DataTemplate DataType="{x:Type vm:StorageViewModel}"><v:StorageView /></DataTemplate>
         <DataTemplate DataType="{x:Type vm:SettingsViewModel}"><v:SettingsView /></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:MultiExportViewModel}"><v:MultiExportView /></DataTemplate>
         <DataTemplate DataType="{x:Type vm:PlannedSectionViewModel}"><v:PlannedSectionView /></DataTemplate>
     </Window.Resources>
 

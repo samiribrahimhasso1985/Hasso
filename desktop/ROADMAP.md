@@ -23,4 +23,16 @@
 | 19 | Android companion API (pairing, sync) | |
 | 20 | Testing + installer | CI + installer already running from 0.1.0 |
 
+## Advanced Features Extension — placement
+| Module | Phase |
+| --- | --- |
+| Production Planner | 5 |
+| Camera Movement Planner | 9 |
+| Frame Composition (live) | 10 |
+| Cinematic Zoom, Video Quality Enhancer | 11 |
+| Director Assistant (voice), Audio Mastering (processing) | 13 |
+| Visual Effects Studio | 14 |
+| Project Guard, Cost Manager (UI) | 18 |
+| Multiformat Export (rendering), Publishing Center, Episode Performance | 20 |
+
 Explicitly excluded: "AI Lens Advisor".

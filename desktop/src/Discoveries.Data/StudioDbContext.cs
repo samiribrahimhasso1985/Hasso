@@ -1,3 +1,5 @@
+using System.Text.RegularExpressions;
+using Discoveries.Core.Costs;
 using Discoveries.Core.Domain;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,6 +14,7 @@ public sealed class StudioDbContext(DbContextOptions<StudioDbContext> options) :
     public DbSet<ApprovalRecord> Approvals => Set<ApprovalRecord>();
     public DbSet<OperationLogEntry> Operations => Set<OperationLogEntry>();
     public DbSet<AppCounter> Counters => Set<AppCounter>();
+    public DbSet<CostEntry> Costs => Set<CostEntry>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -50,12 +53,61 @@ public sealed class StudioDbContext(DbContextOptions<StudioDbContext> options) :
         });
         b.Entity<OperationLogEntry>(e => e.HasKey(x => x.Id));
         b.Entity<AppCounter>(e => e.HasKey(x => x.Key));
+        b.Entity<CostEntry>(e =>
+        {
+            e.Property(x => x.Id).ValueGeneratedNever();
+            e.Property(x => x.Category).HasConversion<string>();
+            e.Property(x => x.Kind).HasConversion<string>();
+            // SQLite has no decimal type; store as text to keep exact cents.
+            e.Property(x => x.Amount).HasConversion<string>();
+            e.HasIndex(x => x.EpisodeId);
+        });
     }
 }
 
-public static class DatabaseInitializer
+public static partial class DatabaseInitializer
 {
-    /// <summary>Creates the database if needed. Schema migrations are introduced before the first
-    /// schema change after 0.1.0 (see ROADMAP); existing data is never dropped.</summary>
-    public static void Initialize(StudioDbContext db) => db.Database.EnsureCreated();
+    /// <summary>Creates a new database, or adds tables introduced by newer versions to an existing
+    /// one. Existing tables and rows are never dropped. (Column changes to existing tables will be
+    /// handled by EF migrations when they first become necessary.)</summary>
+    public static IReadOnlyList<string> Initialize(StudioDbContext db)
+    {
+        if (db.Database.EnsureCreated()) return [];
+        return AddMissingTables(db);
+    }
+
+    [GeneratedRegex(@"^CREATE TABLE ""(?<t>[^""]+)""", RegexOptions.IgnoreCase)]
+    private static partial Regex CreateTableRegex();
+
+    [GeneratedRegex(@"^CREATE (UNIQUE )?INDEX ""[^""]+"" ON ""(?<t>[^""]+)""", RegexOptions.IgnoreCase)]
+    private static partial Regex CreateIndexRegex();
+
+    private static IReadOnlyList<string> AddMissingTables(StudioDbContext db)
+    {
+        var existing = db.Database
+            .SqlQueryRaw<string>("SELECT name AS Value FROM sqlite_master WHERE type = 'table'")
+            .ToList()
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var statements = Regex.Split(db.Database.GenerateCreateScript(), @";\s*(?:\r?\n|$)")
+            .Select(x => x.Trim())
+            .Where(x => x.Length > 0)
+            .ToList();
+
+        var created = new List<string>();
+        foreach (var sql in statements)
+        {
+            var m = CreateTableRegex().Match(sql);
+            if (m.Success && !existing.Contains(m.Groups["t"].Value))
+            {
+                db.Database.ExecuteSqlRaw(sql);
+                created.Add(m.Groups["t"].Value);
+            }
+        }
+        foreach (var sql in statements)
+        {
+            var m = CreateIndexRegex().Match(sql);
+            if (m.Success && created.Contains(m.Groups["t"].Value)) db.Database.ExecuteSqlRaw(sql);
+        }
+        return created;
+    }
 }

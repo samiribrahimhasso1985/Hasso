@@ -3,7 +3,7 @@ using Discoveries.Desktop.Services;
 
 namespace Discoveries.Desktop.ViewModels;
 
-public enum Requirement { None, ApiKey, SonySdk, Resolve, Engine }
+public enum Requirement { None, ApiKey, SonySdk, Resolve, Engine, PlatformApi }
 
 /// <summary>A sidebar section. <see cref="Built"/> = it has a working page; otherwise an honest
 /// status page explains in which phase it is built and what it needs.</summary>
@@ -48,6 +48,20 @@ public static class SectionCatalog
         new("approvals", 18, false),
         new("export", 20, false, Requirement.Resolve),
         new("providers", 6, false, Requirement.ApiKey),
+        // Advanced features extension (core logic marked * already exists and is tested)
+        new("planner", 5, false),
+        new("assistant", 13, false, Requirement.ApiKey),
+        new("movement", 9, false),
+        new("composition", 10, false, Requirement.Engine),      // * analyzer
+        new("zoom", 11, false, Requirement.Engine),             // * Ken Burns planner
+        new("vfx", 14, false, Requirement.Engine),
+        new("enhancer", 11, false, Requirement.Engine),
+        new("mastering", 13, false, Requirement.Engine),        // * loudness analysis in engine
+        new("multiexport", 20, true),
+        new("publishing", 20, false, Requirement.PlatformApi),
+        new("guard", 18, false),                                // * integrity check
+        new("costs", 18, false),                                // * ledger + DB table
+        new("performance", 20, false, Requirement.PlatformApi),
         new("settings", 3, true),
     ];
 }

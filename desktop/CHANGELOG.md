@@ -1,5 +1,16 @@
 # CHANGELOG
 
+## 0.2.0 — 2026-11-11 — Advanced Features Extension
+### Added
+- 13 new sections in navigation (48 total), all AR/DE/EN.
+- Multiformat Export page (working): 6 editable, validated presets saved to the data folder.
+- Core: `FrameCompositionAnalyzer`, `KenBurnsPlanner` (FFmpeg filter, non-destructive), `CostCalculator`
+  (estimated vs actual never mixed), `ProjectGuard` (media integrity, read-only), `ExportPresetStore`.
+- Data: `Costs` table + `CostService`; `DatabaseInitializer` now adds new tables to existing databases
+  without touching existing data.
+- Engine: `POST /audio/loudness` — EBU R128 loudness, LRA, true peak and issues (original untouched).
+- Tests: +23 xUnit, +3 pytest.
+
 ## 0.1.0 — 2026-11-11
 ### Added
 - Applied the expanded master prompt: 35 sections, executable `Discoveries.Desktop.exe`, bottom status bar,

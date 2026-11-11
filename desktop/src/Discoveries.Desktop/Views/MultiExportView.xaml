@@ -1,0 +1,71 @@
+<UserControl x:Class="Discoveries.Desktop.Views.MultiExportView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <DockPanel>
+        <StackPanel DockPanel.Dock="Top">
+            <DockPanel>
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                    <Button Content="{DynamicResource Exp.Reset}" Command="{Binding ResetCommand}" Style="{StaticResource Btn.Secondary}" />
+                    <Button Content="{DynamicResource Exp.Save}" Command="{Binding SaveCommand}" />
+                </StackPanel>
+                <TextBlock Text="{DynamicResource Nav.multiexport}" Style="{StaticResource T.PageTitle}" />
+            </DockPanel>
+            <TextBlock Text="{DynamicResource Exp.Note}" Foreground="{StaticResource B.Muted}" Margin="0,0,0,8" />
+            <TextBlock Text="{Binding Message}" Foreground="{StaticResource B.LightGold}" Margin="0,0,0,8" />
+        </StackPanel>
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <ItemsControl ItemsSource="{Binding Presets}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Style="{StaticResource Card}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="2*" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                                    <TextBlock Text="{DynamicResource Exp.Name}" Style="{StaticResource T.CardLabel}" />
+                                    <TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Margin="0,0,8,0">
+                                    <TextBlock Text="{DynamicResource Exp.Width}" Style="{StaticResource T.CardLabel}" />
+                                    <TextBox Text="{Binding Width, UpdateSourceTrigger=PropertyChanged}" FlowDirection="LeftToRight" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="2" Margin="0,0,8,0">
+                                    <TextBlock Text="{DynamicResource Exp.Height}" Style="{StaticResource T.CardLabel}" />
+                                    <TextBox Text="{Binding Height, UpdateSourceTrigger=PropertyChanged}" FlowDirection="LeftToRight" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="3" Margin="0,0,8,0">
+                                    <TextBlock Text="{DynamicResource Exp.Fps}" Style="{StaticResource T.CardLabel}" />
+                                    <TextBox Text="{Binding Fps, UpdateSourceTrigger=PropertyChanged}" FlowDirection="LeftToRight" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="4" Margin="0,0,8,0">
+                                    <TextBlock Text="{DynamicResource Exp.Codec}" Style="{StaticResource T.CardLabel}" />
+                                    <TextBox Text="{Binding VideoCodec, UpdateSourceTrigger=PropertyChanged}" FlowDirection="LeftToRight" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="5" Margin="0,0,8,0">
+                                    <TextBlock Text="{DynamicResource Exp.VBitrate}" Style="{StaticResource T.CardLabel}" />
+                                    <TextBox Text="{Binding VideoBitrate, UpdateSourceTrigger=PropertyChanged}" FlowDirection="LeftToRight" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="6" Margin="0,0,8,0">
+                                    <TextBlock Text="{DynamicResource Exp.ABitrate}" Style="{StaticResource T.CardLabel}" />
+                                    <TextBox Text="{Binding AudioBitrate, UpdateSourceTrigger=PropertyChanged}" FlowDirection="LeftToRight" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="7">
+                                    <TextBlock Text="{DynamicResource Exp.Container}" Style="{StaticResource T.CardLabel}" />
+                                    <TextBox Text="{Binding Container, UpdateSourceTrigger=PropertyChanged}" FlowDirection="LeftToRight" />
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+    </DockPanel>
+</UserControl>

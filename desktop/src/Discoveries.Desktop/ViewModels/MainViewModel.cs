@@ -84,6 +84,7 @@ public sealed partial class MainViewModel : ObservableObject, IRecipient<Navigat
             "episodes" => _services.GetRequiredService<EpisodeManagerViewModel>(),
             "storage" => _services.GetRequiredService<StorageViewModel>(),
             "settings" => _services.GetRequiredService<SettingsViewModel>(),
+            "multiexport" => _services.GetRequiredService<MultiExportViewModel>(),
             _ => new PlannedSectionViewModel(section, _loc),
         };
         _pages[section.Id] = page;

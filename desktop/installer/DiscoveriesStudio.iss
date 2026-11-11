@@ -3,7 +3,7 @@
 ;        then ISCC installer\DiscoveriesStudio.iss
 
 #define AppName "DISCOVERIES DESKTOP STUDIO"
-#define AppVersion "0.1.0"
+#define AppVersion "0.2.0"
 #define AppExe "Discoveries.Desktop.exe"
 
 [Setup]

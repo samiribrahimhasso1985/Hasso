@@ -10,7 +10,7 @@ from pathlib import Path
 from fastapi import Depends, FastAPI, Header, HTTPException
 from pydantic import BaseModel
 
-from . import __version__, media
+from . import __version__, audio, media
 
 app = FastAPI(title="DISCOVERIES Engine", version=__version__)
 
@@ -82,3 +82,19 @@ def media_probe(req: PathRequest) -> dict:
 def media_hash(req: PathRequest) -> dict:
     path = _existing_file(req.path)
     return {"path": str(path), "sha256": media.sha256_file(path), "size_bytes": path.stat().st_size}
+
+
+class LoudnessRequest(PathRequest):
+    target_lufs: float = audio.DEFAULT_TARGET_LUFS
+    max_true_peak_dbfs: float = audio.DEFAULT_MAX_TRUE_PEAK
+
+
+@app.post("/audio/loudness", dependencies=[Depends(require_token)])
+def audio_loudness(req: LoudnessRequest) -> dict:
+    path = _existing_file(req.path)
+    try:
+        return audio.loudness(path, req.target_lufs, req.max_true_peak_dbfs)
+    except media.ToolMissingError as e:
+        raise HTTPException(status_code=503, detail=str(e)) from e
+    except ValueError as e:
+        raise HTTPException(status_code=422, detail=str(e)) from e

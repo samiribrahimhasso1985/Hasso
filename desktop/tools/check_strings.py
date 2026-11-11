@@ -21,7 +21,7 @@ sections = re.findall(r'new\("([a-z]+)", \d+', (ROOT / "src/Discoveries.Desktop/
 used |= {f"Nav.{s}" for s in sections}
 used |= {f"EpStatus.{s}" for s in ["Draft", "Active", "InReview", "Completed", "Archived"]}
 used |= {f"Section.{s}" for s in ["Intro", "Scene", "Ending"]}
-used |= {f"Req.{s}" for s in ["None", "ApiKey", "SonySdk", "Resolve", "Engine"]}
+used |= {f"Req.{s}" for s in ["None", "ApiKey", "SonySdk", "Resolve", "Engine", "PlatformApi"]}
 
 missing = sorted(k for k in used if k not in S)
 bad = [k for k, v in S.items() if len(v) != 3 or any(not x.strip() for x in v)]

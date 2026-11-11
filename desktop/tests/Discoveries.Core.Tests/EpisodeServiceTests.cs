@@ -129,4 +129,22 @@ public sealed class EpisodeServiceTests : IDisposable
         Assert.Equal("original", await File.ReadAllTextAsync(media));
         Assert.Equal(2, (await _svc.CreateAsync("B")).EpisodeNumber); // number 1 is never reused
     }
+
+    [Fact]
+    public async Task Upgrade_adds_new_tables_and_keeps_existing_data()
+    {
+        var ep = await _svc.CreateAsync("قديمة");
+        using (var db = _factory.CreateDbContext())
+        {
+            db.Database.ExecuteSqlRaw("DROP TABLE \"Costs\"");   // simulate a 0.1.0 database
+            var created = DatabaseInitializer.Initialize(db);
+            Assert.Contains("Costs", created);
+        }
+        Assert.NotNull(await _svc.GetAsync(ep.Id));
+        var costs = new CostService(_factory);
+        await costs.AddAsync(new Discoveries.Core.Costs.CostEntry { DateUtc = DateTime.UtcNow, Amount = 12.34m, Kind = Discoveries.Core.Costs.CostKind.Actual });
+        Assert.Equal(12.34m, (await costs.ListAsync()).Single().Amount);
+        using (var db = _factory.CreateDbContext())
+            Assert.Empty(DatabaseInitializer.Initialize(db)); // idempotent
+    }
 }
