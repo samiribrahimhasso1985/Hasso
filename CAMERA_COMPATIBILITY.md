@@ -1,20 +1,16 @@
-# CAMERA_COMPATIBILITY — Sony FX3
+# Sony FX3 compatibility
 
-**الحالة: غير مبني في الشريحة 1.** لا يعرض التطبيق أي اتصال بالكاميرا أو قراءات منها.
+**Current state: not implemented.** The app shows the camera section as locked.
 
-## الخطة (المرحلة 0 ثم المرحلة 2)
+## Plan
 
-| الطريقة | الاستخدام المتوقع | الحالة |
+| Path | Role | State |
 | --- | --- | --- |
-| USB: FX3 ← ويندوز عبر Sony Camera Remote SDK | البث المباشر، الإعدادات، أمر التسجيل | أول ما يُختبر؛ غير مختبر بعد |
-| Wi-Fi / LAN عبر SDK | بديل لـ USB | يُختبر فقط إن كان FX3 والـ SDK يدعمانه |
-| بلوتوث | ملحقات وريموت ورسائل صغيرة فقط | لا يُعتمد عليه للبث |
-| اتصال مباشر من Android | — | لن يُعرض إلا إذا ثبت عملياً |
+| FX3 → Windows over **USB** with the official Sony Camera Remote SDK | Primary path: live view, status, supported settings, recording control if the SDK supports it for FX3 | To be tested in phase 0 |
+| FX3 → Windows over Wi-Fi / LAN | Only if supported by FX3 firmware and the SDK | Unknown |
+| Tablet ↔ Windows | Local network by default; USB as an alternative if it works on the user's devices | Planned |
+| Bluetooth | Small control messages / accessories only; never video | Planned |
 
-## المطلوب منك
+The Sony SDK must be downloaded by the user under Sony's licence; it is not redistributed in this repository.
 
-- تحميل Sony Camera Remote SDK الرسمي وقبول رخصة Sony (لا يُوزَّع داخل المشروع).
-- معرفة إصدار فرمويـر FX3.
-- كابل USB مناسب.
-
-كل طريقة اتصال ستعرض حالتها: نشط · غير نشط · غير مدعوم · يحتاج إذناً · خطأ اتصال، مع السبب والحل وزر «أعد الفحص».
+Each connection method will report: ACTIVE, INACTIVE, NOT_SUPPORTED, PERMISSION_REQUIRED, CONNECTION_ERROR or UNKNOWN, with the reason, a suggested fix and a re-check button.

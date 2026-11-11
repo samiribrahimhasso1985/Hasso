@@ -1,46 +1,48 @@
-# AI DIRECTOR FX3 — DISCOVERIES · اكتشافات
+# AI DIRECTOR FX3 — DISCOVERIES (اكتشافات)
 
-تطبيق Android لمساعدة الإخراج السينمائي لسلسلة «اكتشافات» (فيديو عمودي 9:16).
-Android app that acts as an AI directing assistant for the vertical documentary series DISCOVERIES.
+Android production assistant for the vertical documentary series **DISCOVERIES — اكتشافات**.
+Specification: *AI Director FX3 — unified master specification v4.3* (claude.ai project "Sony FX3").
 
-**الإصدار:** `0.1.0-slice1` — الشريحة الأولى (Vertical Slice 1).
+## Status: slice 1 (vertical slice)
 
-## ما الموجود في هذه الشريحة
-
-| الوحدة | الحالة |
+| Area | State |
 | --- | --- |
-| لوحة التحكم، الحلقات، الأرشيف بالحالات الـ11 | مبني |
-| ترقيم المسودة D-001 والرقم الرسمي عند النشر فقط | مبني + اختبارات |
-| المخرج الصوتي (Android SpeechRecognizer: ar-IQ / en-US / de-DE) | مبني، يحتاج اختباراً على الجهاز |
-| المخرج التنفيذي (خطة إنتاج JSON) عبر Claude / ChatGPT / Gemini | مبني، يحتاج مفتاح API |
-| مخرج الخلفيات (5 فئات، اعتماد/رفض/تعديل/إضافة لمشهد) | مبني، نصي فقط (المعاينة بالصور في المرحلة 3) |
-| محرر النص (حفظ تلقائي، تراجع/إعادة، إصدارات، استيراد TXT/MD) | مبني |
-| منشئ المشاهد (تقسيم، تقدير المدة، إعادة تحليل ما تغيّر فقط) | مبني + اختبارات |
-| مركز الذكاء الاصطناعي (مفاتيح مشفّرة، نموذج واحد/مقارنة، اختبار اتصال حقيقي) | مبني |
-| واجهة عربية RTL + الإنجليزية + الألمانية | مبني |
-| كاميرا Sony FX3، الملقّن، DaVinci، جسر ويندوز | غير مبني بعد — انظر IMPLEMENTATION_STATUS.md |
+| Android core (Kotlin, Compose, MVVM, Hilt, Room, Keystore) | Implemented |
+| Cinematic dashboard, drawer navigation, Arabic RTL / English / German | Implemented |
+| Episode manager (UUID, draft numbers, official number at publication, 11 statuses, search, filters) | Implemented |
+| Voice Director (Android SpeechRecognizer, ar-IQ / en-US / de-DE, editable transcript, history) | Implemented — needs a real device to test |
+| AI Executive Director (Claude, ChatGPT, Gemini over official REST APIs; single or compare mode) | Implemented — needs your API keys |
+| AI Background Director (5 categories, approve / reject / edit / regenerate / add to scene) | Implemented — text suggestions; preview images need an image provider (phase 3) |
+| Script editor (autosave, undo/redo, versions, TXT/MD import, reading-time estimate) | Implemented |
+| Scene builder (segmentation, change-aware re-sync that never deletes approved work, AI analysis, assets) | Implemented |
+| Demo mode (clearly labelled sample output, no keys needed) | Implemented |
+| Sony FX3, Windows Companion Agent, DaVinci Resolve, teleprompter, transfer | **Not built yet** — shown as locked in the menu |
 
-## البناء
+See `IMPLEMENTATION_STATUS.md` for details and `TEST_REPORT.md` for test results.
+
+## Build
+
+Requirements: JDK 17, Android SDK (compileSdk 34). Android Studio Koala or newer works.
 
 ```bash
-./gradlew testDebugUnitTest   # الاختبارات
-./gradlew assembleDebug       # ملف APK
+./gradlew testDebugUnitTest   # unit tests
+./gradlew assembleDebug       # APK
 ```
 
-ملف APK الناتج: `app/build/outputs/apk/debug/app-debug.apk`
+APK output: `app/build/outputs/apk/debug/app-debug.apk`
 
-يُبنى تلقائياً أيضاً عبر GitHub Actions عند كل push (`.github/workflows/android.yml`)، ويُرفع ملف APK كـ artifact.
+GitHub Actions (`.github/workflows/android.yml`) runs the tests and builds the APK on every push; download it from the run's **Artifacts** section.
 
-المتطلبات: JDK 17، Android SDK 34. minSdk 26 (Android 8.0).
+## Install on the tablet
 
-## الوثائق
+1. Copy `app-debug.apk` to the tablet.
+2. Allow "Install unknown apps" for your file manager.
+3. Open the APK and install. Minimum Android version: 8.0 (API 26).
 
-- [ARCHITECTURE.md](ARCHITECTURE.md) — البنية
-- [IMPLEMENTATION_STATUS.md](IMPLEMENTATION_STATUS.md) — ما المنفّذ وما المختبر وما الناقص
-- [API_SETUP.md](API_SETUP.md) — إعداد مفاتيح الذكاء الاصطناعي
-- [CAMERA_COMPATIBILITY.md](CAMERA_COMPATIBILITY.md) — وضع Sony FX3
-- [DAVINCI_SETUP.md](DAVINCI_SETUP.md) — وضع DaVinci Resolve 21
-- [TEST_REPORT.md](TEST_REPORT.md) — نتائج الاختبارات
-- [PROJECT_AUDIT.md](PROJECT_AUDIT.md) — فحص المشروع قبل البدء
+## Documentation
 
-النصوص المترجمة تُولَّد من `tools/gen_strings.py`.
+- `ARCHITECTURE.md` — modules and data flow
+- `API_SETUP.md` — adding Claude / ChatGPT / Gemini keys
+- `CAMERA_COMPATIBILITY.md` — Sony FX3 plan and current state
+- `DAVINCI_SETUP.md` — DaVinci Resolve plan and current state
+- `PROJECT_AUDIT.md`, `IMPLEMENTATION_STATUS.md`, `TEST_REPORT.md`

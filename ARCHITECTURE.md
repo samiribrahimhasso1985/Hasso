@@ -1,34 +1,38 @@
-# ARCHITECTURE
-
-Single `app` module, packages mirror the planned modules. MVVM + Repository, Hilt DI, Room, Coroutines/Flow, Navigation Compose.
+# Architecture (slice 1)
 
 ```
-com.discoveries.aidirector
-├── domain/model      enums: EpisodeStatus (11), ApprovalStatus, AssetType, BackgroundCategory, ContentLanguage
-├── domain/logic      pure, unit-tested: EpisodeNumbering, ReadingTime, SceneSegmenter, SceneSyncPlanner, UndoRedoBuffer
-├── data/db           Room entities + DAOs (episodes, scripts, versions, scenes, assets, approvals, voice, backgrounds, plans, usage)
-├── data/repo         EpisodeRepository, ScriptRepository, SceneRepository
-├── ai                provider interfaces, Anthropic/OpenAI/Gemini REST providers, router, orchestrator, agents, directors
-├── voice             SpeechController (SpeechRecognizer), VoiceDirector (history)
-├── security          SecretStore (Android Keystore AES-GCM)
-├── settings          AppSettings (non-secret prefs, active episode)
-├── core/di           Hilt module (Room, OkHttp)
-└── ui                Compose screens + ViewModels, theme, navigation drawer
+ui/            Compose screens + Hilt ViewModels (MVVM)
+  dashboard/ episodes/ studio/ script/ scenes/ background/ aicenter/ settings/ common/ theme/
+domain/
+  model/       enums: EpisodeStatus, ApprovalStatus, AssetType, BackgroundCategory, ContentLanguage
+  logic/       pure, unit-tested logic: numbering, segmentation, scene re-sync, reading time, undo/redo
+data/
+  db/          Room entities + DAOs (AppDatabase v1)
+  repo/        EpisodeRepository, ScriptRepository, SceneRepository
+ai/            provider interfaces, Claude/OpenAI/Gemini HTTP providers, router, orchestrator,
+               error handler (retry), usage monitor, executive / background / scene directors
+voice/         SpeechController (Android SpeechRecognizer), VoiceDirector (history)
+security/      SecretStore (AES-GCM key in Android Keystore)
+settings/      AppSettings (non-secret preferences, active episode)
+core/di/       Hilt module (database, OkHttp)
 ```
 
-## Flow of one spoken instruction
+## Data flow: spoken idea → plan
 
-1. VoiceDirector → editable transcript (user edits before sending).
-2. AIExecutiveDirector builds a prompt from `StudioContext` (real equipment only) + `ScriptDirectorAgent`.
-3. AITaskRouter picks providers: demo mode → DEMO only; SINGLE → preferred configured provider; COMPARE → all enabled.
-4. AIOrchestrator runs them in parallel with `AIErrorHandler` retries; `AIUsageMonitor` records tokens.
-5. Each response is stored raw (`plans` table) and parsed with `AiJson`; invalid JSON is shown as an error, never replaced by fake data.
-6. The user approves/rejects; the decision is written to `approvals`. A script suggestion enters the editor only as a new version.
+1. Studio screen: user records → SpeechRecognizer → editable transcript.
+2. "Send" → `AIExecutiveDirector.plan()` → `AIOrchestrator.run()`.
+3. `AITaskRouter` picks providers: demo, single (preferred) or compare (all enabled + configured).
+4. Each provider call goes through `AIErrorHandler.withRetry` (retries 429/5xx only); usage is recorded.
+5. JSON is extracted with `AiJson` and stored in `plans` as PENDING.
+6. User approves / rejects; every decision is written to `approvals`.
 
-## Rules enforced in code
+## Approval rules in code
 
-- Approved scenes whose text changes become `NEEDS_REVIEW`; scenes removed from the script are flagged, never deleted.
-- Backgrounds can be attached to a scene only when `APPROVED`; editing one resets it to `PENDING`.
-- AI scene suggestions never change an approved scene silently; they set it to `NEEDS_REVIEW`.
-- Capabilities without a provider (image/video/audio/TTS) are reported as unavailable.
-- API keys live only in `SecretStore`; errors never include them.
+- Nothing AI-generated is stored as APPROVED.
+- Editing an approved scene or background sets it back to NEEDS_REVIEW / PENDING.
+- Re-building scenes keeps unchanged scenes (matched by SHA-256 of their text), updates changed ones, and flags removed ones instead of deleting them.
+- Only an APPROVED background can be attached to a scene.
+
+## Planned additions
+
+Slice 2 adds tables through a Room migration (v1 → v2), without renaming existing tables: background candidates, scene media plans, camera connections, timeline items, history.

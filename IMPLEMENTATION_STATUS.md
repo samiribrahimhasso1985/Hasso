@@ -1,29 +1,32 @@
-# IMPLEMENTATION_STATUS — slice 1
+# Implementation status
 
-التصنيف حسب سياسة الصدق في المواصفات:
-**مختبر** = اختبار آلي ناجح · **مبني غير مختبر** = الكود موجود ويحتاج اختباراً على جهاز · **يحتاج API** · **يحتاج جهازاً** · **غير مبني**.
+Legend: **Implemented** = code written · **Tested** = covered by passing automated tests · **Needs device** = must be checked on real hardware · **Needs key** = needs a user API key.
 
-| الوحدة | الحالة | ملاحظات |
-| --- | --- | --- |
-| ترقيم الحلقات (UUID، مسودة D-xxx، رقم رسمي عند النشر لا يُعاد) | مختبر (منطق) + مبني غير مختبر (قاعدة البيانات) | `EpisodeNumbering`، `EpisodeRepository.publish` |
-| حالات الحلقة الـ11 + فلتر «غير مكتملة» | مختبر | |
-| تقسيم النص إلى مشاهد + تقدير مدة القراءة | مختبر | `SceneSegmenter`، `ReadingTime` |
-| إعادة تحليل ما تغيّر فقط، دون حذف المعتمد | مختبر (منطق) | `SceneSyncPlanner`: المعتمد المتغيّر ← «يحتاج مراجعة»، المحذوف من النص ← يُعلَّم ولا يُحذف |
-| تراجع/إعادة، حفظ تلقائي، إصدارات النص | مختبر (التراجع) + مبني غير مختبر | |
-| قراءة ردود JSON من الذكاء الاصطناعي ودمج النتائج | مختبر | `AiJson`، `AIResultMerger` |
-| إعادة المحاولة عند 429/5xx فقط | مختبر | `AIErrorHandler` |
-| Claude / ChatGPT / Gemini (توليد نص + قائمة النماذج) | يحتاج API | واجهات REST الرسمية؛ اسم النموذج يختاره المستخدم من قائمة المزوّد |
-| مقارنة عدة مزوّدين + تتبّع التوكنات | يحتاج API | التكلفة بالعملة غير محسوبة لأن الأسعار تتغيّر |
-| تخزين المفاتيح مشفّرة (Android Keystore AES-GCM) | مبني غير مختبر | |
-| المخرج الصوتي (SpeechRecognizer) | يحتاج جهازاً | دقة اللهجة العراقية (ar-IQ) غير مضمونة وتُختبر على الجهاز |
-| مخرج الخلفيات (5 فئات نصية) | يحتاج API | معاينة الصور غير مبنية (المرحلة 3) |
-| منشئ المشاهد بالذكاء الاصطناعي | يحتاج API | الاقتراحات تُحفظ «بانتظار الموافقة» |
-| وضع العرض التجريبي | مبني | منفصل، ونتائجه معلّمة «تجريبي» |
-| واجهة 3 لغات + RTL | مبني غير مختبر | تحتاج فحصاً بصرياً على التابلت |
-| Sony FX3 | غير مبني | المرحلة 2، عبر جسر ويندوز |
-| الملقّن، المخرج المساعد، جلسة التسجيل | غير مبني | الشريحة 2 |
-| استيراد DOCX/PDF/SRT/VTT | غير مبني | الشريحة 2 (TXT وMD مبنيان) |
-| معرض الخلفيات بالصور (2 من الإنترنت + 2 مولّدة) | غير مبني | الشريحة 2، قرار v4.3 |
-| جسر ويندوز، DaVinci، الإرسال | غير مبني | الشريحة 3 |
-| WorkManager | مضاف كاعتمادية، غير مستخدم بعد | للمهام الطويلة في الشرائح القادمة |
-| Room migrations | لا يوجد بعد | قاعدة البيانات الإصدار 1؛ أي تغيير قادم يأتي مع Migration |
+| Feature | Implemented | Unit-tested | Needs device | Needs key |
+| --- | --- | --- | --- | --- |
+| Episode numbering (draft at creation, official at publication, never reused) | Yes | Yes (logic) | — | — |
+| Episode statuses (11) + "incomplete" filter | Yes | Yes | — | — |
+| Room database, approvals log | Yes | No (needs instrumented tests) | — | — |
+| Scene segmentation + reading-time estimate | Yes | Yes | — | — |
+| Change-aware scene re-sync (approved scenes never deleted, changed ones → NEEDS_REVIEW) | Yes | Yes (planner) | — | — |
+| Undo / redo, script versions, autosave | Yes | Yes (buffer) | — | — |
+| TXT / Markdown import | Yes | No | Yes | — |
+| Voice Director (SpeechRecognizer) | Yes | No | Yes (Iraqi dialect quality unknown) | — |
+| AI provider calls (Claude, ChatGPT, Gemini) | Yes | Parsing + retry tested | — | Yes |
+| Connection test + model list from official endpoints | Yes | No | — | Yes |
+| Executive Director plans, compare mode, approval | Yes | JSON parsing + merge tested | — | Yes |
+| Background Director (5 categories) | Yes | Category parsing tested | — | Yes |
+| Scene AI analysis → pending asset requirements | Yes | No | — | Yes |
+| Demo mode | Yes | — | — | — |
+| Keystore secret storage | Yes | No | Yes | — |
+| Arabic RTL / English / German UI | Yes | No | Yes | — |
+
+## Not implemented (honest list)
+
+- DOCX / PDF / SRT / VTT import (slice 2)
+- Background gallery with 2 licensed internet images + 2 AI images per scene, preview studio (slice 2)
+- Image / video / audio generation providers (phase 3)
+- Teleprompter, assistant director, recording session (slice 2)
+- Windows Companion Agent, QR pairing, production transfer, DaVinci project creation (slice 3)
+- Sony FX3 connection over USB via the Windows bridge (phase 2, after phase-0 hardware test)
+- Cost estimation (only token counts are shown; prices change and are not hard-coded)

@@ -1,19 +1,17 @@
-# PROJECT_AUDIT
+# Project audit — 2026-11-11
 
-تاريخ الفحص: 2026-11-11
+**Existing repository:** none. No earlier source code, modules, databases or tests existed, so nothing was replaced or deleted. This repository starts at slice 1.
 
-## النتيجة
+**Build environment used to write slice 1:** a sandbox without Android SDK access (Google and Maven repositories blocked). The code could not be compiled there. Compilation and unit tests run in GitHub Actions; results are recorded in `TEST_REPORT.md`.
 
-- لم يكن هناك مستودع أو كود سابق للمشروع. حساب GitHub يحتوي على مستودع واحد غير مرتبط (`Hasso`)، ولم يُلمس.
-- لا توجد وحدات Android أو تكاملات ذكاء اصطناعي أو كاميرا أو DaVinci سابقة يجب الحفاظ عليها.
-- لذلك أُنشئ المشروع من الصفر في هذا المستودع، وأول commit هو نقطة الحفظ (checkpoint).
-
-## المراجع
-
-مواصفات المشروع محفوظة في مشروع Claude «Sony FX3»، والمرجع الموحّد هو وثيقة
-«AI Director FX3 — المواصفات الرئيسية الموحّدة v4.3».
-
-## بيئة البناء
-
-- بيئة العمل التي كُتب فيها الكود لا تصل إلى مستودعات Google وMaven، فلا يمكن فيها تحميل Android SDK أو بناء APK.
-- البناء والاختبارات يجريان عبر GitHub Actions (Ubuntu، JDK 17، Android SDK المثبّت مسبقاً على المشغّل).
+| Item | Finding |
+| --- | --- |
+| Languages / frameworks | Kotlin 2.0, Jetpack Compose (BOM 2024.09), Material 3 |
+| Android modules | Single `app` module, packages per area (see ARCHITECTURE.md) |
+| AI integrations | Anthropic Messages API, OpenAI Chat Completions, Google Gemini generateContent |
+| Episode / scene management | New: Room database v1 |
+| Camera integration | None yet (phase 2) |
+| DaVinci integration | None yet (slice 3 / phase 6) |
+| Storage | Room (SQLite) on device; secrets in Android Keystore-encrypted preferences |
+| Build configuration | Gradle 8.9 wrapper, AGP 8.5.2, version catalog `gradle/libs.versions.toml` |
+| Tests | JVM unit tests in `app/src/test` |

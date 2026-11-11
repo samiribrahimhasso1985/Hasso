@@ -1,24 +1,19 @@
-# API_SETUP — إعداد الذكاء الاصطناعي
+# AI API setup
 
-اشتراك ChatGPT Plus أو Claude Pro **لا يشمل** الـ API. تحتاج حساب API منفصلاً مع وسيلة دفع لكل مزوّد تريد استخدامه.
+A ChatGPT Plus or Claude Pro subscription does **not** include API access. Each provider needs its own API key and billing.
 
-| المزوّد | من أين المفتاح | الواجهة المستخدمة |
+| Provider | Where to get a key | Model id |
 | --- | --- | --- |
-| Anthropic Claude | console.anthropic.com | `POST /v1/messages`، `GET /v1/models` |
-| OpenAI | platform.openai.com | `POST /v1/chat/completions`، `GET /v1/models` |
-| Google Gemini | aistudio.google.com | `POST /v1beta/models/{model}:generateContent`، `GET /v1beta/models` |
+| Anthropic Claude | console.anthropic.com → API Keys | pick from "Pick from available models" after testing |
+| OpenAI | platform.openai.com → API keys | same |
+| Google Gemini | aistudio.google.com → Get API key | same |
 
-## الخطوات داخل التطبيق
+## In the app
 
-1. افتح **مركز الذكاء الاصطناعي**.
-2. الصق المفتاح واضغط «حفظ». يُشفَّر فوراً عبر Android Keystore ولا يظهر مرة أخرى.
-3. اضغط «اختبار الاتصال». هذا طلب حقيقي لقائمة النماذج.
-4. اختر النموذج من «اختر من النماذج المتاحة» (أسماء النماذج غير مكتوبة داخل الكود).
-5. فعّل المزوّد. اختر «نموذج واحد» أو «مقارنة» (المقارنة تضاعف التكلفة).
+1. Open **AI Control Center**.
+2. Paste the key and tap **Save**. It is encrypted with Android Keystore and never shown again.
+3. Tap **Test connection**. This calls the provider's official models endpoint and lists available models.
+4. Pick a model, then switch **Enabled** on.
+5. Choose **Single model** (cheapest) or **Compare all enabled** (same request to every enabled provider; cost multiplies).
 
-## الأمان
-
-- لا توجد أي مفاتيح داخل الكود أو ملف APK.
-- المفتاح يُرسل فقط إلى خادم المزوّد نفسه.
-- رسائل الخطأ لا تتضمن المفتاح.
-- للتجربة دون مفاتيح: فعّل «وضع العرض التجريبي». نتائجه أمثلة ثابتة معلّمة «تجريبي».
+Keys are never stored in source code or in the APK, and are never written to logs.

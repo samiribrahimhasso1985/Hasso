@@ -1,23 +1,18 @@
-# TEST_REPORT
+# Test report
 
-## اختبارات الوحدة (JVM)
+## Slice 1 — pending first CI run
 
-| الملف | ما يختبره |
+Unit tests (JVM) in `app/src/test`:
+
+| Suite | Covers |
 | --- | --- |
-| `ProductionLogicTest.kt` | الترقيم، حالات الحلقة، تقدير المدة، تقسيم المشاهد، إعادة التحليل الجزئي، التراجع/الإعادة، فئات الخلفيات، 5000 حلقة دون حد ثابت |
-| `AiJsonTest.kt` | قراءة JSON من ردود الذكاء الاصطناعي، رفض الردود غير الصالحة دون بيانات مزيّفة، دمج النتائج، إعادة المحاولة |
+| EpisodeNumberingTest | forward-only counters, draft format, per-series official counter, 11 statuses, 5000 episodes without limit |
+| ReadingTimeTest | word count, Arabic / English estimates |
+| SceneSegmenterTest | paragraphs, `#` headings, auto titles, whitespace-insensitive hashes, empty script |
+| SceneSyncPlannerTest | keep unchanged, approved+changed → NEEDS_REVIEW, reorder, removed → flagged not deleted, insert |
+| UndoRedoBufferTest | round trip, capacity bound, duplicate push |
+| BackgroundCategoryTest | parsing provider spellings |
+| AiJsonTest | JSON in code fences, bare JSON, invalid JSON returns null, merge without duplicates |
+| AIErrorHandlerTest | retries 429, does not retry 401 |
 
-## النتائج
-
-تُحدَّث بعد أول تشغيل ناجح على GitHub Actions. التقرير الكامل يُرفع كـ artifact باسم `test-reports`.
-
-| التشغيل | البناء | الاختبارات |
-| --- | --- | --- |
-| — | لم يُشغَّل بعد | — |
-
-## لم يُختبر بعد
-
-- واجهة المستخدم على Galaxy Tab S7 Ultra (RTL، الوضع الأفقي).
-- SpeechRecognizer بالعربية العراقية والألمانية.
-- استدعاءات API الحقيقية (تحتاج مفاتيح).
-- Room على الجهاز (لا توجد بعد اختبارات instrumented).
+Results will be filled in from the GitHub Actions run. Device tests (voice, Keystore, RTL layout on the tablet) are not run yet.
