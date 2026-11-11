@@ -2,7 +2,7 @@ name: Android build
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, ai-director-fx3 ]
   pull_request:
   workflow_dispatch:
 
