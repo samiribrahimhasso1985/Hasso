@@ -1,4 +1,17 @@
-# BUILD STATUS — 0.1.0 (2026-11-11)
+# BUILD STATUS
+
+## 0.2.0 (2026-11-11) — Advanced Features Extension
+Release: https://github.com/samiribrahimhasso1985/Hasso/releases/tag/desktop-studio-build-4
+| Check | Result |
+| --- | --- |
+| Build Release on Windows | ✅ |
+| xUnit | ✅ 59/59 |
+| pytest engine (Linux + Windows) | ✅ 11/11 |
+| Smoke test: 48 sections × 3 languages, episode flow, export presets edited/saved/reset | ✅ exit 0 |
+| Installer 0.2.0 | ✅ |
+| First run fixed: 1 test used rounding instead of tolerance | ✅ fixed |
+
+## 0.1.0 (2026-11-11)
 
 Verified on GitHub Actions `windows-latest` (Windows Server 2025, NT 10.0.26100 — same kernel line as Windows 11 24H2).
 Release: https://github.com/samiribrahimhasso1985/Hasso/releases/tag/desktop-studio-build-2
