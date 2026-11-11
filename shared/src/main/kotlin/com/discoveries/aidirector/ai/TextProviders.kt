@@ -1,7 +1,5 @@
 package com.discoveries.aidirector.ai
 
-import com.discoveries.aidirector.security.SecretStore
-import com.discoveries.aidirector.settings.AppSettings
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
@@ -22,8 +20,6 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.IOException
-import javax.inject.Inject
-import javax.inject.Singleton
 
 private val JSON_MEDIA = "application/json".toMediaType()
 private val json = Json { ignoreUnknownKeys = true }
@@ -31,20 +27,18 @@ private val json = Json { ignoreUnknownKeys = true }
 /** Shared HTTP plumbing for the official REST APIs. */
 abstract class HttpTextProvider(
     private val http: OkHttpClient,
-    private val secrets: SecretStore,
-    private val settings: AppSettings,
+    private val config: ProviderConfig,
 ) : TextGenerationProvider {
 
     override val capabilities: Set<AiCapability> = setOf(AiCapability.TEXT)
 
-    protected fun apiKey(): String = secrets.get(SecretStore.apiKeyName(id))
+    protected fun apiKey(): String = config.apiKey(id)?.takeIf { it.isNotBlank() }
         ?: throw AiException(id, null, "No API key configured", retryable = false)
 
-    protected fun model(): String = settings.state.value.providers[id]?.model?.takeIf { it.isNotBlank() }
+    protected fun model(): String = config.model(id)?.takeIf { it.isNotBlank() }
         ?: throw AiException(id, null, "No model selected", retryable = false)
 
-    override fun isConfigured(): Boolean =
-        secrets.has(SecretStore.apiKeyName(id)) && !settings.state.value.providers[id]?.model.isNullOrBlank()
+    override fun isConfigured(): Boolean = config.hasKey(id) && !config.model(id).isNullOrBlank()
 
     protected suspend fun call(builder: Request.Builder): JsonObject = withContext(Dispatchers.IO) {
         try {
@@ -77,11 +71,8 @@ abstract class HttpTextProvider(
 }
 
 /** Anthropic Messages API: POST /v1/messages. */
-@Singleton
-class AnthropicTextProvider @Inject constructor(
-    http: OkHttpClient, secrets: SecretStore, settings: AppSettings,
-) : HttpTextProvider(http, secrets, settings) {
-    override val id = AppSettings.PROVIDER_ANTHROPIC
+class AnthropicTextProvider(http: OkHttpClient, config: ProviderConfig) : HttpTextProvider(http, config) {
+    override val id = ProviderIds.ANTHROPIC
     override val displayName = "Anthropic Claude"
 
     override suspend fun generate(request: TextRequest): TextResult {
@@ -119,11 +110,8 @@ class AnthropicTextProvider @Inject constructor(
 }
 
 /** OpenAI Chat Completions API: POST /v1/chat/completions. */
-@Singleton
-class OpenAiTextProvider @Inject constructor(
-    http: OkHttpClient, secrets: SecretStore, settings: AppSettings,
-) : HttpTextProvider(http, secrets, settings) {
-    override val id = AppSettings.PROVIDER_OPENAI
+class OpenAiTextProvider(http: OkHttpClient, config: ProviderConfig) : HttpTextProvider(http, config) {
+    override val id = ProviderIds.OPENAI
     override val displayName = "OpenAI ChatGPT"
 
     override suspend fun generate(request: TextRequest): TextResult {
@@ -158,11 +146,8 @@ class OpenAiTextProvider @Inject constructor(
 }
 
 /** Google Gemini API: POST /v1beta/models/{model}:generateContent. */
-@Singleton
-class GeminiTextProvider @Inject constructor(
-    http: OkHttpClient, secrets: SecretStore, settings: AppSettings,
-) : HttpTextProvider(http, secrets, settings) {
-    override val id = AppSettings.PROVIDER_GEMINI
+class GeminiTextProvider(http: OkHttpClient, config: ProviderConfig) : HttpTextProvider(http, config) {
+    override val id = ProviderIds.GEMINI
     override val displayName = "Google Gemini"
 
     override suspend fun generate(request: TextRequest): TextResult {

@@ -1,6 +1,6 @@
 package com.discoveries.aidirector
 
-import com.discoveries.aidirector.ai.WikimediaCommonsClient
+import com.discoveries.aidirector.ai.CommonsParser
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
@@ -16,18 +16,18 @@ class CommonsParseTest {
     """.trimIndent()
 
     @Test fun parsesInRankOrderWithLicences() {
-        val files = WikimediaCommonsClient.parse(body)
+        val files = CommonsParser.parse(body)
         assertEquals(listOf("Ur ziggurat.jpg", "Ziggurat NC.jpg", "Babylon.jpg"), files.map { it.title })
         assertEquals("Bob", files[1].author)
         assertEquals("CC BY-SA 3.0", files[0].licenseName)
     }
 
     @Test fun pickPrefersUsableLicences() {
-        val picked = WikimediaCommonsClient.pick(WikimediaCommonsClient.parse(body), 2)
+        val picked = CommonsParser.pick(CommonsParser.parse(body), 2)
         assertEquals(listOf("Ur ziggurat.jpg", "Babylon.jpg"), picked.map { it.title })
     }
 
     @Test fun badBodyGivesEmptyList() {
-        assertEquals(0, WikimediaCommonsClient.parse("not json").size)
+        assertEquals(0, CommonsParser.parse("not json").size)
     }
 }

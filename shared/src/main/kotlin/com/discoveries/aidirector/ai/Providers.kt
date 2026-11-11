@@ -1,5 +1,7 @@
 package com.discoveries.aidirector.ai
 
+import kotlinx.coroutines.delay
+
 /** Capabilities a provider can actually serve. Requests are routed only to providers that declare the capability. */
 enum class AiCapability { TEXT, IMAGE, VIDEO, AUDIO, SPEECH_TO_TEXT, TEXT_TO_SPEECH }
 
@@ -51,3 +53,35 @@ class AiException(
     message: String,
     val retryable: Boolean,
 ) : Exception(message)
+
+/** Provider ids shared by Android and Windows. */
+object ProviderIds {
+    const val ANTHROPIC = "anthropic"
+    const val OPENAI = "openai"
+    const val GEMINI = "gemini"
+    val ALL = listOf(ANTHROPIC, OPENAI, GEMINI)
+}
+
+/** Where a provider reads its key and model. Android: Keystore + settings. Windows: DPAPI + settings file. */
+interface ProviderConfig {
+    fun apiKey(providerId: String): String?
+    fun hasKey(providerId: String): Boolean
+    fun model(providerId: String): String?
+}
+
+/** Retries rate limits and server errors with backoff; never retries auth or validation errors. */
+object AIErrorHandler {
+    suspend fun <T> withRetry(attempts: Int = 3, block: suspend () -> T): T {
+        var last: AiException? = null
+        repeat(attempts) { attempt ->
+            try {
+                return block()
+            } catch (e: AiException) {
+                last = e
+                if (!e.retryable || attempt == attempts - 1) throw e
+                delay(1500L * (attempt + 1))
+            }
+        }
+        throw last ?: IllegalStateException("retry failed")
+    }
+}

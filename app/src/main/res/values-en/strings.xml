@@ -294,4 +294,14 @@
     <string name="wf_send_title">Direct sending</string>
     <string name="wf_send_button">Send to computer → DaVinci</string>
     <string name="wf_send_locked">Needs the Windows bridge, built in slice 3. The button stays disabled until it really works.</string>
+    <string name="dk_key_security">Keys are stored encrypted by Windows (DPAPI) for your user account only, and are sent only to the provider itself.</string>
+    <string name="dk_key_unprotected">Warning: this is not Windows, so keys are stored without system encryption.</string>
+    <string name="dk_tablet_only">On Windows now: episodes, production workflow, AI Control Center, settings. The voice director, background director and separate scene editor are tablet-only for now.</string>
+    <string name="dk_data_folder">Data folder: %1$s</string>
+    <string name="dk_open_folder">Open folder</string>
+    <string name="dk_export_package">Export episode package to a folder</string>
+    <string name="dk_export_explain">Creates a folder with the approved images and sounds (internet files are downloaded), the delivery file and a CREDITS file with authors and licences. No original file is deleted.</string>
+    <string name="dk_exported">Exported: %1$s files to %2$s</string>
+    <string name="dk_export_errors">Some files could not be downloaded: %1$s</string>
+    <string name="dk_mode_single_only">On Windows only the preferred provider is used (no compare mode).</string>
 </resources>

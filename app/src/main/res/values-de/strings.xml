@@ -294,4 +294,14 @@
     <string name="wf_send_title">Direktes Senden</string>
     <string name="wf_send_button">An Computer senden → DaVinci</string>
     <string name="wf_send_locked">Benötigt die Windows-Brücke aus Abschnitt 3. Die Schaltfläche bleibt deaktiviert, bis sie wirklich funktioniert.</string>
+    <string name="dk_key_security">Schlüssel werden von Windows (DPAPI) nur für dein Benutzerkonto verschlüsselt gespeichert und nur an den Anbieter gesendet.</string>
+    <string name="dk_key_unprotected">Warnung: kein Windows, Schlüssel werden ohne Systemverschlüsselung gespeichert.</string>
+    <string name="dk_tablet_only">Unter Windows jetzt: Folgen, Produktionsablauf, KI-Zentrale, Einstellungen. Sprachregie, Hintergrund-Regie und separater Szenen-Editor gibt es vorerst nur auf dem Tablet.</string>
+    <string name="dk_data_folder">Datenordner: %1$s</string>
+    <string name="dk_open_folder">Ordner öffnen</string>
+    <string name="dk_export_package">Folgenpaket in einen Ordner exportieren</string>
+    <string name="dk_export_explain">Erstellt einen Ordner mit freigegebenen Bildern und Tönen (Internetdateien werden geladen), der Übergabedatei und einer CREDITS-Datei mit Urhebern und Lizenzen. Keine Originaldatei wird gelöscht.</string>
+    <string name="dk_exported">Exportiert: %1$s Dateien nach %2$s</string>
+    <string name="dk_export_errors">Einige Dateien konnten nicht geladen werden: %1$s</string>
+    <string name="dk_mode_single_only">Unter Windows wird nur der bevorzugte Anbieter genutzt (kein Vergleichsmodus).</string>
 </resources>

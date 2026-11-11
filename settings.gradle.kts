@@ -16,3 +16,5 @@ dependencyResolutionManagement {
 
 rootProject.name = "AIDirectorFX3"
 include(":app")
+include(":shared")
+include(":desktop")

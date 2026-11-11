@@ -59,9 +59,9 @@ class AppSettings @Inject constructor(@ApplicationContext context: Context) {
     fun setVoiceLanguage(lang: ContentLanguage) { prefs.edit().putString(KEY_VOICE_LANG, lang.tag).apply(); refresh() }
 
     companion object {
-        const val PROVIDER_ANTHROPIC = "anthropic"
-        const val PROVIDER_OPENAI = "openai"
-        const val PROVIDER_GEMINI = "gemini"
+        const val PROVIDER_ANTHROPIC = com.discoveries.aidirector.ai.ProviderIds.ANTHROPIC
+        const val PROVIDER_OPENAI = com.discoveries.aidirector.ai.ProviderIds.OPENAI
+        const val PROVIDER_GEMINI = com.discoveries.aidirector.ai.ProviderIds.GEMINI
         val PROVIDER_IDS = listOf(PROVIDER_ANTHROPIC, PROVIDER_OPENAI, PROVIDER_GEMINI)
         const val DEFAULT_SERIES = "DISCOVERIES — اكتشافات"
 

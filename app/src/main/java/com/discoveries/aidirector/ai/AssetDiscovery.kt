@@ -30,42 +30,6 @@ import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
 
-/** Search terms and AI prompts the AI proposes for one scene. */
-@Serializable
-data class AssetQueries(
-    val imageSearchQuery: String = "",
-    val audioSearchQuery: String = "",
-    val aiImagePrompts: List<String> = emptyList(),
-    val musicMood: String = "",
-    val soundEffects: List<String> = emptyList(),
-)
-
-object AssetQueryAgent : DirectorAgent {
-    override val id = "AssetDirector"
-    override val task = DemoTextProvider.TASK_ASSETS
-    override fun instructions() = """
-        ${DemoTextProvider.TASK_ASSETS}
-        For ONE scene, propose what to look for. Reply with this exact JSON shape:
-        {"imageSearchQuery":"","audioSearchQuery":"","aiImagePrompts":["",""],"musicMood":"","soundEffects":[""]}
-        imageSearchQuery and audioSearchQuery: 2-5 ENGLISH keywords for searching Wikimedia Commons (real places, objects, artefacts).
-        aiImagePrompts: exactly 2 detailed ENGLISH prompts for vertical 9:16 cinematic images, historically plausible,
-        no text, no logos, no real living people. musicMood and soundEffects: short descriptions in the content language.
-        Never name copyrighted songs.
-    """.trimIndent()
-}
-
-/** One file found on Wikimedia Commons, with its published licence. */
-data class CommonsFile(
-    val title: String,
-    val url: String,
-    val thumbUrl: String?,
-    val pageUrl: String?,
-    val mime: String,
-    val author: String,
-    val licenseName: String,
-    val licenseUrl: String?,
-)
-
 /** Wikimedia Commons search (no API key). Licences come from the file's own metadata. */
 @Singleton
 class WikimediaCommonsClient @Inject constructor(private val http: OkHttpClient) {
@@ -88,7 +52,7 @@ class WikimediaCommonsClient @Inject constructor(private val http: OkHttpClient)
         try {
             http.newCall(Request.Builder().url(url).header("User-Agent", USER_AGENT).build()).execute().use { r ->
                 if (!r.isSuccessful) throw AiException("commons", r.code, "Wikimedia Commons HTTP ${r.code}", r.code >= 500)
-                parse(r.body?.string().orEmpty())
+                CommonsParser.parse(r.body?.string().orEmpty())
             }
         } catch (e: IOException) {
             throw AiException("commons", null, "Network error: ${e.javaClass.simpleName}", retryable = true)
@@ -96,39 +60,7 @@ class WikimediaCommonsClient @Inject constructor(private val http: OkHttpClient)
     }
 
     companion object {
-        const val USER_AGENT = "AIDirectorFX3/0.2 (Android; https://github.com/samiribrahimhasso1985/hasso)"
-        private val json = Json { ignoreUnknownKeys = true }
-        private val htmlTag = Regex("<[^>]+>")
-
-        /** Parses a formatversion=2 response, keeping search rank order. */
-        fun parse(body: String): List<CommonsFile> {
-            val pages = runCatching {
-                json.parseToJsonElement(body).jsonObject["query"]?.jsonObject?.get("pages")?.jsonArray
-            }.getOrNull() ?: return emptyList()
-            return pages.map { it.jsonObject }
-                .sortedBy { it["index"]?.jsonPrimitive?.intOrNull ?: Int.MAX_VALUE }
-                .mapNotNull { page ->
-                    val info = page["imageinfo"]?.jsonArray?.firstOrNull()?.jsonObject ?: return@mapNotNull null
-                    val meta = info["extmetadata"] as? JsonObject
-                    fun metaValue(key: String) = (meta?.get(key) as? JsonObject)?.get("value")?.jsonPrimitive?.contentOrNull
-                    CommonsFile(
-                        title = page["title"]?.jsonPrimitive?.contentOrNull.orEmpty().removePrefix("File:"),
-                        url = info["url"]?.jsonPrimitive?.contentOrNull ?: return@mapNotNull null,
-                        thumbUrl = info["thumburl"]?.jsonPrimitive?.contentOrNull,
-                        pageUrl = info["descriptionurl"]?.jsonPrimitive?.contentOrNull,
-                        mime = info["mime"]?.jsonPrimitive?.contentOrNull.orEmpty(),
-                        author = htmlTag.replace(metaValue("Artist").orEmpty(), "").trim().ifBlank { "?" },
-                        licenseName = metaValue("LicenseShortName").orEmpty(),
-                        licenseUrl = metaValue("LicenseUrl"),
-                    )
-                }
-        }
-
-        /** Prefers usable licences, then fills up so the user still sees what was found. */
-        fun pick(files: List<CommonsFile>, count: Int): List<CommonsFile> {
-            val (ok, blocked) = files.partition { LicenseChecker.classify(it.licenseName).canApprove }
-            return (ok + blocked).take(count)
-        }
+        const val USER_AGENT = CommonsParser.USER_AGENT
     }
 }
 
@@ -168,13 +100,13 @@ class MediaDiscoveryService @Inject constructor(
         var internetImages = 0; var internetAudio = 0; var aiImages = 0; var ideas = 0
 
         val imageQuery = queries?.imageSearchQuery?.ifBlank { null } ?: scene.title
-        runCatching { WikimediaCommonsClient.pick(commons.search(imageQuery, audio = false), 2) }
+        runCatching { CommonsParser.pick(commons.search(imageQuery, audio = false), 2) }
             .onSuccess { files -> files.forEach { insertInternet(scene, it, AssetType.IMAGE, imageQuery); internetImages++ } }
             .onFailure { errors += "Commons: ${it.message}" }
 
         val audioQuery = queries?.audioSearchQuery?.ifBlank { null }
         if (audioQuery != null) {
-            runCatching { WikimediaCommonsClient.pick(commons.search(audioQuery, audio = true), 2) }
+            runCatching { CommonsParser.pick(commons.search(audioQuery, audio = true), 2) }
                 .onSuccess { files -> files.forEach { insertInternet(scene, it, AssetType.SOUND_EFFECT, audioQuery); internetAudio++ } }
                 .onFailure { errors += "Commons: ${it.message}" }
         }

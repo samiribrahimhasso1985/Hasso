@@ -8,7 +8,6 @@ import com.discoveries.aidirector.settings.AppSettings
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.delay
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -24,27 +23,17 @@ class DemoTextProvider @Inject constructor() : TextGenerationProvider {
     override fun isConfigured() = true
 
     override suspend fun generate(request: TextRequest): TextResult {
-        val body = when {
-            request.system.contains(TASK_BACKGROUND) -> DEMO_BACKGROUNDS
-            request.system.contains(TASK_SCENE) -> DEMO_SCENE
-            request.system.contains(TASK_ASSETS) -> DEMO_ASSETS
-            else -> DEMO_PLAN
-        }
+        val body = DemoResponses.forSystem(request.system)
         return TextResult(id, "demo", body, null, null, 0, isDemo = true)
     }
 
     override suspend fun listModels() = listOf("demo")
 
     companion object {
-        const val TASK_PLAN = "[TASK:PRODUCTION_PLAN]"
-        const val TASK_BACKGROUND = "[TASK:BACKGROUNDS]"
-        const val TASK_SCENE = "[TASK:SCENE_ANALYSIS]"
-        const val TASK_ASSETS = "[TASK:ASSET_QUERIES]"
-
-        private const val DEMO_PLAN = """{"episodeConcept":"[DEMO] مثال توضيحي — ليس نتيجة ذكاء اصطناعي حقيقية","scriptSuggestion":"[DEMO] نص تجريبي.","emotionalDirection":"[DEMO]","backgrounds":[],"cameraRecommendations":["[DEMO]"],"lightingRecommendations":["[DEMO]"],"imageRequirements":[],"videoRequirements":[],"audioRequirements":[],"scenes":[{"title":"[DEMO] مشهد 1","narration":"[DEMO]","durationSec":10}],"timeline":["[DEMO]"]}"""
-        private const val DEMO_BACKGROUNDS = """{"suggestions":[{"category":"REAL_STUDIO","title":"[DEMO] خلفية استوديو","description":"[DEMO]"},{"category":"GREEN_SCREEN","title":"[DEMO] شاشة خضراء","description":"[DEMO]"},{"category":"AI_GENERATED","title":"[DEMO] خلفية مولّدة","description":"[DEMO]"},{"category":"REAL_LOCATION","title":"[DEMO] موقع حقيقي","description":"[DEMO]"},{"category":"CINEMATIC_VIDEO","title":"[DEMO] فيديو خلفية","description":"[DEMO]"}]}"""
-        private const val DEMO_ASSETS = """{"imageSearchQuery":"Mesopotamia ancient ruins","audioSearchQuery":"wind desert","aiImagePrompts":["[DEMO]"],"musicMood":"[DEMO] هادئ وغامض","soundEffects":["[DEMO] ريح خفيفة"]}"""
-        private const val DEMO_SCENE = """{"description":"[DEMO]","cameraDirection":"[DEMO]","lighting":"[DEMO]","shotType":"[DEMO]","cameraMovement":"[DEMO]","images":["[DEMO] صورة"],"audio":[],"music":[],"soundEffects":[]}"""
+        const val TASK_PLAN = AiTasks.PLAN
+        const val TASK_BACKGROUND = AiTasks.BACKGROUND
+        const val TASK_SCENE = AiTasks.SCENE
+        const val TASK_ASSETS = AiTasks.ASSETS
     }
 }
 
@@ -80,23 +69,6 @@ class AITaskRouter @Inject constructor(
             AiMode.COMPARE -> available
             AiMode.SINGLE -> listOf(available.firstOrNull { it.id == s.preferredProvider } ?: available.first())
         }
-    }
-}
-
-/** Retries rate limits and server errors with backoff; never retries auth or validation errors. */
-object AIErrorHandler {
-    suspend fun <T> withRetry(attempts: Int = 3, block: suspend () -> T): T {
-        var last: AiException? = null
-        repeat(attempts) { attempt ->
-            try {
-                return block()
-            } catch (e: AiException) {
-                last = e
-                if (!e.retryable || attempt == attempts - 1) throw e
-                delay(1500L * (attempt + 1))
-            }
-        }
-        throw last ?: IllegalStateException("retry failed")
     }
 }
 

@@ -294,4 +294,14 @@
     <string name="wf_send_title">الإرسال المباشر</string>
     <string name="wf_send_button">إرسال إلى الكمبيوتر ← DaVinci</string>
     <string name="wf_send_locked">يتطلب جسر ويندوز، ويُبنى في الشريحة 3. الزر معطّل حتى يعمل فعلاً.</string>
+    <string name="dk_key_security">تُحفظ المفاتيح مشفّرة بنظام ويندوز (DPAPI) لحسابك فقط، ولا تُرسل إلا إلى المزوّد نفسه.</string>
+    <string name="dk_key_unprotected">تحذير: هذا النظام ليس ويندوز، فالمفاتيح محفوظة دون تشفير النظام.</string>
+    <string name="dk_tablet_only">على ويندوز الآن: الحلقات، مسار الإنتاج، مركز الذكاء الاصطناعي، الإعدادات. المخرج الصوتي ومخرج الخلفيات ومحرر المشاهد المنفصل على التابلت فقط حالياً.</string>
+    <string name="dk_data_folder">مجلد البيانات: %1$s</string>
+    <string name="dk_open_folder">فتح المجلد</string>
+    <string name="dk_export_package">تصدير حزمة الحلقة إلى مجلد</string>
+    <string name="dk_export_explain">ينشئ مجلداً فيه الصور والأصوات المثبّتة (تُنزَّل صور الإنترنت)، وملف التسليم، وملف CREDITS بأسماء المؤلفين والتراخيص. لا يُحذف أي ملف أصلي.</string>
+    <string name="dk_exported">تم التصدير: %1$s ملف إلى %2$s</string>
+    <string name="dk_export_errors">تعذّر تنزيل بعض الملفات: %1$s</string>
+    <string name="dk_mode_single_only">على ويندوز يُستخدم المزوّد المفضّل فقط (بدون وضع المقارنة).</string>
 </resources>

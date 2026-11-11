@@ -46,3 +46,16 @@ GitHub Actions (`.github/workflows/android.yml`) runs the tests and builds the A
 - `CAMERA_COMPATIBILITY.md` — Sony FX3 plan and current state
 - `DAVINCI_SETUP.md` — DaVinci Resolve plan and current state
 - `PROJECT_AUDIT.md`, `IMPLEMENTATION_STATUS.md`, `TEST_REPORT.md`
+
+## Windows desktop version (`desktop/`)
+
+A Windows 11 version of the same app, built with Compose for Desktop from the same Kotlin code.
+Shared logic (numbering, scene sync, workflow rules, licence checker, AI providers and prompts, Commons parsing)
+lives in `shared/` and is used by both the tablet and Windows apps.
+
+- On Windows now: dashboard, episodes, the six-step production workflow, AI Control Center, settings (ar/en/de, RTL).
+- Data: `%APPDATA%\AIDirectorFX3\data.json` (atomic writes, previous version kept as `.bak`).
+- API keys: encrypted with Windows DPAPI for the current user (`secrets.json`), never in the code or installer.
+- Step 6 exports an episode package folder: approved images/sounds, `manifest.json`, `CREDITS.txt`, `Script.txt`.
+- Tablet-only for now: voice director, background director, separate scene editor.
+- Build: GitHub Actions (`windows-latest`) runs `:desktop:packageMsi` and publishes an MSI and a portable ZIP.
