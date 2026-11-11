@@ -18,3 +18,12 @@ Unit tests (JVM) in `app/src/test`:
 | AIErrorHandlerTest | retries 429, does not retry 401 |
 
 Not yet tested: device tests (voice, Keystore, RTL layout on the tablet) are not run yet.
+
+## Slice 2 — CI run 43043806683 (commit 95542aa): passed
+
+- 44 unit tests (16 new): licence checker, workflow unlock rules, missing-take check, SRT/VTT/MD import cleaning,
+  Wikimedia Commons response parsing and licence-first picking, and a schema test that compares the v1 → v2
+  migration SQL with the schema Room exported during the build (also checks that the `lens` column is gone).
+- APK: `AIDirectorFX3-slice2.apk` in release `ai-director-fx3-build-3`.
+- Not yet verified on a real device: the database upgrade from slice 1, Wikimedia downloads, AI image generation
+  with a real key, file import/export pickers, RTL layout of the wizard.
