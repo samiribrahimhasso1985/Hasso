@@ -1,0 +1,114 @@
+<UserControl x:Class="Discoveries.Desktop.Views.DashboardView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel>
+            <DockPanel Margin="0,0,0,8">
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                    <Button Content="{DynamicResource Common.Refresh}" Command="{Binding RefreshCommand}" Style="{StaticResource Btn.Secondary}" />
+                    <Button Content="{DynamicResource Dash.CreateEpisode}" Command="{Binding CreateEpisodeCommand}" />
+                </StackPanel>
+                <TextBlock Text="{DynamicResource Nav.dashboard}" Style="{StaticResource T.PageTitle}" />
+            </DockPanel>
+
+            <!-- Key numbers -->
+            <UniformGrid Columns="4">
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Text="{DynamicResource Dash.Episodes}" Style="{StaticResource T.CardLabel}" />
+                        <TextBlock Text="{Binding EpisodeCount}" Style="{StaticResource T.CardValue}" />
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Text="{DynamicResource Dash.Active}" Style="{StaticResource T.CardLabel}" />
+                        <TextBlock Text="{Binding ActiveCount}" Style="{StaticResource T.CardValue}" />
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Text="{DynamicResource Dash.Archived}" Style="{StaticResource T.CardLabel}" />
+                        <TextBlock Text="{Binding ArchivedCount}" Style="{StaticResource T.CardValue}" />
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Text="{DynamicResource Dash.Pending}" Style="{StaticResource T.CardLabel}" />
+                        <TextBlock Text="{Binding PendingApprovals}" Style="{StaticResource T.CardValue}" />
+                    </StackPanel>
+                </Border>
+            </UniformGrid>
+
+            <Border Style="{StaticResource Card}">
+                <StackPanel>
+                    <TextBlock Text="{DynamicResource Dash.LastProject}" Style="{StaticResource T.CardLabel}" />
+                    <TextBlock Text="{Binding LastProject}" FontSize="16" Foreground="{StaticResource B.LightGold}" Margin="0,6,0,0" />
+                </StackPanel>
+            </Border>
+
+            <!-- Integrations -->
+            <UniformGrid Columns="3">
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Text="{DynamicResource Dash.Camera}" Style="{StaticResource T.CardLabel}" />
+                        <TextBlock Text="{Binding Camera.Status}" FontWeight="SemiBold" Margin="0,6,0,4"
+                                   Foreground="{Binding Camera.Status, Converter={StaticResource StatusToBrush}}" />
+                        <TextBlock Text="{Binding Camera.Text}" Foreground="{StaticResource B.Muted}" />
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Text="{DynamicResource Dash.Resolve}" Style="{StaticResource T.CardLabel}" />
+                        <TextBlock Text="{Binding Resolve.Status}" FontWeight="SemiBold" Margin="0,6,0,4"
+                                   Foreground="{Binding Resolve.Status, Converter={StaticResource StatusToBrush}}" />
+                        <TextBlock Text="{Binding Resolve.Text}" Foreground="{StaticResource B.Muted}" />
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Text="{DynamicResource Dash.Engine}" Style="{StaticResource T.CardLabel}" />
+                        <TextBlock Text="{Binding EngineStatus.Status}" FontWeight="SemiBold" Margin="0,6,0,4"
+                                   Foreground="{Binding EngineStatus.Status, Converter={StaticResource StatusToBrush}}" />
+                        <TextBlock Text="{Binding EngineStatus.Text}" Foreground="{StaticResource B.Muted}" />
+                    </StackPanel>
+                </Border>
+            </UniformGrid>
+
+            <UniformGrid Columns="2">
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Text="{DynamicResource Dash.Storage}" Style="{StaticResource T.CardLabel}" Margin="0,0,0,6" />
+                        <ItemsControl ItemsSource="{Binding Drives}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate><TextBlock Text="{Binding}" Margin="0,2" /></DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <TextBlock Text="{DynamicResource Dash.Backup}" Style="{StaticResource T.CardLabel}" Margin="0,12,0,4" />
+                        <TextBlock Text="{Binding BackupStatus}" />
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Text="{DynamicResource Dash.LastImports}" Style="{StaticResource T.CardLabel}" Margin="0,0,0,6" />
+                        <ItemsControl ItemsSource="{Binding RecentImports}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate><TextBlock Text="{Binding}" Margin="0,2" /></DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+            </UniformGrid>
+
+            <Border Style="{StaticResource Card}">
+                <StackPanel>
+                    <TextBlock Text="{DynamicResource Dash.RecentOps}" Style="{StaticResource T.CardLabel}" Margin="0,0,0,6" />
+                    <ItemsControl ItemsSource="{Binding RecentOperations}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate><TextBlock Text="{Binding}" Foreground="{StaticResource B.LightGold}" Margin="0,2" /></DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

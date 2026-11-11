@@ -1,0 +1,64 @@
+<Window x:Class="Discoveries.Desktop.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:Discoveries.Desktop.ViewModels"
+        xmlns:v="clr-namespace:Discoveries.Desktop.Views"
+        Title="{DynamicResource App.Title}"
+        Width="1440" Height="900" MinWidth="1000" MinHeight="640"
+        WindowStartupLocation="CenterScreen"
+        Background="{StaticResource B.Background}"
+        FlowDirection="{Binding FlowDirection}"
+        UseLayoutRounding="True" SnapsToDevicePixels="True"
+        TextOptions.TextFormattingMode="Display">
+    <Window.Resources>
+        <DataTemplate DataType="{x:Type vm:DashboardViewModel}"><v:DashboardView /></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:EpisodeManagerViewModel}"><v:EpisodeManagerView /></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:StorageViewModel}"><v:StorageView /></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:SettingsViewModel}"><v:SettingsView /></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:PlannedSectionViewModel}"><v:PlannedSectionView /></DataTemplate>
+    </Window.Resources>
+
+    <DockPanel>
+    <!-- Bottom status bar -->
+    <Border DockPanel.Dock="Bottom" Background="{StaticResource B.Panel}" BorderBrush="{StaticResource B.Border}" BorderThickness="0,1,0,0" Padding="16,5">
+        <DockPanel>
+            <TextBlock DockPanel.Dock="Right" Text="{Binding EngineText}" Foreground="{StaticResource B.Gold}" FontSize="12" Margin="16,0,0,0" />
+            <TextBlock DockPanel.Dock="Right" Text="{Binding ModeText}" Foreground="{StaticResource B.Muted}" FontSize="12" Margin="16,0,0,0" />
+            <TextBlock Text="{Binding DataText}" Foreground="{StaticResource B.Muted}" FontSize="12" TextTrimming="CharacterEllipsis" TextWrapping="NoWrap" />
+        </DockPanel>
+    </Border>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="270" MinWidth="200" MaxWidth="420" />
+            <ColumnDefinition Width="4" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <!-- Sidebar -->
+        <DockPanel Grid.Column="0" Background="{StaticResource B.Panel}">
+            <StackPanel DockPanel.Dock="Top" Margin="20,22,20,16">
+                <TextBlock Text="DISCOVERIES" Foreground="{StaticResource B.Gold}" FontSize="24" FontWeight="Bold" />
+                <TextBlock Text="{DynamicResource App.Subtitle}" Foreground="{StaticResource B.Muted}" FontSize="12" Margin="0,2,0,0" />
+            </StackPanel>
+            <ListBox ItemsSource="{Binding NavItems}" SelectedItem="{Binding SelectedNav}"
+                     ItemContainerStyle="{StaticResource NavItem}"
+                     ScrollViewer.VerticalScrollBarVisibility="Auto">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <DockPanel>
+                            <TextBlock DockPanel.Dock="Right" Text="{Binding Badge}" FontSize="10"
+                                       Foreground="{StaticResource B.Muted}" VerticalAlignment="Center" Margin="6,0,0,0" />
+                            <TextBlock Text="{Binding Title}" TextTrimming="CharacterEllipsis" TextWrapping="NoWrap" />
+                        </DockPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </DockPanel>
+
+        <GridSplitter Grid.Column="1" HorizontalAlignment="Stretch" ResizeBehavior="PreviousAndNext" />
+
+        <!-- Content -->
+        <ContentControl Grid.Column="2" Content="{Binding CurrentPage}" Margin="28,24,20,16" Focusable="False" />
+    </Grid>
+    </DockPanel>
+</Window>

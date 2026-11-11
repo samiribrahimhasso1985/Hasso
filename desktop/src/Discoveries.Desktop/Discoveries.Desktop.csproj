@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <RootNamespace>Discoveries.Desktop</RootNamespace>
+    <AssemblyName>Discoveries.Desktop</AssemblyName>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.*" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.*" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Discoveries.Core\Discoveries.Core.csproj" />
+    <ProjectReference Include="..\Discoveries.Data\Discoveries.Data.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- The Python engine ships next to the executable. -->
+    <None Include="..\..\engine\discoveries_engine\**\*.py" LinkBase="engine\discoveries_engine" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <None Include="..\..\engine\requirements.txt" Link="engine\requirements.txt" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

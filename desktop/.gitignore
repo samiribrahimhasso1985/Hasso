@@ -1,0 +1,11 @@
+bin/
+obj/
+publish/
+TestResults/
+smoke-data/
+installer/Output/
+*.user
+.vs/
+__pycache__/
+.pytest_cache/
+*.zip
