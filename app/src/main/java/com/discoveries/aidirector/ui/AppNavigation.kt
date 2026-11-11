@@ -20,6 +20,7 @@ import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.Movie
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Timeline
 import androidx.compose.material.icons.filled.ViewList
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -61,11 +62,13 @@ import com.discoveries.aidirector.ui.script.ScriptEditorScreen
 import com.discoveries.aidirector.ui.settings.SettingsScreen
 import com.discoveries.aidirector.ui.studio.StudioScreen
 import com.discoveries.aidirector.ui.theme.DirectorColors
+import com.discoveries.aidirector.ui.workflow.WorkflowScreen
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 enum class Route(@StringRes val title: Int, val icon: ImageVector) {
     DASHBOARD(R.string.nav_dashboard, Icons.Filled.Dashboard),
+    WORKFLOW(R.string.nav_workflow, Icons.Filled.Timeline),
     EPISODES(R.string.nav_episodes, Icons.Filled.Movie),
     STUDIO(R.string.nav_studio, Icons.Filled.Mic),
     SCRIPT(R.string.nav_script, Icons.Filled.Edit),
@@ -75,12 +78,11 @@ enum class Route(@StringRes val title: Int, val icon: ImageVector) {
     SETTINGS(R.string.nav_settings, Icons.Filled.Settings),
 }
 
-/** Sections that are planned but not built in slice 1. Shown disabled and labelled honestly. */
+/** Sections that are planned but not built yet. Shown disabled and labelled honestly. */
 private val laterSections = listOf(
     R.string.later_camera,
     R.string.later_teleprompter,
     R.string.later_davinci,
-    R.string.later_media,
     R.string.later_storyboard,
 )
 
@@ -174,6 +176,7 @@ private fun MainShell() {
         ) { padding ->
             NavHost(nav, startDestination = Route.DASHBOARD.name, modifier = Modifier.padding(padding)) {
                 composable(Route.DASHBOARD.name) { DashboardScreen(onNavigate = ::go) }
+                composable(Route.WORKFLOW.name) { WorkflowScreen(onNeedEpisode = { go(Route.EPISODES) }) }
                 composable(Route.EPISODES.name) { EpisodesScreen(onOpenScript = { go(Route.SCRIPT) }) }
                 composable(Route.STUDIO.name) { StudioScreen(onNeedEpisode = { go(Route.EPISODES) }, onOpenScript = { go(Route.SCRIPT) }) }
                 composable(Route.SCRIPT.name) { ScriptEditorScreen(onNeedEpisode = { go(Route.EPISODES) }, onOpenScenes = { go(Route.SCENES) }) }

@@ -148,6 +148,7 @@ class SceneRepository @Inject constructor(private val db: AppDatabase) {
     fun observe(episodeId: String) = scenes.observeForEpisode(episodeId)
     fun observeAssets(episodeId: String) = assets.observeForEpisode(episodeId)
     fun observeCount(episodeId: String) = scenes.observeCount(episodeId)
+    suspend fun get(id: String) = scenes.get(id)
 
     /** Rebuilds scenes from the script while preserving unchanged scenes, approvals and assets. */
     suspend fun syncFromScript(episodeId: String, script: String, language: ContentLanguage): SceneSyncSummary =

@@ -7,6 +7,8 @@ import com.discoveries.aidirector.domain.model.ApprovalStatus
 import com.discoveries.aidirector.domain.model.AssetType
 import com.discoveries.aidirector.domain.model.BackgroundCategory
 import com.discoveries.aidirector.domain.model.EpisodeStatus
+import com.discoveries.aidirector.domain.model.LicenseState
+import com.discoveries.aidirector.domain.model.SuggestionOrigin
 
 @Entity(tableName = "topics")
 data class TopicEntity(
@@ -137,7 +139,6 @@ data class BackgroundSuggestionEntity(
     val lighting: String,
     val cameraAngle: String,
     val subjectDistance: String,
-    val lens: String,
     val davinciCompositing: String,
     val music: String,
     val soundEffects: String,
@@ -170,4 +171,52 @@ data class AiUsageEntity(
     val latencyMs: Long,
     val success: Boolean,
     val createdAt: Long,
+)
+
+/**
+ * Asset suggested in step 2 (internet or AI). It stays hidden until "end of content" and is only
+ * used after explicit approval in step 5. Licence state is checked before approval is allowed.
+ */
+@Entity(tableName = "media_suggestions", indices = [Index("episodeId"), Index("sceneId")])
+data class MediaSuggestionEntity(
+    @PrimaryKey val id: String,
+    val episodeId: String,
+    val sceneId: String,
+    val kind: AssetType,
+    val origin: SuggestionOrigin,
+    val title: String,
+    val previewUrl: String?,
+    val fileUrl: String?,
+    val localPath: String?,
+    val sourcePage: String?,
+    val author: String,
+    val licenseName: String,
+    val licenseUrl: String?,
+    val licenseState: LicenseState,
+    val prompt: String,
+    val providerId: String,
+    val status: ApprovalStatus,
+    val createdAt: Long,
+    val decidedAt: Long?,
+)
+
+/** Where the episode stands in the six-step workflow, so work resumes at the same step. */
+@Entity(tableName = "workflow_state")
+data class WorkflowStateEntity(
+    @PrimaryKey val episodeId: String,
+    val currentStep: Int,
+    val analysisDoneAt: Long?,
+    val contentEndedAt: Long?,
+    val updatedAt: Long,
+)
+
+/** Manual take log for step 3 until the Windows bridge reports real FX3 recordings (slice 3). */
+@Entity(tableName = "scene_takes", indices = [Index("episodeId"), Index("sceneId")])
+data class SceneTakeEntity(
+    @PrimaryKey val id: String,
+    val episodeId: String,
+    val sceneId: String,
+    val takeNumber: Int,
+    val note: String,
+    val markedAt: Long,
 )

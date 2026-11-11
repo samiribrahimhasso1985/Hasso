@@ -15,8 +15,8 @@ android {
         applicationId = "com.discoveries.aidirector"
         minSdk = 26
         targetSdk = 34
-        versionCode = 1
-        versionName = "0.1.0-slice1"
+        versionCode = 2
+        versionName = "0.2.0-slice2"
     }
 
     buildTypes {
@@ -46,6 +46,7 @@ android {
 
 ksp {
     arg("room.generateKotlin", "true")
+    arg("room.schemaLocation", "$projectDir/schemas")
 }
 
 dependencies {
@@ -75,6 +76,7 @@ dependencies {
     implementation(libs.hilt.navigation.compose)
 
     implementation(libs.okhttp)
+    implementation(libs.coil.compose)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.kotlinx.coroutines.android)
 

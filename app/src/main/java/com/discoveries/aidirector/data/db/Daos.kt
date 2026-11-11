@@ -1,6 +1,7 @@
 package com.discoveries.aidirector.data.db
 
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
@@ -162,4 +163,49 @@ interface UsageDao {
 
     @Query("SELECT * FROM ai_usage ORDER BY createdAt DESC LIMIT :limit")
     fun observeRecent(limit: Int): Flow<List<AiUsageEntity>>
+}
+
+@Dao
+interface MediaDao {
+    @Query("SELECT * FROM media_suggestions WHERE episodeId = :episodeId ORDER BY createdAt")
+    fun observeForEpisode(episodeId: String): Flow<List<MediaSuggestionEntity>>
+
+    @Query("SELECT * FROM media_suggestions WHERE episodeId = :episodeId ORDER BY createdAt")
+    suspend fun getForEpisode(episodeId: String): List<MediaSuggestionEntity>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insert(item: MediaSuggestionEntity)
+
+    @Query("UPDATE media_suggestions SET status = :status, decidedAt = :now WHERE id = :id")
+    suspend fun setStatus(id: String, status: ApprovalStatus, now: Long)
+
+    @Query("DELETE FROM media_suggestions WHERE sceneId = :sceneId AND status = 'PENDING'")
+    suspend fun deletePendingForScene(sceneId: String)
+}
+
+@Dao
+interface WorkflowDao {
+    @Query("SELECT * FROM workflow_state WHERE episodeId = :episodeId")
+    fun observe(episodeId: String): Flow<WorkflowStateEntity?>
+
+    @Query("SELECT * FROM workflow_state WHERE episodeId = :episodeId")
+    suspend fun get(episodeId: String): WorkflowStateEntity?
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsert(state: WorkflowStateEntity)
+}
+
+@Dao
+interface TakeDao {
+    @Query("SELECT * FROM scene_takes WHERE episodeId = :episodeId ORDER BY markedAt")
+    fun observeForEpisode(episodeId: String): Flow<List<SceneTakeEntity>>
+
+    @Query("SELECT COUNT(*) FROM scene_takes WHERE sceneId = :sceneId")
+    suspend fun countForScene(sceneId: String): Int
+
+    @Insert
+    suspend fun insert(take: SceneTakeEntity)
+
+    @Delete
+    suspend fun delete(take: SceneTakeEntity)
 }

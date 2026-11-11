@@ -21,7 +21,7 @@ object StudioContext {
     fun system(language: ContentLanguage): String = """
         You are part of AI DIRECTOR FX3, a production assistant for the vertical (9:16, 1080x1920) documentary series "DISCOVERIES — اكتشافات".
         Episodes are about 3 minutes. The narrator is the user, recorded with his own voice.
-        Known equipment ONLY: Sony FX3 camera (lens unknown unless stated), one NEEWER CB60B 70W bi-color LED, a green screen, DaVinci Resolve 21 on Windows 11.
+        Known equipment ONLY: Sony FX3 camera (do not recommend lenses), one NEEWER CB60B 70W bi-color LED, a green screen, DaVinci Resolve 21 on Windows 11.
         Do not assume other lights, microphones or cameras. Mark any physical distance as approximate.
         Never invent historical facts or sources; flag claims that need verification.
         Write all human-readable values in ${languageName(language)}.
@@ -49,7 +49,7 @@ object ScriptDirectorAgent : DirectorAgent {
         ${DemoTextProvider.TASK_PLAN}
         Turn the user's instruction into a production plan with this exact JSON shape:
         {"episodeConcept":"","scriptSuggestion":"","emotionalDirection":"",
-         "backgrounds":[{"category":"REAL_STUDIO|GREEN_SCREEN|AI_GENERATED|REAL_LOCATION|CINEMATIC_VIDEO","title":"","description":"","colors":"","lighting":"","cameraAngle":"","subjectDistance":"","lens":"","davinciCompositing":"","music":"","soundEffects":""}],
+         "backgrounds":[{"category":"REAL_STUDIO|GREEN_SCREEN|AI_GENERATED|REAL_LOCATION|CINEMATIC_VIDEO","title":"","description":"","colors":"","lighting":"","cameraAngle":"","subjectDistance":"","davinciCompositing":"","music":"","soundEffects":""}],
          "cameraRecommendations":[""],"lightingRecommendations":[""],
          "imageRequirements":[""],"videoRequirements":[""],"audioRequirements":[""],
          "scenes":[{"title":"","description":"","narration":"","durationSec":0}],
@@ -66,7 +66,7 @@ object BackgroundDirectorAgent : DirectorAgent {
         Analyse topic, emotion, environment, location, time, colour palette, lighting and cinematic atmosphere.
         Return exactly one suggestion for each of the 5 categories:
         REAL_STUDIO, GREEN_SCREEN, AI_GENERATED, REAL_LOCATION, CINEMATIC_VIDEO.
-        JSON shape: {"suggestions":[{"category":"","title":"","description":"","colors":"","lighting":"","cameraAngle":"","subjectDistance":"","lens":"","davinciCompositing":"","music":"","soundEffects":""}]}
+        JSON shape: {"suggestions":[{"category":"","title":"","description":"","colors":"","lighting":"","cameraAngle":"","subjectDistance":"","davinciCompositing":"","music":"","soundEffects":""}]}
         Lighting must be achievable with the single NEEWER CB60B; say so if more light is needed.
         Music must be original or licensed; never name copyrighted tracks.
     """.trimIndent()
@@ -172,7 +172,7 @@ class AIBackgroundDirector @Inject constructor(
                                     category = BackgroundCategory.parse(idea.category),
                                     title = idea.title, description = idea.description, colors = idea.colors,
                                     lighting = idea.lighting, cameraAngle = idea.cameraAngle,
-                                    subjectDistance = idea.subjectDistance, lens = idea.lens,
+                                    subjectDistance = idea.subjectDistance,
                                     davinciCompositing = idea.davinciCompositing, music = idea.music,
                                     soundEffects = idea.soundEffects,
                                     providerId = if (outcome.result.isDemo) "DEMO" else outcome.providerId,

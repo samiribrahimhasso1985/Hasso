@@ -159,7 +159,6 @@ fun BackgroundScreen(onNeedEpisode: () -> Unit, vm: BackgroundViewModel = hiltVi
                 LabeledValue(stringResource(R.string.field_lighting), s.lighting)
                 LabeledValue(stringResource(R.string.field_camera), s.cameraAngle)
                 LabeledValue(stringResource(R.string.bg_distance), s.subjectDistance)
-                LabeledValue(stringResource(R.string.bg_lens), s.lens)
                 LabeledValue(stringResource(R.string.bg_davinci), s.davinciCompositing)
                 LabeledValue(stringResource(R.string.asset_music), s.music)
                 LabeledValue(stringResource(R.string.asset_sfx), s.soundEffects)

@@ -98,7 +98,8 @@ fun DashboardScreen(onNavigate: (Route) -> Unit, vm: DashboardViewModel = hiltVi
                 )
                 Text(stringResource(R.string.next_action) + ": " + stringResource(nextAction(ep.status)))
                 ButtonRow {
-                    BigButton(stringResource(R.string.nav_studio), onClick = { onNavigate(Route.STUDIO) })
+                    BigButton(stringResource(R.string.nav_workflow), onClick = { onNavigate(Route.WORKFLOW) })
+                    SecondaryButton(stringResource(R.string.nav_studio), onClick = { onNavigate(Route.STUDIO) })
                     SecondaryButton(stringResource(R.string.nav_script), onClick = { onNavigate(Route.SCRIPT) })
                     SecondaryButton(stringResource(R.string.nav_scenes), onClick = { onNavigate(Route.SCENES) })
                     SecondaryButton(stringResource(R.string.nav_backgrounds), onClick = { onNavigate(Route.BACKGROUNDS) })

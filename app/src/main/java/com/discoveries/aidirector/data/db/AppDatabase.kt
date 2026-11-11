@@ -17,9 +17,12 @@ import androidx.room.RoomDatabase
         BackgroundSuggestionEntity::class,
         PlanEntity::class,
         AiUsageEntity::class,
+        MediaSuggestionEntity::class,
+        WorkflowStateEntity::class,
+        SceneTakeEntity::class,
     ],
-    version = 1,
-    exportSchema = false,
+    version = 2,
+    exportSchema = true,
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun topicDao(): TopicDao
@@ -33,6 +36,9 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun backgroundDao(): BackgroundDao
     abstract fun planDao(): PlanDao
     abstract fun usageDao(): UsageDao
+    abstract fun mediaDao(): MediaDao
+    abstract fun workflowDao(): WorkflowDao
+    abstract fun takeDao(): TakeDao
 
     companion object {
         const val NAME = "ai_director_fx3.db"

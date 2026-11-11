@@ -50,3 +50,30 @@ object ApprovalTarget {
     const val BACKGROUND = "BACKGROUND"
     const val PLAN = "PLAN"
 }
+
+/** The six sequential production steps (spec v5.2, top section). */
+enum class WorkflowStep(val number: Int) {
+    TEXT(1), ANALYSIS(2), CAMERA(3), END_CONTENT(4), APPROVAL(5), DELIVERY(6);
+
+    companion object {
+        fun of(number: Int): WorkflowStep = entries.firstOrNull { it.number == number } ?: TEXT
+    }
+}
+
+/** Where a suggested asset came from. AI_IDEA is a text direction (e.g. music mood) with no file. */
+enum class SuggestionOrigin { INTERNET, AI_GENERATED, AI_IDEA }
+
+/**
+ * Rights state of a suggested asset. UNKNOWN is never treated as free.
+ * NON_COMMERCIAL and NO_DERIVATIVES are blocked because the series is published and edited.
+ */
+enum class LicenseState(val canApprove: Boolean, val needsAttribution: Boolean) {
+    PUBLIC_DOMAIN(true, false),
+    CC0(true, false),
+    CC_BY(true, true),
+    CC_BY_SA(true, true),
+    AI_GENERATED(true, false),
+    NON_COMMERCIAL(false, true),
+    NO_DERIVATIVES(false, true),
+    UNKNOWN(false, false),
+}

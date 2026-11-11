@@ -13,7 +13,6 @@ data class BackgroundIdea(
     val lighting: String = "",
     val cameraAngle: String = "",
     val subjectDistance: String = "",
-    val lens: String = "",
     val davinciCompositing: String = "",
     val music: String = "",
     val soundEffects: String = "",

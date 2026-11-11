@@ -10,7 +10,7 @@ Legend: **Implemented** = code written · **Tested** = covered by passing automa
 | Scene segmentation + reading-time estimate | Yes | Yes | — | — |
 | Change-aware scene re-sync (approved scenes never deleted, changed ones → NEEDS_REVIEW) | Yes | Yes (planner) | — | — |
 | Undo / redo, script versions, autosave | Yes | Yes (buffer) | — | — |
-| TXT / Markdown import | Yes | No | Yes | — |
+| TXT / Markdown / SRT / VTT import (subtitle timing removed) | Yes | Yes (cleaner) | Yes | — |
 | Voice Director (SpeechRecognizer) | Yes | No | Yes (Iraqi dialect quality unknown) | — |
 | AI provider calls (Claude, ChatGPT, Gemini) | Yes | Parsing + retry tested | — | Yes |
 | Connection test + model list from official endpoints | Yes | No | — | Yes |
@@ -20,13 +20,24 @@ Legend: **Implemented** = code written · **Tested** = covered by passing automa
 | Demo mode | Yes | — | — | — |
 | Keystore secret storage | Yes | No | Yes | — |
 | Arabic RTL / English / German UI | Yes | No | Yes | — |
+| **Slice 2** — six-step workflow wizard (sequential unlock, resume, go back) | Yes | Yes (rules) | Yes | — |
+| Step 2: per scene 2 Wikimedia Commons images + up to 2 Commons sounds, with published licence | Yes | Yes (parsing, pick) | Yes (network) | — |
+| Step 2: 2 AI-generated images per scene (OpenAI gpt-image-1, else Gemini 2.5 Flash Image) | Yes | No | Yes | Yes |
+| Step 2: music mood + sound-effect ideas (text, no file) | Yes | — | — | Yes |
+| Suggestions hidden until "end of content" | Yes | Yes (rules) | — | — |
+| Step 3: honest bridge status, FX3 error → fix list, distance/light/angle tips, manual take log | Yes | — | — | — |
+| Step 4: end-of-content button, warning for scenes without a take, resume shooting | Yes | Yes (missing takes) | — | — |
+| Step 5: approve / reject with licence checker (8 states, UNKNOWN never free, NC/ND blocked) | Yes | Yes | — | — |
+| Step 6: delivery manifest JSON (scenes, approved assets, attribution) | Yes | No | Yes | — |
+| Room migration v1 → v2 (new tables, `lens` column removed, data kept) | Yes | Yes (SQL compared with Room's exported schema) | Yes (upgrade on device) | — |
 
 ## Not implemented (honest list)
 
-- DOCX / PDF / SRT / VTT import (slice 2)
-- Background gallery with 2 licensed internet images + 2 AI images per scene, preview studio (slice 2)
-- Image / video / audio generation providers (phase 3)
-- Teleprompter, assistant director, recording session (slice 2)
+- DOCX / PDF import
+- Video and audio generation providers (only images are generated)
+- Teleprompter and assistant director (moved after slice 3)
+- Live camera analysis of distance / light / angle (slice 4); step 3 shows guidance from the scene plan
+- Direct "send to computer → DaVinci" (button shown disabled until the slice-3 bridge exists)
 - Windows Companion Agent, QR pairing, production transfer, DaVinci project creation (slice 3)
 - Sony FX3 connection over USB via the Windows bridge (phase 2, after phase-0 hardware test)
 - Cost estimation (only token counts are shown; prices change and are not hard-coded)
