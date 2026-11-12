@@ -321,4 +321,6 @@ class AppContext(val dir: File = Store.defaultDir()) {
     val ai = AiService(store, vault, http)
     val images = ImageService(store, vault, http, dir)
     val discovery = DiscoveryService(store, ai, images, CommonsService(http))
+    val pairing = PairingManager(File(dir, "tablet_tokens.json"))
+    val tablet = TabletServer(store, pairing)
 }

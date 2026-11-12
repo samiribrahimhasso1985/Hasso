@@ -18,6 +18,7 @@ dependencies {
     implementation(compose.materialIconsExtended)
     implementation(libs.kotlinx.coroutines.swing)
     implementation(libs.jna.platform)
+    implementation(libs.zxing.core)
 
     testImplementation(libs.junit)
 }
@@ -28,11 +29,11 @@ compose.desktop {
         nativeDistributions {
             targetFormats(TargetFormat.Msi, TargetFormat.Exe)
             packageName = "AIDirectorFX3"
-            packageVersion = "0.3.0"
+            packageVersion = "0.4.0"
             description = "AI Director FX3 — DISCOVERIES"
             vendor = "DISCOVERIES"
             // java.naming etc. are not needed; sql is not used. jdk.crypto.ec is required for HTTPS.
-            modules("java.instrument", "jdk.unsupported", "jdk.crypto.ec", "java.net.http", "java.naming", "java.sql", "jdk.accessibility")
+            modules("java.instrument", "jdk.unsupported", "jdk.crypto.ec", "java.net.http", "java.naming", "java.sql", "jdk.accessibility", "jdk.httpserver")
             windows {
                 menuGroup = "AI Director FX3"
                 shortcut = true

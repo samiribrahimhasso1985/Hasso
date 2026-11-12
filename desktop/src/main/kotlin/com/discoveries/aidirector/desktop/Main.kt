@@ -17,6 +17,7 @@ import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Dashboard
 import androidx.compose.material.icons.filled.Movie
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.TabletAndroid
 import androidx.compose.material.icons.filled.Timeline
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
@@ -60,10 +61,10 @@ import com.discoveries.aidirector.domain.model.EpisodeStatus
 import kotlinx.coroutines.launch
 import java.awt.Desktop
 
-const val APP_VERSION = "0.3.0-desktop"
+const val APP_VERSION = "0.4.0-desktop"
 
 fun main() = application {
-    val ctx = remember { AppContext() }
+    val ctx = remember { AppContext().also { if (it.store.data.value.settings.tabletServer) it.tablet.start() } }
     Window(
         onCloseRequest = ::exitApplication,
         title = "AI Director FX3 — DISCOVERIES",
@@ -77,6 +78,7 @@ enum class Section(val key: String, val icon: ImageVector) {
     DASHBOARD("nav_dashboard", Icons.Filled.Dashboard),
     WORKFLOW("nav_workflow", Icons.Filled.Timeline),
     EPISODES("nav_episodes", Icons.Filled.Movie),
+    TABLET("tb_nav", Icons.Filled.TabletAndroid),
     AI_CENTER("nav_ai_center", Icons.Filled.AutoAwesome),
     SETTINGS("nav_settings", Icons.Filled.Settings),
 }
@@ -108,6 +110,7 @@ fun App(ctx: AppContext) {
                         Section.DASHBOARD -> DashboardScreen { section = it }
                         Section.WORKFLOW -> WorkflowScreen(onNeedEpisode = { section = Section.EPISODES })
                         Section.EPISODES -> EpisodesScreen(onOpen = { section = Section.WORKFLOW })
+                        Section.TABLET -> TabletScreen()
                         Section.AI_CENTER -> AiCenterScreen()
                         Section.SETTINGS -> SettingsScreen()
                     }

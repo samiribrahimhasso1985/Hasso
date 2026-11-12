@@ -59,3 +59,11 @@ lives in `shared/` and is used by both the tablet and Windows apps.
 - Step 6 exports an episode package folder: approved images/sounds, `manifest.json`, `CREDITS.txt`, `Script.txt`.
 - Tablet-only for now: voice director, background director, separate scene editor.
 - Build: GitHub Actions (`windows-latest`) runs `:desktop:packageMsi` and publishes an MSI and a portable ZIP.
+
+### Tablet control from the browser (desktop 0.4.0)
+
+The Windows app can run a small local server (off by default, "Tablet" section). The tablet opens the shown
+address in its browser on the same Wi-Fi, enters the one-time pairing code, and gets: teleprompter (scene by scene,
+RTL, speed, font size, mirror, tap to pause), take log per scene, director notes, and the "end of content" button.
+No APK is needed. Tokens are stored as SHA-256 hashes; the code rotates after each pairing and after 5 wrong tries.
+The connection is plain HTTP on the local network only.

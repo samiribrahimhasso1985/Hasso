@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>AI Director FX3</title>
+<style>
+  :root { --black:#0B0B0D; --char:#16171A; --grey:#26282D; --gold:#C9A227; --white:#F4F1EA; --muted:#A7A39A; --good:#5DBB63; --warn:#E0A63A; --bad:#E05A4F; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin:0; height:100%; background:var(--black); color:var(--white); font-family: system-ui, "Noto Sans Arabic", "Segoe UI", sans-serif; overflow:hidden; }
+  button { font:inherit; color:var(--white); background:var(--grey); border:1px solid #3a3d44; border-radius:12px; min-height:52px; padding:0 18px; font-size:18px; }
+  button:active { background:#34373e; }
+  button.gold { background:var(--gold); color:var(--black); border-color:var(--gold); font-weight:700; }
+  button.danger { color:var(--bad); border-color:var(--bad); background:transparent; }
+  button:disabled { opacity:.4; }
+  [hidden] { display:none !important; }
+  .center { height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px; padding:24px; text-align:center; }
+  #code { font-size:44px; letter-spacing:10px; text-align:center; width:320px; max-width:90vw; padding:14px; border-radius:12px; border:2px solid var(--gold); background:var(--char); color:var(--white); direction:ltr; }
+  #app { height:100%; display:flex; flex-direction:column; }
+  header { display:flex; align-items:center; gap:10px; padding:8px 12px; background:var(--char); border-bottom:1px solid #2c2e33; }
+  #title { flex:1; color:var(--gold); font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  nav { display:flex; gap:8px; }
+  nav button { min-height:44px; font-size:16px; }
+  nav button.on { border-color:var(--gold); color:var(--gold); }
+  #offline { background:var(--bad); color:#fff; text-align:center; padding:6px; }
+  section { flex:1; min-height:0; display:flex; flex-direction:column; }
+  .scroll { overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:14px; }
+  .card { background:var(--char); border-radius:14px; padding:16px; display:flex; flex-direction:column; gap:10px; }
+  .card h3 { margin:0; color:var(--gold); font-size:20px; }
+  .row { display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
+  .muted { color:var(--muted); }
+  .warn { color:var(--warn); }
+  .good { color:var(--good); }
+  .label { color:var(--muted); font-size:14px; }
+  /* teleprompter */
+  #reader { flex:1; min-height:0; overflow-y:auto; position:relative; scrollbar-width:none; }
+  #reader::-webkit-scrollbar { display:none; }
+  #text { padding:35vh 6vw 70vh; line-height:1.7; font-weight:600; }
+  #text.mirror { transform:scaleX(-1); }
+  #text p { margin:0 0 .9em; opacity:.45; transition:opacity .2s; }
+  #text p.cur { opacity:1; }
+  #line { position:absolute; inset-inline:0; top:35%; height:0; border-top:2px solid var(--gold); opacity:.5; pointer-events:none; }
+  #readerWrap { flex:1; min-height:0; position:relative; display:flex; flex-direction:column; }
+  #controls { background:var(--char); border-top:1px solid #2c2e33; padding:10px 12px; display:flex; flex-wrap:wrap; gap:8px; align-items:center; justify-content:center; }
+  #controls .grp { display:flex; align-items:center; gap:6px; }
+  #controls .val { min-width:44px; text-align:center; direction:ltr; }
+  #sceneName { padding:6px 14px; background:var(--char); color:var(--muted); font-size:15px; display:flex; gap:12px; }
+  #sceneName b { color:var(--white); flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+</style>
+</head>
+<body>
+
+<div id="pair" class="center" hidden>
+  <h2 style="color:var(--gold);margin:0">AI DIRECTOR FX3</h2>
+  <div id="pairTitle"></div>
+  <input id="code" inputmode="numeric" autocomplete="off" maxlength="6" placeholder="000000">
+  <button id="pairBtn" class="gold"></button>
+  <div id="pairErr" class="warn"></div>
+</div>
+
+<div id="app" hidden>
+  <header>
+    <span id="title"></span>
+    <nav>
+      <button data-tab="prompter" class="on"></button>
+      <button data-tab="scenes"></button>
+      <button data-tab="tips"></button>
+    </nav>
+  </header>
+  <div id="offline" hidden></div>
+  <div id="empty" class="center muted" hidden></div>
+
+  <section id="tab-prompter">
+    <div id="sceneName"><b id="sceneTitle"></b><span id="sceneTakes"></span></div>
+    <div id="readerWrap">
+      <div id="reader"><div id="text"></div></div>
+      <div id="line"></div>
+    </div>
+    <div id="controls">
+      <div class="grp"><button id="prev"></button><button id="play" class="gold"></button><button id="next"></button></div>
+      <div class="grp"><span class="label" id="lSpeed"></span><button id="sDown">−</button><span class="val" id="vSpeed"></span><button id="sUp">+</button></div>
+      <div class="grp"><span class="label" id="lFont"></span><button id="fDown">−</button><span class="val" id="vFont"></span><button id="fUp">+</button></div>
+      <div class="grp"><button id="mirror"></button><button id="takeNow"></button></div>
+    </div>
+  </section>
+
+  <section id="tab-scenes" hidden><div class="scroll" id="scenesList"></div></section>
+  <section id="tab-tips" hidden><div class="scroll" id="tipsList"></div></section>
+</div>
+
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var mem = {};
+  function load(k, d) { try { var v = localStorage.getItem(k); return v === null ? d : v; } catch (e) { return k in mem ? mem[k] : d; } }
+  function save(k, v) { mem[k] = v; try { localStorage.setItem(k, v); } catch (e) {} }
+  function drop(k) { delete mem[k]; try { localStorage.removeItem(k); } catch (e) {} }
+
+  var token = load('fx3token', null), T = {}, S = null, cur = 0, tab = 'prompter';
+  var playing = false, speed = +load('fx3speed', 40), font = +load('fx3font', 44), mirror = false;
+  var pos = 0, lastTs = 0, textKey = '', listKey = '', fails = 0;
+  function t(k) { return T[k] || k; }
+  function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+
+  function api(path, body) {
+    var h = { 'Content-Type': 'application/json' };
+    if (token) h['Authorization'] = 'Bearer ' + token;
+    return fetch(path, { method: body ? 'POST' : 'GET', headers: h, body: body ? JSON.stringify(body) : undefined, cache: 'no-store' })
+      .then(function (r) {
+        if (r.status === 401) { token = null; drop('fx3token'); showPair(); throw new Error('unpaired'); }
+        return r;
+      });
+  }
+
+  function showPair() { $('app').hidden = true; $('pair').hidden = false; $('code').value = ''; $('code').focus(); }
+
+  function applyStrings(h) {
+    T = h.strings; document.documentElement.lang = h.lang; document.documentElement.dir = h.rtl ? 'rtl' : 'ltr';
+    $('pairTitle').textContent = t('tb_pair_title'); $('pairBtn').textContent = t('tb_pair_button');
+    var tabs = document.querySelectorAll('nav button');
+    tabs[0].textContent = t('tb_tab_prompter'); tabs[1].textContent = t('tb_tab_scenes'); tabs[2].textContent = t('tb_tab_tips');
+    $('prev').textContent = t('tb_prev'); $('next').textContent = t('tb_next'); $('mirror').textContent = t('tb_mirror');
+    $('takeNow').textContent = t('tb_log_take'); $('lSpeed').textContent = t('tb_speed'); $('lFont').textContent = t('tb_font');
+    $('offline').textContent = t('tb_offline'); $('empty').textContent = t('tb_no_episode');
+    updPlay(); updVals();
+  }
+
+  function updPlay() { $('play').textContent = playing ? t('tb_pause') : t('tb_play'); }
+  function updVals() { $('vSpeed').textContent = speed; $('vFont').textContent = font; $('text').style.fontSize = font + 'px'; }
+
+  function pairNow() {
+    var code = $('code').value.replace(/\D/g, '');
+    if (code.length !== 6) return;
+    fetch('/api/pair', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code: code }) })
+      .then(function (r) {
+        if (!r.ok) { $('pairErr').textContent = t('tb_pair_wrong'); $('code').value = ''; return; }
+        return r.json().then(function (j) { token = j.token; save('fx3token', token); $('pairErr').textContent = ''; $('pair').hidden = true; $('app').hidden = false; poll(); });
+      }).catch(function () { $('pairErr').textContent = t('tb_offline'); });
+  }
+
+  function poll() {
+    if (!token) return;
+    api('/api/state').then(function (r) { return r.json(); }).then(function (s) {
+      fails = 0; $('offline').hidden = true; S = s; render();
+    }).catch(function (e) { if (e.message !== 'unpaired' && ++fails >= 2) $('offline').hidden = false; });
+  }
+
+  function showTab(name) {
+    tab = name;
+    document.querySelectorAll('nav button').forEach(function (b) { b.classList.toggle('on', b.dataset.tab === name); });
+    render();
+  }
+
+  function render() {
+    if (!S) return;
+    $('title').textContent = S.title || 'AI Director FX3';
+    var has = S.hasEpisode && S.scenes.length > 0;
+    $('empty').hidden = has;
+    ['prompter', 'scenes', 'tips'].forEach(function (n) { $('tab-' + n).hidden = !has || n !== tab; });
+    if (!has) return;
+    if (cur >= S.scenes.length) cur = S.scenes.length - 1;
+    renderPrompter();
+    var key = JSON.stringify(S.scenes.map(function (x) { return [x.id, x.title, x.takes, x.shot, x.direction, x.movement, x.lighting]; })) + S.contentEnded;
+    if (key !== listKey) { listKey = key; renderScenes(); renderTips(); }
+  }
+
+  function renderPrompter() {
+    var sc = S.scenes[cur];
+    $('sceneTitle').textContent = sc.order + '/' + S.scenes.length + ' · ' + sc.title;
+    $('sceneTakes').textContent = t('tb_takes') + ': ' + sc.takes;
+    var key = sc.id + '\n' + sc.narration;
+    if (key === textKey) return;
+    textKey = key;
+    var box = $('text'); box.textContent = ''; box.dir = S.contentRtl ? 'rtl' : 'ltr';
+    sc.narration.split(/\n+/).forEach(function (line) { if (line.trim()) box.appendChild(el('p', null, line.trim())); });
+    pos = 0; $('reader').scrollTop = 0; playing = false; updPlay(); mark();
+  }
+
+  function mark() {
+    var r = $('reader'), y = r.getBoundingClientRect().top + r.clientHeight * 0.35, best = null;
+    r.querySelectorAll('p').forEach(function (p) { var b = p.getBoundingClientRect(); if (b.top <= y + 4) best = p; p.classList.remove('cur'); });
+    (best || r.querySelector('p')) && (best || r.querySelector('p')).classList.add('cur');
+  }
+
+  function act(path, sceneId) { api(path, sceneId ? { sceneId: sceneId } : {}).then(poll).catch(function () {}); }
+
+  function renderScenes() {
+    var list = $('scenesList'); list.textContent = '';
+    list.appendChild(el('div', 'muted', t('tb_fx3_note')));
+    S.scenes.forEach(function (sc, i) {
+      var c = el('div', 'card');
+      c.appendChild(el('h3', null, sc.order + '. ' + sc.title));
+      c.appendChild(el('div', sc.takes > 0 ? 'good' : 'muted', t('tb_takes') + ': ' + sc.takes));
+      var row = el('div', 'row');
+      var a = el('button', 'gold', t('tb_log_take')); a.onclick = function () { act('/api/take', sc.id); };
+      var b = el('button', null, t('tb_undo_take')); b.disabled = sc.takes === 0; b.onclick = function () { act('/api/untake', sc.id); };
+      var g = el('button', null, t('tb_tab_prompter')); g.onclick = function () { cur = i; showTab('prompter'); };
+      row.appendChild(a); row.appendChild(b); row.appendChild(g); c.appendChild(row); list.appendChild(c);
+    });
+    var end = el('div', 'card');
+    if (S.contentEnded) end.appendChild(el('div', 'good', t('tb_ended')));
+    else {
+      var e = el('button', 'danger', t('tb_end'));
+      e.onclick = function () { if (window.confirm(t('tb_end_confirm'))) act('/api/end'); };
+      end.appendChild(e);
+    }
+    list.appendChild(end);
+  }
+
+  function renderTips() {
+    var list = $('tipsList'); list.textContent = '';
+    S.scenes.forEach(function (sc) {
+      var c = el('div', 'card'); c.appendChild(el('h3', null, sc.order + '. ' + sc.title));
+      var any = false;
+      [['wf_shot', sc.shot], ['wf_direction', sc.direction], ['wf_movement', sc.movement], ['wf_lighting', sc.lighting]].forEach(function (p) {
+        if (!p[1]) return; any = true;
+        c.appendChild(el('div', 'label', t(p[0]))); c.appendChild(el('div', null, p[1]));
+      });
+      if (!any) c.appendChild(el('div', 'muted', t('wf_scene_not_analysed')));
+      list.appendChild(c);
+    });
+    var g = el('div', 'card');
+    ['wf_tip_distance', 'wf_tip_frame', 'wf_tip_light', 'wf_tip_shadow', 'wf_tip_angle'].forEach(function (k) { g.appendChild(el('div', null, '• ' + t(k))); });
+    g.appendChild(el('div', 'muted', t('wf_tip_approx')));
+    g.appendChild(el('div', 'muted', t('tb_sleep_hint')));
+    list.appendChild(g);
+  }
+
+  function frame(ts) {
+    if (playing && lastTs) {
+      var r = $('reader'), max = r.scrollHeight - r.clientHeight;
+      pos += speed * Math.min(0.1, (ts - lastTs) / 1000);
+      if (pos >= max) { pos = max; playing = false; updPlay(); }
+      r.scrollTop = pos; mark();
+    }
+    lastTs = ts; requestAnimationFrame(frame);
+  }
+
+  function go(d) { if (!S) return; var n = cur + d; if (n < 0 || n >= S.scenes.length) return; cur = n; render(); }
+  function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+
+  $('pairBtn').onclick = pairNow;
+  $('code').addEventListener('input', function () { if ($('code').value.replace(/\D/g, '').length === 6) pairNow(); });
+  document.querySelectorAll('nav button').forEach(function (b) { b.onclick = function () { showTab(b.dataset.tab); }; });
+  $('play').onclick = function () { playing = !playing; updPlay(); };
+  $('reader').onclick = function () { playing = !playing; updPlay(); };
+  $('reader').addEventListener('scroll', function () { if (!playing) { pos = $('reader').scrollTop; mark(); } });
+  $('prev').onclick = function () { go(-1); };
+  $('next').onclick = function () { go(1); };
+  $('sDown').onclick = function () { speed = clamp(speed - 5, 5, 300); save('fx3speed', speed); updVals(); };
+  $('sUp').onclick = function () { speed = clamp(speed + 5, 5, 300); save('fx3speed', speed); updVals(); };
+  $('fDown').onclick = function () { font = clamp(font - 4, 20, 140); save('fx3font', font); updVals(); };
+  $('fUp').onclick = function () { font = clamp(font + 4, 20, 140); save('fx3font', font); updVals(); };
+  $('mirror').onclick = function () { mirror = !mirror; $('text').classList.toggle('mirror', mirror); };
+  $('takeNow').onclick = function () { if (S && S.scenes[cur]) act('/api/take', S.scenes[cur].id); };
+
+  fetch('/api/hello', { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (h) {
+    applyStrings(h);
+    if (token) { $('app').hidden = false; poll(); } else showPair();
+    setInterval(poll, 2000);
+    requestAnimationFrame(frame);
+  });
+})();
+</script>
+</body>
+</html>

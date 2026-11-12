@@ -105,6 +105,7 @@ data class Settings(
     val models: Map<String, String> = emptyMap(),
     val activeEpisodeId: String? = null,
     val seriesName: String = "DISCOVERIES — اكتشافات",
+    val tabletServer: Boolean = false,
 )
 
 @Serializable
@@ -264,6 +265,12 @@ class Store(val dir: File) {
     fun addTake(episodeId: String, sceneId: String) = update { d ->
         val n = d.takes.count { it.sceneId == sceneId } + 1
         d.copy(takes = d.takes + Take(newId(), episodeId, sceneId, n, System.currentTimeMillis()))
+    }
+
+    /** Undo from the tablet: removes only the newest take of the scene. */
+    fun removeLastTake(sceneId: String) = update { d ->
+        val last = d.takes.filter { it.sceneId == sceneId }.maxByOrNull { it.markedAt } ?: return@update d
+        d.copy(takes = d.takes.filter { it.id != last.id })
     }
 
     fun removeTake(id: String) = update { d -> d.copy(takes = d.takes.filter { it.id != id }) }
