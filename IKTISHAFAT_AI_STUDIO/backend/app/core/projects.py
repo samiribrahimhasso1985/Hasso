@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 from ..database.models import Project, MediaFile, TaskLog
 from ..video.ffprobe import probe
 from .config import ensure_dirs
+from .formats import FPS, resolve_format
 from .security import classify, is_inside, safe_write_path, validate_source_file, SecurityError
 
 SUBFOLDERS = ["storyboard", "timeline", "subtitles", "audio", "exports"]
@@ -22,7 +23,11 @@ def _slug(name: str) -> str:
     return s
 
 
-def create_project(db: Session, name: str, description: str = "", language: str = "ar") -> Project:
+def create_project(db: Session, name: str, description: str = "", language: str = "ar",
+                   format_id: str = "hd169", width: int | None = None, height: int | None = None, fps: float = 25.0) -> Project:
+    fmt = resolve_format(format_id, width, height)
+    if fps not in FPS:
+        raise SecurityError(f"Unsupported frame rate: {fps}")
     if db.scalar(select(Project).where(Project.name == name)):
         raise SecurityError("Project name already exists")
     folder = safe_write_path(ensure_dirs() / "projects" / _slug(name))
@@ -30,7 +35,8 @@ def create_project(db: Session, name: str, description: str = "", language: str 
         raise SecurityError("Project folder already exists")
     for sub in SUBFOLDERS:
         (folder / sub).mkdir(parents=True)
-    p = Project(name=name, description=description, language=language, folder=str(folder))
+    p = Project(name=name, description=description, language=language, folder=str(folder), format_id=fmt["id"],
+                aspect=fmt["aspect"], width=fmt["width"], height=fmt["height"], fps=fps)
     db.add(p)
     db.add(TaskLog(name="create_project", detail=name))
     db.commit()

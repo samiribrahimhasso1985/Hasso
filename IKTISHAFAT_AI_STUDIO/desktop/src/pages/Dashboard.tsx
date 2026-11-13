@@ -30,7 +30,7 @@ export default function Dashboard({ lang, ai, projects, pid, go }: { lang: Lang;
       <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-[1fr_1fr_1.3fr_1fr]">
         <ProjectOverview lang={lang} ov={ov} msg={msg} onOpen={() => go('projects')} onExport={guard(async () => setMsg((await api.exportEdl(pid!)).path))} />
         <AIEngine lang={lang} ai={ai} onManage={() => go('aiModels')} />
-        <Preview lang={lang} media={sel} />
+        <Preview lang={lang} media={sel} target={ov?.target} />
         <Assistant lang={lang} ai={ai} pid={pid} />
       </div>
       <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-4">

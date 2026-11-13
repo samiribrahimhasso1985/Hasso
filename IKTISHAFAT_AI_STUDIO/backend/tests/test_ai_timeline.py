@@ -149,6 +149,13 @@ def test_adapter_logic_verifies_timeline():
     assert adapter.status(FakeMod(FakeResolve(FakeMP())))["version"] == "21.1.1.0"
 
 
+def test_adapter_sets_vertical_frame_size():
+    r = FakeResolve(FakeMP()); seen = {}
+    r.p.SetSetting = lambda k, v: seen.setdefault(k, v) or True
+    adapter.build_timeline("T", CLIPS, 30, module=FakeMod(r), size=(1080, 1920))
+    assert seen == {"timelineFrameRate": "30", "timelineResolutionWidth": "1080", "timelineResolutionHeight": "1920"}
+
+
 def test_adapter_reports_failed_verification():
     with pytest.raises(adapter.ResolveError, match="Verification failed"):
         adapter.build_timeline("T", CLIPS, 25, module=FakeMod(FakeResolve(FakeMP(drop=True))))

@@ -1,0 +1,43 @@
+name: build-windows-installer
+on:
+  workflow_dispatch:
+  push:
+    tags: ['v*']
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: Test backend
+        working-directory: IKTISHAFAT_AI_STUDIO/backend
+        run: |
+          pip install -r requirements-dev.txt pyinstaller
+          python -m pytest -q -m "not resolve"
+      - name: Bundle backend (PyInstaller)
+        working-directory: IKTISHAFAT_AI_STUDIO/backend
+        env: { IKTISHAFAT_NO_AUTOINIT: '1' }
+        run: pyinstaller --noconfirm --clean --onedir --name iktishafat-backend --collect-submodules uvicorn --collect-submodules keyring --hidden-import sqlalchemy.dialects.sqlite --paths . run_backend.py
+      - name: Smoke test bundled backend
+        shell: pwsh
+        working-directory: IKTISHAFAT_AI_STUDIO/backend
+        run: |
+          $env:IKTISHAFAT_PORT = '8791'
+          $p = Start-Process -FilePath dist\iktishafat-backend\iktishafat-backend.exe -PassThru
+          Start-Sleep 8
+          $r = Invoke-RestMethod http://127.0.0.1:8791/api/health
+          Stop-Process $p -Force
+          if ($r.status -ne 'ok') { throw 'backend health failed' }
+      - name: Build installer
+        working-directory: IKTISHAFAT_AI_STUDIO/desktop
+        run: |
+          npm install --no-audit --no-fund
+          npm test
+          npm run dist:win
+      - uses: actions/upload-artifact@v4
+        with:
+          name: IKTISHAFAT-AI-STUDIO-Windows-Installer
+          path: IKTISHAFAT_AI_STUDIO/desktop/release/*.exe

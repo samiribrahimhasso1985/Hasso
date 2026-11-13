@@ -9,19 +9,22 @@ async function req<T>(path: string, init?: RequestInit): Promise<T> {
   return r.json()
 }
 
-export interface Project { id: number; name: string; description: string; stage: string; language: string; folder: string; created_at: string; updated_at: string }
-export interface Media { id: number; path: string; kind: string; size_bytes: number; duration: number | null; width: number | null; height: number | null; fps: number | null; codec: string | null; meta_source: string; status: string; duplicate: boolean }
+export interface Project { id: number; name: string; description: string; stage: string; language: string; format_id: string; aspect: string; width: number; height: number; fps: number; folder: string; created_at: string; updated_at: string }
+export interface Media { id: number; path: string; kind: string; size_bytes: number; duration: number | null; width: number | null; height: number | null; fps: number | null; codec: string | null; meta_source: string; status: string; duplicate: boolean; fit: { status: string; crop_percent?: number; axis?: string } | null }
 export interface Dashboard { project_count: number; current_project: Project | null; recent_projects: Project[]; media_counts: Record<string, number>; media_missing: number; tasks: { name: string; status: string; detail: string; at: string }[]; davinci: string; storage: { data_dir: string; free_gb: number; total_gb: number }; local_ai: boolean }
 export interface Diagnostics { platform: any; ffmpeg: any; ffprobe: any; davinci: any; local_ai: any; storage: any }
 
 export interface ProviderStatus { id: string; label: string; configured: boolean; reachable: boolean | null; models: string[] }
-export interface Overview { project: { id: number; name: string; stage: string; updated_at: string }; resolution: string | null; fps: number | null; timeline_duration: number; clip_count: number; media_count: number; thumb_media_id: number | null }
+export interface Overview { project: { id: number; name: string; stage: string; updated_at: string }; resolution: string | null; fps: number | null; timeline_duration: number; clip_count: number; media_count: number; thumb_media_id: number | null; target: { aspect: string; width: number; height: number; fps: number } }
 export interface Clip { id: number; media_id: number; name: string; kind: string; track: string; start: number; duration: number }
 export interface Task { id: number; name: string; detail: string; status: string; progress: number; remaining_s: number | null }
 export interface Resources { cpu: number; ram: number; gpu: number | null }
 export interface DavinciStatus { status: string; note: string; connection: { connected: boolean; version: string | null; current_project: string | null; error: string | null } }
 
+export interface Formats { presets: { id: string; aspect: string; width: number; height: number; use: string }[]; fps: number[] }
+
 export const api = {
+  formats: () => req<Formats>('/api/formats'),
   mediaUrl: (id: number) => `${API}/api/media/${id}/file`,
   thumbUrl: (id: number) => `${API}/api/media/${id}/thumbnail`,
   overview: (id: number) => req<Overview>(`/api/projects/${id}/overview`),
@@ -45,7 +48,7 @@ export const api = {
   dashboard: () => req<Dashboard>('/api/dashboard'),
   diagnostics: () => req<Diagnostics>('/api/diagnostics'),
   projects: () => req<Project[]>('/api/projects'),
-  createProject: (b: { name: string; description: string; language: string }) => req<Project>('/api/projects', { method: 'POST', body: JSON.stringify(b) }),
+  createProject: (b: { name: string; description: string; language: string; format_id: string; fps: number; width?: number; height?: number }) => req<Project>('/api/projects', { method: 'POST', body: JSON.stringify(b) }),
   deleteProject: (id: number) => req<{ backup: string }>(`/api/projects/${id}?confirm=true`, { method: 'DELETE' }),
   backupProject: (id: number) => req<{ backup: string }>(`/api/projects/${id}/backup`, { method: 'POST' }),
   media: (id: number, kind?: string, q?: string) => req<Media[]>(`/api/projects/${id}/media?${new URLSearchParams({ ...(kind ? { kind } : {}), ...(q ? { q } : {}) })}`),

@@ -19,6 +19,7 @@ export function ProjectOverview({ lang, ov, onOpen, onExport, msg }: { lang: Lan
             <div className="opacity-80">{L(lang, 'المدة', 'Duration')}: {fmt(ov.timeline_duration)}</div>
             <div className="opacity-80">{L(lang, 'الدقة', 'Resolution')}: <bdi dir="ltr">{ov.resolution ?? '—'}</bdi></div>
             <div className="opacity-80">FPS: {ov.fps ?? '—'}</div>
+            <div className="text-gold" dir="ltr">{L(lang, 'الصيغة المستهدفة', 'Target')}: {ov.target.aspect} · {ov.target.width}×{ov.target.height} · {ov.target.fps}</div>
             <div className="opacity-60">{L(lang, 'آخر تعديل', 'Modified')}: {ov.project.updated_at.slice(0, 16).replace('T', ' ')}</div></div>
         </div>)}
       <div className="mt-3 flex gap-2"><button className="btn" onClick={onOpen}>{L(lang, 'فتح المشروع', 'Open Project')}</button>
@@ -50,11 +51,17 @@ export function AIEngine({ lang, ai, onManage }: { lang: Lang; ai: AI; onManage:
     </W>)
 }
 
-export function Preview({ lang, media }: { lang: Lang; media: Media | null }) {
+export function Preview({ lang, media, target }: { lang: Lang; media: Media | null; target?: { aspect: string; width: number; height: number } }) {
+  const [framed, setFramed] = useState(true)
+  const box = framed && target && media?.kind === 'video'
   return (
     <W title={`${L(lang, 'المعاينة', 'Preview')}${media ? ' — ' + media.path.split(/[\\/]/).pop() : ''}`}>
       {!media ? <p className="opacity-70">{L(lang, 'اختر ملفاً من مكتبة الوسائط', 'Select a file from the Media Pool')}</p>
-        : media.kind === 'video' ? <video key={media.id} src={api.mediaUrl(media.id)} controls className="max-h-72 w-full rounded-lg bg-black" />
+        : media.kind === 'video' ? <div>
+            <div className="mx-auto overflow-hidden rounded-lg bg-black" style={box ? { aspectRatio: `${target!.width} / ${target!.height}`, maxHeight: '16rem' } : { maxHeight: '16rem' }}>
+              <video key={media.id} src={api.mediaUrl(media.id)} controls className={`h-full w-full ${box ? 'object-cover' : 'object-contain'}`} /></div>
+            {target && <label className="mt-1 flex items-center gap-2 text-xs opacity-80"><input type="checkbox" checked={framed} onChange={e => setFramed(e.target.checked)} />{L(lang, `عرض بإطار المشروع (${target.aspect})`, `Show in project frame (${target.aspect})`)}
+              {media.fit?.status === 'reframe' && <span className="text-gold">{L(lang, `يُقصّ ~${media.fit.crop_percent}%`, `~${media.fit.crop_percent}% cropped`)}</span>}</label>}</div>
         : media.kind === 'audio' ? <audio key={media.id} src={api.mediaUrl(media.id)} controls className="w-full" />
         : media.kind === 'image' ? <img alt="" src={api.mediaUrl(media.id)} className="max-h-72 rounded-lg" /> : <p>{media.kind}</p>}
     </W>)
@@ -165,6 +172,7 @@ export function MediaPool({ lang, items, selected, onSelect, onAdd, onAnalyze }:
             <button className="block w-full text-start" onClick={() => onSelect(m)}>
               <div className="flex h-12 items-center justify-center overflow-hidden rounded bg-ink">{m.kind === 'video' || m.kind === 'image' ? <img alt="" className="h-full w-full object-cover" src={api.thumbUrl(m.id)} /> : <span className="text-xl">{m.kind === 'audio' ? '🎵' : '📄'}</span>}</div>
               <div className="mt-1 truncate" dir="ltr">{m.path.split(/[\\/]/).pop()}</div></button>
+            {m.fit?.status === 'reframe' && <div className="text-[10px] text-gold">{L(lang, `إعادة تأطير ${m.fit.crop_percent}%`, `reframe ${m.fit.crop_percent}%`)}</div>}
             <div className="mt-1 flex gap-1">{['video', 'audio', 'image'].includes(m.kind) && <button className="btn-ghost !px-1.5 !py-0 text-xs" aria-label="add to timeline" onClick={() => onAdd(m)}>＋</button>}
               {['video', 'audio'].includes(m.kind) && <button className="btn-ghost !px-1.5 !py-0 text-xs" onClick={() => onAnalyze(m)}>{L(lang, 'تحليل', 'Analyze')}</button>}</div>
           </div>))}

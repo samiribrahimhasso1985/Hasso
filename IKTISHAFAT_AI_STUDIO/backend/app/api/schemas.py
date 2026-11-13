@@ -7,6 +7,10 @@ class ProjectIn(BaseModel):
     name: str = Field(min_length=1, max_length=200)
     description: str = ""
     language: str = Field(default="ar", pattern="^(ar|de|en)$")
+    format_id: str = "hd169"
+    width: int | None = None
+    height: int | None = None
+    fps: float = 25.0
 
 
 class ProjectOut(BaseModel):
@@ -16,6 +20,11 @@ class ProjectOut(BaseModel):
     description: str
     stage: str
     language: str
+    format_id: str
+    aspect: str
+    width: int
+    height: int
+    fps: float
     folder: str
     created_at: datetime
     updated_at: datetime
@@ -44,3 +53,4 @@ class MediaOut(BaseModel):
     license: str
     status: str = "ok"
     duplicate: bool = False
+    fit: dict | None = None

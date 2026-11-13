@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select, func
 from sqlalchemy.orm import Session
 from ..core import diagnostics, projects as svc
+from ..core.formats import PRESETS, FPS, aspect_fit
 from ..core.security import SecurityError, safe_write_path
 from ..database.models import Project, MediaFile, TaskLog
 from ..database.session import get_session
@@ -22,6 +23,8 @@ def _project(db: Session, pid: int) -> Project:
 
 def _media_out(m: MediaFile, dup: bool = False) -> MediaOut:
     out = MediaOut.model_validate(m)
+    if m.kind in ("video", "image") and m.project:
+        out.fit = aspect_fit(m.width, m.height, m.project.width, m.project.height)
     out.status = svc.media_status(m)
     out.duplicate = dup
     return out
@@ -37,6 +40,11 @@ def get_diagnostics():
     return diagnostics.run()
 
 
+@router.get("/formats")
+def formats():
+    return {"presets": PRESETS, "fps": FPS}
+
+
 @router.get("/projects", response_model=list[ProjectOut])
 def list_projects(db: Session = Depends(get_session)):
     return db.scalars(select(Project).order_by(Project.updated_at.desc())).all()
@@ -45,7 +53,8 @@ def list_projects(db: Session = Depends(get_session)):
 @router.post("/projects", response_model=ProjectOut, status_code=201)
 def create_project(body: ProjectIn, db: Session = Depends(get_session)):
     try:
-        return svc.create_project(db, body.name, body.description, body.language)
+        return svc.create_project(db, body.name, body.description, body.language,
+                                  body.format_id, body.width, body.height, body.fps)
     except SecurityError as e:
         raise HTTPException(400, str(e))
 

@@ -101,3 +101,41 @@ def test_dashboard(client):
     client.post("/api/projects", json={"name": "d"})
     d = client.get("/api/dashboard").json()
     assert d["project_count"] == 1 and d["current_project"]["name"] == "d"
+
+
+def test_formats_and_vertical_project(client):
+    f = client.get("/api/formats").json()
+    assert {"vert916", "hd169", "sq11"} <= {p["id"] for p in f["presets"]}
+    r = client.post("/api/projects", json={"name": "v", "format_id": "vert916", "fps": 30})
+    assert r.status_code == 201
+    p = r.json()
+    assert (p["aspect"], p["width"], p["height"], p["fps"]) == ("9:16", 1080, 1920, 30.0)
+    c = client.post("/api/projects", json={"name": "c", "format_id": "custom", "width": 1600, "height": 900}).json()
+    assert c["aspect"] == "16:9"
+    assert client.post("/api/projects", json={"name": "b1", "format_id": "nope"}).status_code == 400
+    assert client.post("/api/projects", json={"name": "b2", "format_id": "custom", "width": 1001, "height": 900}).status_code == 400
+    assert client.post("/api/projects", json={"name": "b3", "fps": 17}).status_code == 400
+
+
+def test_aspect_fit_reports_reframe(client, sample_video):
+    pid = client.post("/api/projects", json={"name": "v", "format_id": "vert916"}).json()["id"]
+    m = client.post(f"/api/projects/{pid}/media", json={"path": str(sample_video)}).json()  # 320x240 (4:3) into 9:16
+    assert m["fit"]["status"] == "reframe" and m["fit"]["axis"] == "width" and m["fit"]["crop_percent"] == 58
+    pid2 = client.post("/api/projects", json={"name": "s", "format_id": "std43"}).json()["id"]
+    assert client.post(f"/api/projects/{pid2}/media", json={"path": str(sample_video)}).json()["fit"]["status"] == "match"
+    assert client.get(f"/api/projects/{pid}/overview").json()["target"]["aspect"] == "9:16"
+
+
+def test_old_database_is_migrated(tmp_path):
+    import sqlite3
+    from app.database import session
+    db = tmp_path / "old.db"
+    con = sqlite3.connect(db)
+    con.execute("CREATE TABLE projects (id INTEGER PRIMARY KEY, name VARCHAR(200), description TEXT, stage VARCHAR(30), language VARCHAR(5), folder VARCHAR(500), created_at DATETIME, updated_at DATETIME)")
+    con.execute("CREATE TABLE media_files (id INTEGER PRIMARY KEY, project_id INTEGER, path VARCHAR(1000), kind VARCHAR(20), size_bytes INTEGER, sha256 VARCHAR(64), duration FLOAT, width INTEGER, height INTEGER, fps FLOAT, codec VARCHAR(50), meta_source VARCHAR(20), source VARCHAR(300), license VARCHAR(300), added_at DATETIME)")
+    con.execute("INSERT INTO projects (name,description,stage,language,folder) VALUES ('old','','pre-production','ar','/x')")
+    con.commit(); con.close()
+    eng = session.init_db(f"sqlite:///{db.as_posix()}")
+    cols = {r[1] for r in eng.connect().exec_driver_sql("PRAGMA table_info(projects)")}
+    assert {"format_id", "aspect", "width", "height", "fps"} <= cols
+    eng.dispose()

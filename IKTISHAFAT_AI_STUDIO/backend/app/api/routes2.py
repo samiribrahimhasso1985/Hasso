@@ -95,6 +95,7 @@ def overview(pid: int, db: Session = Depends(get_session)):
     cl = tl.clips(db, pid)
     return {"project": {"id": p.id, "name": p.name, "stage": p.stage, "updated_at": p.updated_at.isoformat()},
             "resolution": f"{v.width} × {v.height}" if v else None, "fps": v.fps if v else None,
+            "target": {"aspect": p.aspect, "width": p.width, "height": p.height, "fps": p.fps},
             "timeline_duration": tl.total_duration(cl), "clip_count": len(cl), "media_count": len(media),
             "thumb_media_id": v.id if v else None}
 
@@ -206,6 +207,7 @@ def _context(db: Session, pid: int | None) -> str:
     cl = tl.clips(db, pid)
     r = detect.detect()
     lines = [f"Project: {p.name} (stage: {p.stage}). Description: {p.description or '-'}",
+             f"Target video format: {p.aspect} ({p.width}x{p.height}) at {p.fps} fps",
              "Media pool:"]
     for m in media[:40]:
         a = m.analysis or {}
@@ -256,9 +258,8 @@ def davinci_timeline(pid: int, body: TimelineIn, db: Session = Depends(get_sessi
     cl = tl.clips(db, pid)
     if not cl:
         raise HTTPException(400, "Timeline is empty")
-    fps = next((c["fps"] for c in cl if c["fps"]), 25.0)
     try:
-        res = adapter.build_timeline(body.name or p.name, cl, fps)
+        res = adapter.build_timeline(body.name or p.name, cl, p.fps, size=(p.width, p.height))
     except adapter.ResolveError as e:
         raise HTTPException(502, str(e))
     db.add(TaskLog(project_id=pid, name="davinci_timeline", detail=f"{res['timeline']} ({res['clips']} clips, verified)"))

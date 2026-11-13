@@ -53,7 +53,7 @@ def status(module=None) -> dict:
         return {"connected": False, "version": None, "current_project": None, "error": str(e)}
 
 
-def build_timeline(name: str, clips: list[dict], fps: float, module=None) -> dict:
+def build_timeline(name: str, clips: list[dict], fps: float, module=None, size: tuple[int, int] | None = None) -> dict:
     """clips: dicts from core.timeline.clips (video V1..V3 and audio A1..A2). Verifies result."""
     r = connect(module)
     pm = r.GetProjectManager()
@@ -63,6 +63,10 @@ def build_timeline(name: str, clips: list[dict], fps: float, module=None) -> dic
     if not proj.SetSetting("timelineFrameRate", fps_setting(fps)):
         raise ResolveError(f"Resolve rejected timeline frame rate {fps_setting(fps)} "
                            "(unsupported rate, or the open project already has timelines at another rate)")
+    if size:  # frame size = project's chosen format (e.g. 1080x1920 for 9:16)
+        for k, v in (("timelineResolutionWidth", size[0]), ("timelineResolutionHeight", size[1])):
+            if not proj.SetSetting(k, str(v)):
+                raise ResolveError(f"Resolve rejected {k}={v}")
     mp = proj.GetMediaPool()
     paths = sorted({c["path"] for c in clips})
     items = mp.ImportMedia(paths)

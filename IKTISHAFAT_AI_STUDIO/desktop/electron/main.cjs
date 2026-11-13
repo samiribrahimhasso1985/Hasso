@@ -9,6 +9,12 @@ let backend = null
 
 function startBackend() {
   if (process.env.IKTISHAFAT_EXTERNAL_BACKEND === '1') return
+  if (app.isPackaged) {  // installed build: bundled backend executable (PyInstaller)
+    const exe = path.join(process.resourcesPath, 'backend', process.platform === 'win32' ? 'iktishafat-backend.exe' : 'iktishafat-backend')
+    backend = spawn(exe, [], { env: { ...process.env, IKTISHAFAT_PORT: PORT }, windowsHide: true })
+    backend.stderr.on('data', d => console.error('[backend]', d.toString()))
+    return
+  }
   const root = path.join(__dirname, '..', '..', 'backend')
   const venvPy = process.platform === 'win32'
     ? path.join(root, '.venv', 'Scripts', 'python.exe') : path.join(root, '.venv', 'bin', 'python')

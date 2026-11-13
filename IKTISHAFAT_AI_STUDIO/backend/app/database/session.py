@@ -34,3 +34,8 @@ def _migrate(engine):
         cols = {r[1] for r in c.execute(text("PRAGMA table_info(media_files)"))}
         if "analysis" not in cols:
             c.execute(text("ALTER TABLE media_files ADD COLUMN analysis JSON"))
+        pcols = {r[1] for r in c.execute(text("PRAGMA table_info(projects)"))}
+        for name, ddl in [("format_id", "VARCHAR(20) DEFAULT 'hd169'"), ("aspect", "VARCHAR(10) DEFAULT '16:9'"),
+                          ("width", "INTEGER DEFAULT 1920"), ("height", "INTEGER DEFAULT 1080"), ("fps", "FLOAT DEFAULT 25.0")]:
+            if name not in pcols:
+                c.execute(text(f"ALTER TABLE projects ADD COLUMN {name} {ddl}"))
