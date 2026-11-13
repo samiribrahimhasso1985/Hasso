@@ -1,9 +1,15 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+/* ink = page background, navy = panels/cards, warm = text, gold = accent. text-ink on accent buttons stays readable in every theme. */
+:root, [data-theme='dark'] { --c-ink: 4 7 15; --c-navy: 10 20 40; --c-warm: 243 234 215; --c-gold: 233 180 76; --c-ok: 110 231 183; --c-danger: 252 165 165; }
+[data-theme='ivory'] { --c-ink: 250 246 238; --c-navy: 255 255 255; --c-warm: 38 32 22; --c-gold: 150 98 8; --c-ok: 21 128 61; --c-danger: 185 28 28; }
+[data-theme='sky']   { --c-ink: 238 244 251; --c-navy: 255 255 255; --c-warm: 15 30 55; --c-gold: 20 88 188; --c-ok: 21 128 61; --c-danger: 185 28 28; }
+[data-theme='sage']  { --c-ink: 238 245 240; --c-navy: 255 255 255; --c-warm: 20 45 32; --c-gold: 24 112 74; --c-ok: 21 128 61; --c-danger: 185 28 28; }
+[data-theme='rose']  { --c-ink: 252 242 241; --c-navy: 255 255 255; --c-warm: 58 24 30; --c-gold: 176 48 80; --c-ok: 21 128 61; --c-danger: 185 28 28; }
 html, body, #root { height: 100%; }
 body { @apply bg-ink text-warm font-sans; }
-.card { @apply rounded-xl border border-gold/20 bg-navy p-4; }
+.card { @apply rounded-xl border border-gold/20 bg-navy p-4 shadow-sm; }
 .btn { @apply rounded-lg bg-gold px-4 py-2 font-semibold text-ink hover:opacity-90 disabled:opacity-40; }
 .btn-ghost { @apply rounded-lg border border-gold/40 px-3 py-1.5 text-gold hover:bg-gold/10; }
 .input { @apply w-full rounded-lg border border-gold/30 bg-ink px-3 py-2 text-warm outline-none focus:border-gold; }

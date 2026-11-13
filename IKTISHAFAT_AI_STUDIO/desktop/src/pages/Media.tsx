@@ -32,7 +32,7 @@ export default function Media({ lang, pid: gpid }: { lang: Lang; pid: number | n
           <Card key={m.id}>
             <div className="break-all text-sm" dir="ltr">{m.path.split(/[\\/]/).pop()}</div>
             <div className="mt-1 text-xs opacity-70" dir="ltr">{m.kind} · {m.width ? `${m.width}x${m.height}` : '—'} · {m.fps ? `${m.fps} fps` : '—'} · {m.duration ? `${m.duration}s` : '—'} · {m.codec ?? '—'} · {m.meta_source}</div>
-            {m.status === 'missing' && <div className="text-red-300">{t(lang, 'missing')}</div>}
+            {m.status === 'missing' && <div className="text-danger">{t(lang, 'missing')}</div>}
           </Card>))}
       </div>
     </div>

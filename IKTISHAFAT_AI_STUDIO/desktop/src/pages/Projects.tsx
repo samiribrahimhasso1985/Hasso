@@ -11,7 +11,7 @@ export default function Projects({ lang, onChange }: { lang: Lang; onChange: () 
   const run = async (fn: () => Promise<any>) => { setErr(''); setInfo(''); try { const r = await fn(); if (r?.backup) setInfo(r.backup); await load(); onChange() } catch (e: any) { setErr(e.message) } }
   return (
     <div className="space-y-4">
-      {err && <ErrorBox msg={err} />}{info && <div className="text-sm text-emerald-300" dir="ltr">{info}</div>}
+      {err && <ErrorBox msg={err} />}{info && <div className="text-sm text-ok" dir="ltr">{info}</div>}
       <Card title={t(lang, 'newProject')}>
         <div className="grid gap-2 md:grid-cols-3">
           <input className="input" aria-label="name" placeholder={t(lang, 'name')} value={name} onChange={e => setName(e.target.value)} />
@@ -23,7 +23,7 @@ export default function Projects({ lang, onChange }: { lang: Lang; onChange: () 
           <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="video format">
             {[...fm.presets, { id: 'custom', aspect: lang === 'ar' ? 'مخصص' : 'Custom', width: cw, height: ch, use: '' }].map(p => {
               const k = 34 / Math.max(p.width, p.height)
-              return <button key={p.id} role="radio" aria-checked={fid === p.id} onClick={() => setFid(p.id)} className={`flex w-36 items-center gap-2 rounded-lg border p-2 text-start text-xs ${fid === p.id ? 'border-gold bg-gold/15' : 'border-white/15'}`}>
+              return <button key={p.id} role="radio" aria-checked={fid === p.id} onClick={() => setFid(p.id)} className={`flex w-36 items-center gap-2 rounded-lg border p-2 text-start text-xs ${fid === p.id ? 'border-gold bg-gold/15' : 'border-warm/20'}`}>
                 <span className="flex h-10 w-10 shrink-0 items-center justify-center"><span className="block border border-gold/70 bg-gold/10" style={{ width: p.width * k, height: p.height * k }} /></span>
                 <span><b className="text-sm">{p.aspect}</b><br /><span dir="ltr">{p.width}×{p.height}</span><br /><span className="opacity-60">{p.use}</span></span></button>
             })}

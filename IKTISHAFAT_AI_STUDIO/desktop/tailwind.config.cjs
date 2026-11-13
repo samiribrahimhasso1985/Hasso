@@ -1,7 +1,7 @@
 module.exports = {
   content: ['./index.html', './src/**/*.{ts,tsx}'],
   theme: { extend: {
-    colors: { navy: '#0A1428', ink: '#04070F', gold: '#E9B44C', warm: '#F3EAD7' },
+    colors: { navy: 'rgb(var(--c-navy) / <alpha-value>)', ink: 'rgb(var(--c-ink) / <alpha-value>)', gold: 'rgb(var(--c-gold) / <alpha-value>)', warm: 'rgb(var(--c-warm) / <alpha-value>)', ok: 'rgb(var(--c-ok) / <alpha-value>)', danger: 'rgb(var(--c-danger) / <alpha-value>)' },
     fontFamily: { sans: ['Cairo', 'sans-serif'], serif: ['Amiri', 'serif'] },
   } },
   plugins: [],

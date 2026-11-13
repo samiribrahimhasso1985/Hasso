@@ -12,7 +12,7 @@ export default function AIModels({ lang, ai }: { lang: Lang; ai: AI }) {
   const test = async (p: string) => { setErr(''); const r = await api.aiTest(p); setNote(r.ok ? `${p}: ${r.models.length} models` : ''); if (!r.ok) setErr(`${p}: ${r.error}`); await ai.refresh() }
   return (
     <div className="space-y-3">
-      {err && <ErrorBox msg={err} />}{note && <div className="text-sm text-emerald-300">{note}</div>}
+      {err && <ErrorBox msg={err} />}{note && <div className="text-sm text-ok">{note}</div>}
       {!ai.secure && <ErrorBox msg={L(lang, 'لا يوجد مخزن اعتماد آمن في هذا النظام. استخدم متغيرات البيئة ANTHROPIC_API_KEY / OPENAI_API_KEY / GEMINI_API_KEY.', 'No secure credential store here. Use the ANTHROPIC_API_KEY / OPENAI_API_KEY / GEMINI_API_KEY environment variables.')} />}
       <p className="text-sm opacity-70">{L(lang, 'المفاتيح تُحفظ في Windows Credential Manager ولا تظهر في الواجهة أو السجلات أو قاعدة البيانات. لا يُرسل أي فيديو إلى السحابة.', 'Keys are stored in Windows Credential Manager and never shown in the UI, logs or database. No video is ever sent to the cloud.')}</p>
       {ai.providers.map(p => (

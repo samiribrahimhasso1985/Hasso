@@ -6,7 +6,7 @@ import { Lang } from '../i18n'
 export const L = (lang: Lang, ar: string, en: string) => (lang === 'ar' ? ar : en)
 export const W = ({ title, children, right }: { title: string; children: ReactNode; right?: ReactNode }) => (
   <section className="card flex min-h-0 flex-col"><div className="mb-2 flex items-center justify-between"><h3 className="font-bold text-warm">{title}</h3>{right}</div><div className="min-h-0 flex-1">{children}</div></section>)
-const Dot = ({ on }: { on: boolean | null }) => <span className={`inline-block h-2 w-2 rounded-full ${on ? 'bg-emerald-400' : on === false ? 'bg-red-400' : 'bg-gray-500'}`} />
+const Dot = ({ on }: { on: boolean | null }) => <span className={`inline-block h-2 w-2 rounded-full ${on ? 'bg-ok' : on === false ? 'bg-danger' : 'bg-warm/40'}`} />
 export const fmt = (s: number) => { const h = Math.floor(s / 3600), m = Math.floor(s / 60) % 60, x = Math.floor(s % 60); return [h, m, x].map(n => String(n).padStart(2, '0')).join(':') }
 
 export function ProjectOverview({ lang, ov, onOpen, onExport, msg }: { lang: Lang; ov: Overview | null; onOpen: () => void; onExport: () => void; msg: string }) {
@@ -47,7 +47,7 @@ export function AIEngine({ lang, ai, onManage }: { lang: Lang; ai: AI; onManage:
         <select className="input !py-1" aria-label="model" value={ai.modelFor(ai.active)} onChange={e => ai.setModel(ai.active, e.target.value)}>
           {(cur?.models.length ? cur.models : ['']).map(m => <option key={m} value={m}>{m || L(lang, '— اضغط Test —', '— press Test —')}</option>)}</select></div>
       <label className="mt-2 flex items-center gap-2 text-xs opacity-80"><input type="checkbox" checked={ai.fallback} onChange={e => ai.setFallback(e.target.checked)} />{L(lang, 'التحويل لمزود بديل عند الفشل', 'Fall back to another provider on failure')}</label>
-      {err && <div className="mt-1 text-xs text-red-300">{err}</div>}
+      {err && <div className="mt-1 text-xs text-danger">{err}</div>}
     </W>)
 }
 
@@ -78,7 +78,7 @@ const QUICK = (lang: Lang) => [
 export function Assistant({ lang, ai, pid }: { lang: Lang; ai: AI; pid: number | null }) {
   const [log, setLog] = useState<{ role: string; content: string }[]>([]); const [text, setText] = useState(''); const [busy, setBusy] = useState(false); const [err, setErr] = useState('')
   const end = useRef<HTMLDivElement>(null)
-  useEffect(() => { end.current?.scrollIntoView?.() }, [log])
+  useEffect(() => { if (log.length) end.current?.scrollIntoView?.({ block: 'nearest' }) }, [log])
   const send = async (prompt: string) => {
     if (!prompt.trim() || busy) return
     const model = ai.modelFor(ai.active)
@@ -100,7 +100,7 @@ export function Assistant({ lang, ai, pid }: { lang: Lang; ai: AI; pid: number |
           {log.map((m, i) => <div key={i} className={`whitespace-pre-wrap rounded-lg p-2 ${m.role === 'user' ? 'bg-gold/15' : 'bg-ink'}`}>{m.content}</div>)}
           {busy && <div className="opacity-60">…</div>}<div ref={end} />
         </div>
-        {err && <div role="alert" className="mb-1 text-xs text-red-300">{err}</div>}
+        {err && <div role="alert" className="mb-1 text-xs text-danger">{err}</div>}
         <div className="mt-1 flex gap-2"><input className="input" aria-label="assistant-input" value={text} placeholder={L(lang, 'اكتب طلبك هنا…', 'Type your request…')} onChange={e => setText(e.target.value)} onKeyDown={e => e.key === 'Enter' && send(text)} />
           <button className="btn" disabled={busy || !text.trim()} onClick={() => send(text)}>➤</button></div>
         <div className="mt-1 text-[10px] opacity-50">{L(lang, 'يُرسل النص وأسماء الملفات فقط — لا يُرسل أي فيديو.', 'Only text and file names are sent — never video.')}</div>
@@ -110,9 +110,9 @@ export function Assistant({ lang, ai, pid }: { lang: Lang; ai: AI; pid: number |
 
 export function Ring({ pct, label, sub }: { pct: number | null; label: string; sub?: string }) {
   const v = pct ?? 0, r = 26, c = 2 * Math.PI * r
-  return (<div className="text-center"><svg width="64" height="64" viewBox="0 0 64 64" role="img" aria-label={`${label} ${pct ?? 'n/a'}`}><circle cx="32" cy="32" r={r} fill="none" stroke="#ffffff22" strokeWidth="6" />
-    <circle cx="32" cy="32" r={r} fill="none" stroke="#E9B44C" strokeWidth="6" strokeDasharray={`${(v / 100) * c} ${c}`} transform="rotate(-90 32 32)" strokeLinecap="round" />
-    <text x="32" y="36" textAnchor="middle" fontSize="13" fill="#F3EAD7">{pct === null ? 'n/a' : `${v}%`}</text></svg><div className="text-xs">{label}</div>{sub && <div className="text-[10px] opacity-50">{sub}</div>}</div>)
+  return (<div className="text-center"><svg width="64" height="64" viewBox="0 0 64 64" role="img" aria-label={`${label} ${pct ?? 'n/a'}`}><circle cx="32" cy="32" r={r} fill="none" stroke="currentColor" strokeOpacity="0.15" strokeWidth="6" />
+    <circle cx="32" cy="32" r={r} fill="none" stroke="rgb(var(--c-gold))" strokeWidth="6" strokeDasharray={`${(v / 100) * c} ${c}`} transform="rotate(-90 32 32)" strokeLinecap="round" />
+    <text x="32" y="36" textAnchor="middle" fontSize="13" fill="currentColor">{pct === null ? 'n/a' : `${v}%`}</text></svg><div className="text-xs">{label}</div>{sub && <div className="text-[10px] opacity-50">{sub}</div>}</div>)
 }
 
 export function Tasks({ lang, tasks, onCancel }: { lang: Lang; tasks: Task[]; onCancel: (id: number) => void }) {
@@ -142,7 +142,7 @@ export function ResourcesW({ lang, r }: { lang: Lang; r: Resources | null }) {
   return <W title={L(lang, 'موارد النظام', 'System Resources')}><div className="flex justify-around pt-2"><Ring pct={r?.cpu ?? null} label="CPU" /><Ring pct={r?.ram ?? null} label="RAM" /><Ring pct={r?.gpu ?? null} label="GPU" sub={r && r.gpu === null ? L(lang, 'غير متاح', 'unavailable') : undefined} /></div></W>
 }
 
-const TRACK_COLORS: Record<string, string> = { V: 'bg-sky-700/60', A: 'bg-emerald-700/60' }
+const TRACK_COLORS: Record<string, string> = { V: 'bg-gold/30', A: 'bg-ok/40' }
 export function Timeline({ lang, clips, duration, tracks, onDelete }: { lang: Lang; clips: Clip[]; duration: number; tracks: string[]; onDelete: (id: number) => void }) {
   const total = Math.max(duration, 1)
   return (
@@ -154,7 +154,7 @@ export function Timeline({ lang, clips, duration, tracks, onDelete }: { lang: La
             <div className="relative h-10 flex-1 rounded bg-ink">
               {clips.filter(c => c.track === tr).map(c => (
                 <div key={c.id} title={`${c.name} (${c.duration}s)`} style={{ left: `${(c.start / total) * 100}%`, width: `${(c.duration / total) * 100}%` }}
-                  className={`group absolute top-0 flex h-full items-center overflow-hidden rounded border border-white/20 px-1 text-[10px] ${TRACK_COLORS[tr[0]]}`}>
+                  className={`group absolute top-0 flex h-full items-center overflow-hidden rounded border border-warm/25 px-1 text-[10px] ${TRACK_COLORS[tr[0]]}`}>
                   {c.kind !== 'audio' && <img alt="" className="mr-1 h-full w-8 object-cover" src={api.thumbUrl(c.media_id)} />}<span className="truncate">{c.name}</span>
                   <button aria-label="remove clip" className="absolute right-0 top-0 hidden bg-black/70 px-1 group-hover:block" onClick={() => onDelete(c.id)}>×</button></div>))}
             </div></div>))}
@@ -168,7 +168,7 @@ export function MediaPool({ lang, items, selected, onSelect, onAdd, onAnalyze }:
       {!items.length && <p className="text-sm opacity-70">{L(lang, 'استورد ملفات من مكتبة الوسائط.', 'Import files from Media Library.')}</p>}
       <div className="grid max-h-44 grid-cols-2 gap-2 overflow-y-auto">
         {items.map(m => (
-          <div key={m.id} className={`rounded-lg border p-1 text-xs ${selected === m.id ? 'border-gold' : 'border-white/10'}`}>
+          <div key={m.id} className={`rounded-lg border p-1 text-xs ${selected === m.id ? 'border-gold' : 'border-warm/15'}`}>
             <button className="block w-full text-start" onClick={() => onSelect(m)}>
               <div className="flex h-12 items-center justify-center overflow-hidden rounded bg-ink">{m.kind === 'video' || m.kind === 'image' ? <img alt="" className="h-full w-full object-cover" src={api.thumbUrl(m.id)} /> : <span className="text-xl">{m.kind === 'audio' ? '🎵' : '📄'}</span>}</div>
               <div className="mt-1 truncate" dir="ltr">{m.path.split(/[\\/]/).pop()}</div></button>

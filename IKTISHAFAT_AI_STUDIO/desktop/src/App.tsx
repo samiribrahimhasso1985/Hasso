@@ -16,6 +16,9 @@ import { Badge } from './components/ui'
 const ICON: Record<string, string> = { dashboard: '🏠', projects: '📁', aiDirector: '🎬', camera: '📷', lighting: '💡', background: '🌄', production: '📡', storyboard: '🎞️', media: '🗂️', smartEditor: '✨', subtitles: '💬', audio: '🔊', color: '🎨', thumbnail: '🖼️', davinci: '🎥', aiModels: '🧠', diagnostics: '🩺', settings: '⚙️' }
 
 export default function App() {
+  const [theme, setThemeS] = useState(() => { try { return localStorage.getItem('theme') || 'dark' } catch { return 'dark' } })
+  const setTheme = (v: string) => { try { localStorage.setItem('theme', v) } catch { /* ignore */ } setThemeS(v) }
+  useEffect(() => { document.documentElement.dataset.theme = theme }, [theme])
   const [lang, setLangState] = useState<Lang>(() => (localStorage.getItem('lang') as Lang) || 'ar')
   const [projects, setProjects] = useState<Project[]>([]); const [pid, setPid] = useState<number | null>(null); const ai = useAI()
   const [page, setPage] = useState('dashboard'); const [ok, setOk] = useState(false); const [tick, setTick] = useState(0)
@@ -31,7 +34,7 @@ export default function App() {
       case 'projects': return <Projects lang={lang} onChange={() => setTick(x => x + 1)} />
       case 'media': return <Media lang={lang} pid={pid} />
       case 'diagnostics': return <Diagnostics lang={lang} />
-      case 'settings': return <Settings lang={lang} setLang={setLang} />
+      case 'settings': return <Settings lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} />
       case 'davinci': return <><Diagnostics lang={lang} only="davinci" /><div className="mt-3"><Placeholder lang={lang} id="davinci" phase={5} /></div></>
       case 'aiModels': return <AIModels lang={lang} ai={ai} />
       default: return <Placeholder lang={lang} id={page} phase={nav.phase} />
