@@ -12,6 +12,7 @@ def init_db(url: str | None = None):
     global _engine, _Session
     _engine = create_engine(url or db_url(), connect_args={"check_same_thread": False})
     Base.metadata.create_all(_engine)
+    _migrate(_engine)
     _Session = sessionmaker(_engine, expire_on_commit=False)
     return _engine
 
@@ -24,3 +25,12 @@ def get_session():
         yield s
     finally:
         s.close()
+
+
+def _migrate(engine):
+    """Tiny additive migration for databases created by earlier versions."""
+    from sqlalchemy import text
+    with engine.begin() as c:
+        cols = {r[1] for r in c.execute(text("PRAGMA table_info(media_files)"))}
+        if "analysis" not in cols:
+            c.execute(text("ALTER TABLE media_files ADD COLUMN analysis JSON"))

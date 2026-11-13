@@ -39,6 +39,7 @@ class MediaFile(Base):
     fps: Mapped[float | None] = mapped_column(Float, nullable=True)
     codec: Mapped[str | None] = mapped_column(String(50), nullable=True)
     meta_source: Mapped[str] = mapped_column(String(20), default="none")  # ffprobe | none
+    analysis: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     source: Mapped[str] = mapped_column(String(300), default="")
     license: Mapped[str] = mapped_column(String(300), default="")
     added_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
@@ -64,3 +65,14 @@ class Approval(Base):
     status: Mapped[str] = mapped_column(String(20), default="pending")
     note: Mapped[str] = mapped_column(Text, default="")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
+
+
+class TimelineClip(Base):
+    __tablename__ = "timeline_clips"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    project_id: Mapped[int] = mapped_column(ForeignKey("projects.id"))
+    media_id: Mapped[int] = mapped_column(ForeignKey("media_files.id"))
+    track: Mapped[str] = mapped_column(String(4))  # V1..V3, A1..A2
+    start: Mapped[float] = mapped_column(Float, default=0.0)      # position on timeline (s)
+    in_point: Mapped[float] = mapped_column(Float, default=0.0)   # source in (s)
+    out_point: Mapped[float] = mapped_column(Float, default=0.0)  # source out (s)

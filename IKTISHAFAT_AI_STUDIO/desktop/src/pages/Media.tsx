@@ -2,11 +2,11 @@ import { useEffect, useState } from 'react'
 import { api, Media as M, Project } from '../services/api'
 import { Lang, t } from '../i18n'
 import { Card, ErrorBox } from '../components/ui'
-export default function Media({ lang }: { lang: Lang }) {
+export default function Media({ lang, pid: gpid }: { lang: Lang; pid: number | null }) {
   const [projects, setProjects] = useState<Project[]>([]); const [pid, setPid] = useState<number | null>(null)
   const [items, setItems] = useState<M[]>([]); const [path, setPath] = useState(''); const [kind, setKind] = useState(''); const [q, setQ] = useState('')
   const [err, setErr] = useState(''); const [note, setNote] = useState('')
-  useEffect(() => { api.projects().then(p => { setProjects(p); if (p[0]) setPid(p[0].id) }).catch(e => setErr(e.message)) }, [])
+  useEffect(() => { api.projects().then(p => { setProjects(p); setPid(gpid ?? p[0]?.id ?? null) }).catch(e => setErr(e.message)) }, [])
   const load = () => pid && api.media(pid, kind, q).then(setItems).catch(e => setErr(e.message))
   useEffect(() => { load() }, [pid, kind, q])
   const pick = async () => { const f = await (window as any).studio?.pickFile?.(); if (f) setPath(f) }

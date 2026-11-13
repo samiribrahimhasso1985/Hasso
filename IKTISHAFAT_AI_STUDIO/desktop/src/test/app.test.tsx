@@ -14,7 +14,7 @@ describe('app shell', () => {
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('down')))
     render(<App />)
     expect(document.documentElement.dir).toBe('rtl')
-    fireEvent.click(screen.getByText(dict.ar.camera, { exact: false }))
+    fireEvent.click(screen.getAllByText(dict.ar.camera, { exact: false })[0])
     expect(await screen.findByText(dict.ar.notImpl, { exact: false })).toBeTruthy()
   })
 })

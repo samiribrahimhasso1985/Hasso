@@ -14,7 +14,33 @@ export interface Media { id: number; path: string; kind: string; size_bytes: num
 export interface Dashboard { project_count: number; current_project: Project | null; recent_projects: Project[]; media_counts: Record<string, number>; media_missing: number; tasks: { name: string; status: string; detail: string; at: string }[]; davinci: string; storage: { data_dir: string; free_gb: number; total_gb: number }; local_ai: boolean }
 export interface Diagnostics { platform: any; ffmpeg: any; ffprobe: any; davinci: any; local_ai: any; storage: any }
 
+export interface ProviderStatus { id: string; label: string; configured: boolean; reachable: boolean | null; models: string[] }
+export interface Overview { project: { id: number; name: string; stage: string; updated_at: string }; resolution: string | null; fps: number | null; timeline_duration: number; clip_count: number; media_count: number; thumb_media_id: number | null }
+export interface Clip { id: number; media_id: number; name: string; kind: string; track: string; start: number; duration: number }
+export interface Task { id: number; name: string; detail: string; status: string; progress: number; remaining_s: number | null }
+export interface Resources { cpu: number; ram: number; gpu: number | null }
+export interface DavinciStatus { status: string; note: string; connection: { connected: boolean; version: string | null; current_project: string | null; error: string | null } }
+
 export const api = {
+  mediaUrl: (id: number) => `${API}/api/media/${id}/file`,
+  thumbUrl: (id: number) => `${API}/api/media/${id}/thumbnail`,
+  overview: (id: number) => req<Overview>(`/api/projects/${id}/overview`),
+  timeline: (id: number) => req<{ clips: Clip[]; duration: number; tracks: string[] }>(`/api/projects/${id}/timeline`),
+  addClip: (id: number, media_id: number, track: string) => req<{ id: number }>(`/api/projects/${id}/timeline/clips`, { method: 'POST', body: JSON.stringify({ media_id, track }) }),
+  delClip: (id: number, cid: number) => req<unknown>(`/api/projects/${id}/timeline/clips/${cid}`, { method: 'DELETE' }),
+  exportEdl: (id: number) => req<{ path: string }>(`/api/projects/${id}/export/edl`, { method: 'POST' }),
+  analyze: (mid: number) => req<{ task_id: number }>(`/api/media/${mid}/analyze`, { method: 'POST' }),
+  tasks: () => req<Task[]>('/api/tasks'),
+  cancelTask: (id: number) => req<unknown>(`/api/tasks/${id}/cancel`, { method: 'POST' }),
+  resources: () => req<Resources>('/api/system/resources'),
+  aiProviders: () => req<{ providers: ProviderStatus[]; secure_store: boolean }>('/api/ai/providers'),
+  aiSetKey: (p: string, key: string) => req<unknown>(`/api/ai/providers/${p}/key`, { method: 'PUT', body: JSON.stringify({ key }) }),
+  aiDelKey: (p: string) => req<unknown>(`/api/ai/providers/${p}/key`, { method: 'DELETE' }),
+  aiTest: (p: string) => req<{ ok: boolean; models: string[]; error: string | null }>(`/api/ai/providers/${p}/test`, { method: 'POST' }),
+  assist: (b: { project_id: number | null; provider: string; model: string; prompt: string; history: { role: string; content: string }[]; allow_fallback: boolean; fallback_models: Record<string, string> }) =>
+    req<{ provider: string; model: string; text: string; fallback_used: boolean }>('/api/assistant', { method: 'POST', body: JSON.stringify(b) }),
+  davinci: () => req<DavinciStatus>('/api/davinci/status'),
+  davinciTimeline: (id: number) => req<{ verified: boolean; timeline: string; clips: number }>(`/api/projects/${id}/davinci/timeline`, { method: 'POST', body: JSON.stringify({ approved: true }) }),
   health: () => req<{ status: string }>('/api/health'),
   dashboard: () => req<Dashboard>('/api/dashboard'),
   diagnostics: () => req<Diagnostics>('/api/diagnostics'),
