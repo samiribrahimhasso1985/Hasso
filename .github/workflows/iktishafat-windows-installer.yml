@@ -5,6 +5,8 @@ on:
     branches: [claude/iktishafat-ai-studio-build-cbnvkp]
     paths: ['IKTISHAFAT_AI_STUDIO/**', '.github/workflows/iktishafat-windows-installer.yml']
     tags: ['iktishafat-v*']
+permissions:
+  contents: write
 jobs:
   build:
     runs-on: windows-latest
@@ -42,3 +44,16 @@ jobs:
         with:
           name: IKTISHAFAT-AI-STUDIO-Windows-Installer
           path: IKTISHAFAT_AI_STUDIO/desktop/release/*.exe
+      - name: Publish download link (GitHub Release)
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $exe = "IKTISHAFAT_AI_STUDIO/desktop/release/IKTISHAFAT-AI-STUDIO-Setup.exe"
+          if (-not (Test-Path $exe)) { throw "installer not found: $exe" }
+          try { gh release delete iktishafat-latest --yes --cleanup-tag } catch { }
+          $global:LASTEXITCODE = 0
+          gh release create iktishafat-latest $exe --prerelease --target $env:GITHUB_SHA `
+            --title "IKTISHAFAT AI STUDIO - Windows installer (latest build)" `
+            --notes "Unsigned Windows installer built by CI from commit $env:GITHUB_SHA. SmartScreen: More info > Run anyway. FFmpeg is needed for media analysis (winget install Gyan.FFmpeg)."
+          if ($LASTEXITCODE -ne 0) { throw "release creation failed" }

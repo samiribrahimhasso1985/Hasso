@@ -56,7 +56,8 @@
     },
     "nsis": {
       "oneClick": false,
-      "allowToChangeInstallationDirectory": true
+      "allowToChangeInstallationDirectory": true,
+      "artifactName": "IKTISHAFAT-AI-STUDIO-Setup.${ext}"
     }
   },
   "author": "IKTISHAFAT"
