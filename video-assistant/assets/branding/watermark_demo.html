@@ -1,0 +1,65 @@
+<!doctype html>
+<!--
+  Demo (9:16): persistent logo with a subtle animation + dynamic word-highlight subtitles.
+  window.render(t) draws time t. Serve over http (CSS masks are blocked on file://).
+  Logo behaviour: fades in at 0.6 s; a soft golden sheen crosses the calligraphy
+  (every SHEEN_EVERY seconds in real videos; once at 3 s in this demo).
+-->
+<html lang="ar" dir="rtl"><head><meta charset="utf-8"><style>
+@font-face{font-family:Sub;src:url(../outro/fonts/tajawal-arabic-800-normal.woff2)}
+html,body{margin:0;background:#000}
+#f{position:relative;width:1080px;height:1920px;overflow:hidden;
+   background:radial-gradient(ellipse at 50% 38%,#6a5844 0%,#2b241e 45%,#14110e 100%)}
+.ph{position:absolute;left:50%;transform:translateX(-50%);background:#3b3129}
+#head{top:520px;width:300px;height:360px;border-radius:50%}
+#body{top:860px;width:720px;height:1200px;border-radius:300px 300px 0 0}
+/* persistent logo */
+#wm{position:absolute;top:230px;right:64px;width:250px;height:calc(250px*210/736);
+    filter:drop-shadow(0 2px 6px rgba(0,0,0,.55))}
+#wm img{position:absolute;inset:0;width:100%;height:100%}
+#sheen{position:absolute;inset:0;
+  -webkit-mask:url(../brand/logo_calligraphy_white.png) center/100% 100% no-repeat;
+          mask:url(../brand/logo_calligraphy_white.png) center/100% 100% no-repeat}
+/* subtitles */
+#sub{position:absolute;top:1405px;left:170px;right:170px;text-align:center;
+     font-family:Sub;font-size:64px;line-height:1.5;color:#fff;text-shadow:var(--o)}
+#sub span{display:inline-block;margin:0 .14em;transition:none}
+#sub span.on{color:#FFD400;transform:scale(1.08)}
+</style></head><body><div id="f">
+<div class="ph" id="body"></div><div class="ph" id="head"></div>
+<div id="wm"><img src="../brand/logo_calligraphy_white.png" alt=""><div id="sheen"></div></div>
+<div id="sub"></div>
+</div>
+<script>
+// refined outline: 5px round black stroke + soft shadow (no spikes on Arabic joins)
+(()=>{const r=5,sh=[];for(let a=0;a<360;a+=15)sh.push(`${(r*Math.cos(a*Math.PI/180)).toFixed(1)}px ${(r*Math.sin(a*Math.PI/180)).toFixed(1)}px 0 #000`);
+sh.push('0 6px 14px rgba(0,0,0,.55)');document.documentElement.style.setProperty('--o',sh.join(','))})();
+
+const DUR = 8.0;
+// demo word timings (real videos use the reviewed transcript.json)
+const PHRASES = [
+  [["شنو",0.8,1.1],["صار",1.1,1.45],["بالضبط",1.45,2.0]],
+  [["بهاي",2.25,2.6],["المعركة",2.6,3.3]],
+  [["خلّي",3.6,3.9],["نبدي",3.9,4.3],["من",4.3,4.5],["البداية",4.5,5.2]],
+  [["قبل",5.5,5.8],["آلاف",5.8,6.2],["السنين",6.2,6.9]],
+];
+const sub = document.getElementById('sub'), wm = document.getElementById('wm'), sheen = document.getElementById('sheen');
+const clamp=(x,a=0,b=1)=>Math.min(b,Math.max(a,x)), ease=x=>{x=clamp(x);return x*x*(3-2*x)};
+let shown = -1;
+window.render = function(t){
+  // logo: fade in, stay; sheen once
+  wm.style.opacity = 0.75 * ease((t-0.6)/0.8);
+  const s = clamp((t-3.0)/1.1), sx = -30 + 160*ease(s);
+  sheen.style.background = `linear-gradient(105deg,transparent ${sx-14}%,rgba(255,214,140,.95) ${sx}%,transparent ${sx+14}%)`;
+  sheen.style.opacity = (s>0 && s<1) ? 1 : 0;
+  // subtitles: phrase visible from first word start to last word end (+0.15 s)
+  const pi = PHRASES.findIndex(p => t >= p[0][1]-0.1 && t < p[p.length-1][2]+0.15);
+  if (pi !== shown){ sub.innerHTML = pi<0 ? '' : PHRASES[pi].map(w=>`<span>${w[0]}</span>`).join(' '); shown = pi; }
+  if (pi>=0){
+    const p = PHRASES[pi], k = ease((t-(p[0][1]-0.1))/0.18);
+    sub.style.opacity = k; sub.style.transform = `translateY(${(1-k)*18}px)`;
+    [...sub.children].forEach((e,i)=>e.classList.toggle('on', t>=p[i][1] && t<p[i][2]));
+  }
+};
+window.DUR = DUR; window.render(0);
+</script></body></html>
