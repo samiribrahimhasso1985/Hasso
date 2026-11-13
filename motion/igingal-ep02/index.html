@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>IGINGAL — الحلقة الثانية (Montage)</title>
+<style>
+  @font-face { font-family: Plex; src: url(../igingal-ep01/fonts/PlexArabic-Regular.ttf); font-weight: 400; }
+  @font-face { font-family: Plex; src: url(../igingal-ep01/fonts/PlexArabic-Bold.ttf); font-weight: 700; }
+  @font-face { font-family: Cinzel; src: url(../igingal-ep01/fonts/Cinzel-Bold.ttf); font-weight: 700; }
+  @font-face { font-family: Cunei; src: url(../igingal-ep01/fonts/NotoSansCuneiform-Regular.ttf); }
+
+  html, body { margin: 0; background: #000; }
+  #stage { position: relative; width: 1920px; height: 1080px; overflow: hidden; background: #070504; }
+  .shot { position: absolute; inset: 0; overflow: hidden; opacity: 0; }
+  .shot img { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
+  .shot .bg { width: 1920px; height: 1080px; }
+  .shot .fg { -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 5%, #000 95%, transparent 100%); }
+  .sweep { position: absolute; inset: 0; mix-blend-mode: screen; opacity: 0; pointer-events: none;
+    background: linear-gradient(100deg, transparent 40%, rgba(255,214,140,.35) 50%, transparent 60%); background-size: 300% 100%; }
+
+  .place { position: absolute; bottom: 62px; right: 80px; text-align: right; opacity: 0; padding: 30px 40px 34px;
+           background: radial-gradient(ellipse at center, rgba(0,0,0,.62) 0%, rgba(0,0,0,.35) 55%, transparent 75%); }
+  .place .n { font-family: Plex; font-weight: 700; font-size: 58px; color: #ecc36f;
+              text-shadow: 0 0 22px rgba(236,170,70,.45), 0 4px 16px rgba(0,0,0,.9); }
+  .place .line { height: 2px; background: linear-gradient(270deg, #e3b25a, transparent); margin: 6px 0 10px; }
+  .place .s { font-family: Plex; font-size: 30px; color: #f3e6c8; text-shadow: 0 3px 12px rgba(0,0,0,.95); }
+  .place.left { right: auto; left: 80px; }
+  .label { position: absolute; bottom: 36px; left: 40px; font-family: Plex; font-size: 22px; color: rgba(243,230,200,.75);
+           padding: 4px 14px 6px; border: 1px solid rgba(236,195,111,.45); background: rgba(8,6,4,.45); }
+
+  .card { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; }
+  .card .logo-c { font-family: Cunei; font-size: 150px; color: #f0c26a; text-shadow: 0 0 30px rgba(240,170,70,.7); line-height: 1.1; }
+  .card .logo-t { font-family: Cinzel; font-weight: 700; font-size: 130px; letter-spacing: 14px; color: #f3cf7d;
+                  text-shadow: 0 0 30px rgba(240,170,70,.6); }
+  .card .ep { font-family: Plex; font-weight: 700; font-size: 54px; color: #f3e6c8; margin-top: 18px; }
+  .card .tag { font-family: Plex; font-size: 34px; color: #e3b25a; margin-top: 8px; }
+
+  #dust { position: absolute; inset: 0; pointer-events: none; }
+  #fx { position: absolute; inset: 0; pointer-events: none; opacity: 0; }
+  #grain { position: absolute; inset: 0; pointer-events: none; mix-blend-mode: overlay; opacity: .28; }
+  #bars { position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(#000 0, #000 0) top / 100% 0 no-repeat, linear-gradient(#000 0, #000 0) bottom / 100% 0 no-repeat; }
+  #vignette { position: absolute; inset: 0; pointer-events: none;
+    background: radial-gradient(ellipse at center, rgba(0,0,0,0) 55%, rgba(0,0,0,.55) 100%); }
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<script>
+const W = 1920, H = 1080, NS = 'http://www.w3.org/2000/svg';
+let seed = 5;
+const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const prog = (t, a, b) => clamp((t - a) / (b - a));
+const ease = x => x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+const eOut = x => 1 - Math.pow(1 - x, 3);
+const lerp = (a, b, p) => a + (b - a) * p;
+const stage = document.getElementById('stage');
+
+const AI = 'تصوير فني توضيحي';
+// layout: cover = fills the frame (focus moves f0→f1, scale s0→s1, x pan px0→px1)
+//         side-r / side-l / center = full image at frame height over its blurred copy
+// tr = transition INTO the shot: dissolve | glow | black | whip
+const SHOTS = [
+  { src: '03', layout: 'cover', dur: 9, f: [.12, .42], s: [1.0, 1.08], tr: 'black', label: AI, title: true },
+  { src: '14', layout: 'cover', dur: 6, f: [.35, .55], s: [1.1, 1.02], tr: 'dissolve', label: AI, place: ['مدينة الزقورة', 'بلاد الرافدين'] },
+  { src: '02', layout: 'side-r', dur: 6, s: [1.0, 1.08], tr: 'whip', label: AI, place: ['بناء الزقورة', 'آلاف الأيدي وطوب الطين'], side: 'left' },
+  { src: '13', layout: 'cover', dur: 6, f: [.62, .45], s: [1.05, 1.12], tr: 'dissolve', label: AI, place: ['ميناء على النهر', 'تجارة وحِرف'] },
+  { src: '09', layout: 'cover', dur: 6, f: [.5, .5], s: [1.12, 1.12], px: [-120, 120], tr: 'glow', label: AI, place: ['بوابة عشتار', 'بابل'] },
+  { src: '15', layout: 'center', dur: 6, s: [1.0, 1.07], tr: 'dissolve', label: AI },
+  { src: '18', layout: 'cover', dur: 6, f: [.25, .55], s: [1.0, 1.1], tr: 'dissolve', label: AI, sweep: true },
+  { src: '16', layout: 'cover', dur: 6, f: [.85, .58], s: [1.1, 1.04], tr: 'whip', label: AI, place: ['بابل', 'مدينة على ضفاف الفرات'] },
+  { src: '01', layout: 'side-l', dur: 6, s: [1.0, 1.08], tr: 'dissolve', label: AI, place: ['الحدائق المعلّقة', 'بين الحقيقة والأسطورة'], side: 'right', flicker: true },
+  { src: '06', layout: 'side-r', dur: 6, s: [1.06, 1.0], tr: 'glow', label: AI, place: ['ملكٌ يطلّ على مدينته', ''], side: 'left' },
+  { src: '11', layout: 'cover', dur: 6, f: [.2, .32], s: [1.0, 1.1], tr: 'dissolve', label: AI },
+  { src: '17', layout: 'side-l', dur: 6, s: [1.0, 1.08], tr: 'dissolve', label: AI, place: ['العرش', 'السلطة والقانون'], side: 'right' },
+  { src: '07', layout: 'center', dur: 7, s: [1.0, 1.1], tr: 'black', label: 'صورة حقيقية', place: ['مسلّة حمورابي', 'متحف اللوفر — باريس'], side: 'right' },
+  { src: '05', layout: 'cover', dur: 6, f: [.15, .45], s: [1.0, 1.06], tr: 'dissolve', label: AI, place: ['نقش بارز', 'الزقورة والألواح'], sweep: true },
+  { src: '04', layout: 'side-r', dur: 6, s: [1.0, 1.08], tr: 'dissolve', label: AI, place: ['الكتبة', 'حُرّاس الذاكرة'], side: 'left' },
+  { src: '10', layout: 'cover', dur: 6, f: [.2, .7], s: [1.15, 1.25], tr: 'glow', label: AI, place: ['الكتابة المسمارية', 'من الطين إلى الذاكرة'], sweep: true },
+  { src: '12', layout: 'center', dur: 7, s: [1.0, 1.08], tr: 'black', label: 'صورة أرشيفية', place: ['أطلال بابل', 'أوائل القرن العشرين'], side: 'right' },
+  { src: '08', layout: 'center', dur: 7, s: [1.0, 1.1], tr: 'dissolve', label: 'صورة أرشيفية', place: ['ملوية سامراء', 'القرن التاسع الميلادي — تراث العراق الممتد'], side: 'right' },
+];
+const END = 6;
+
+// ---------------- build ----------------
+let t0 = 0;
+const loadImg = (src, cls, parent) => { const i = new Image(); i.className = cls; i.src = src; parent.appendChild(i); return i; };
+SHOTS.forEach((sh, k) => {
+  sh.start = t0; sh.end = t0 + sh.dur; t0 = sh.end;
+  const root = document.createElement('div'); root.className = 'shot'; stage.appendChild(root); sh.root = root;
+  if (sh.layout === 'cover') sh.img = loadImg(`graded/${sh.src}.jpg`, 'cv', root);
+  else { loadImg(`bg/${sh.src}.jpg`, 'bg', root); sh.img = loadImg(`graded/${sh.src}.jpg`, 'fg', root); }
+  if (sh.sweep) sh.sw = Object.assign(document.createElement('div'), { className: 'sweep' }), root.appendChild(sh.sw);
+  if (sh.place) {
+    const p = document.createElement('div'); p.className = 'place' + (sh.side === 'left' ? ' left' : '');
+    p.innerHTML = `<div class="n">${sh.place[0]}</div><div class="line"></div><div class="s">${sh.place[1]}</div>`;
+    root.appendChild(p); sh.pl = p;
+  }
+  if (sh.label) { const l = document.createElement('div'); l.className = 'label'; l.textContent = sh.label; root.appendChild(l); }
+});
+const TOTAL = t0 + END;
+
+// title card over shot 1, end logo card
+const title = document.createElement('div'); title.className = 'card'; title.style.background = 'radial-gradient(ellipse 45% 50% at center, rgba(0,0,0,.6), transparent)';
+title.innerHTML = '<div class="logo-c">𒅆𒅅</div><div class="logo-t">IGINGAL</div><div class="ep">الحلقة الثانية</div>';
+stage.appendChild(title);
+const end = document.createElement('div'); end.className = 'card'; end.style.background = '#070504';
+end.innerHTML = '<div class="logo-c">𒅆𒅅</div><div class="logo-t">IGINGAL</div><div class="tag">العين الكبيرة… عادةُ سؤالٍ لا تتعب</div>';
+stage.appendChild(end);
+
+// overlays
+const dust = document.createElementNS(NS, 'svg'); dust.id = 'dust'; dust.setAttribute('viewBox', `0 0 ${W} ${H}`); stage.appendChild(dust);
+{ const f = document.createElementNS(NS, 'filter'); f.id = 'dg'; const b = document.createElementNS(NS, 'feGaussianBlur'); b.setAttribute('stdDeviation', 1.5); f.appendChild(b); dust.appendChild(f); }
+const motes = [];
+for (let i = 0; i < 110; i++) {
+  const c = document.createElementNS(NS, 'circle');
+  c.setAttribute('r', .8 + rnd() * 3); c.setAttribute('fill', rnd() < .8 ? '#f6c46a' : '#fff0c8'); c.setAttribute('filter', 'url(#dg)');
+  dust.appendChild(c); motes.push({ c, x: rnd() * W, y: rnd() * H, vx: (rnd() - .5) * 14, vy: 5 + rnd() * 18, ph: rnd() * 6, f: .5 + rnd() * 2 });
+}
+const fx = Object.assign(document.createElement('div'), { id: 'fx' }); stage.appendChild(fx);
+const grain = Object.assign(document.createElement('div'), { id: 'grain' }); stage.appendChild(grain);
+{
+  const c = document.createElement('canvas'); c.width = c.height = 512;
+  const g = c.getContext('2d'), img = g.createImageData(512, 512);
+  for (let i = 0; i < img.data.length; i += 4) { const v = 100 + rnd() * 80; img.data[i] = img.data[i + 1] = img.data[i + 2] = v; img.data[i + 3] = 255; }
+  g.putImageData(img, 0, 0); grain.style.backgroundImage = `url(${c.toDataURL()})`;
+}
+stage.appendChild(Object.assign(document.createElement('div'), { id: 'vignette' }));
+
+// ---------------- camera ----------------
+function place(sh, p) {
+  const img = sh.img, ar = img.naturalHeight / img.naturalWidth;
+  const s = lerp(sh.s[0], sh.s[1], p);
+  if (sh.layout === 'cover') {
+    const dw = W * s, dh = dw * ar;
+    const f = lerp(sh.f[0], sh.f[1], p);
+    const top = -clamp(f * dh - H / 2, 0, dh - H);
+    const px = sh.px ? lerp(sh.px[0], sh.px[1], p) : 0;
+    const left = (W - dw) / 2 + px;
+    img.style.width = dw + 'px';
+    img.style.transform = `translate(${left}px, ${top}px)`;
+  } else {
+    const dh = H * s, dw = dh / ar;
+    const cx = sh.layout === 'center' ? W / 2 : sh.layout === 'side-r' ? W - 120 - (H / ar) / 2 : 120 + (H / ar) / 2;
+    img.style.width = dw + 'px';
+    img.style.transform = `translate(${cx - dw / 2}px, ${(H - dh) / 2}px)`;
+  }
+}
+
+window.renderAt = function (t) {
+  let fxOp = 0, fxBg = '#000';
+  SHOTS.forEach((sh, k) => {
+    const lead = sh.tr === 'dissolve' ? 1 : sh.tr === 'whip' ? .35 : 0;
+    const tailEnd = sh.end + (SHOTS[k + 1] && SHOTS[k + 1].tr === 'dissolve' ? 0 : 0);
+    let op = 0, tx = 0, blur = 0;
+    if (t >= sh.start - lead && t < tailEnd) {
+      op = 1;
+      if (sh.tr === 'dissolve' && k > 0) op = prog(t, sh.start - lead, sh.start);
+      if (sh.tr === 'whip') { const q = ease(prog(t, sh.start - lead, sh.start + .35)); tx = (1 - q) * -W; blur = Math.sin(q * Math.PI) * 24; }
+    }
+    // previous shot whips out to the right while the new one whips in
+    const nx = SHOTS[k + 1];
+    if (nx && nx.tr === 'whip' && t >= nx.start - .35 && t < nx.start + .35) {
+      const q = ease(prog(t, nx.start - .35, nx.start + .35)); tx = q * W; blur = Math.sin(q * Math.PI) * 24; op = 1;
+    }
+    sh.root.style.display = op > 0 ? 'block' : 'none';
+    sh.root.style.opacity = op;
+    sh.root.style.transform = tx ? `translateX(${tx}px)` : '';
+    sh.root.style.filter = blur > .5 ? `blur(${blur}px)` : '';
+    if (op <= 0) return;
+    const p = clamp((t - (sh.start - lead)) / (sh.dur + lead));
+    place(sh, ease(p) * .3 + p * .7);
+    const lt = t - sh.start;
+    if (sh.pl) {
+      const a = eOut(prog(lt, .8, 1.6)), b = prog(lt, sh.dur - 1.2, sh.dur - .5);
+      sh.pl.style.opacity = a * (1 - b);
+      sh.pl.style.transform = `translateY(${(1 - a) * 24}px)`;
+      sh.pl.querySelector('.line').style.width = (eOut(prog(lt, 1, 2.2)) * 100) + '%';
+    }
+    if (sh.sw) { sh.sw.style.opacity = Math.sin(prog(lt, 1, sh.dur - 1) * Math.PI); sh.sw.style.backgroundPosition = `${100 - prog(lt, 1, sh.dur - 1) * 100}% 0`; }
+    if (sh.flicker) sh.root.style.filter = `brightness(${1 + .04 * Math.sin(lt * 9) + .03 * Math.sin(lt * 23 + 1)})`;
+    // boundary effects
+    const d = t - sh.start;
+    if (sh.tr === 'black' && k > 0 && Math.abs(d) < .7) fxOp = Math.max(fxOp, 1 - Math.abs(d) / .7);
+    if (sh.tr === 'glow' && Math.abs(d) < .5) { fxOp = Math.max(fxOp, .8 * (1 - Math.abs(d) / .5)); fxBg = 'radial-gradient(circle, #fff3d0 0%, #f0b257 45%, #6a3a10 100%)'; }
+  });
+  if (t < 1) fxOp = Math.max(fxOp, 1 - t);
+  fx.style.opacity = fxOp; fx.style.background = fxBg;
+
+  // title over shot 1
+  const ta = prog(t, 2.2, 3.6) * (1 - prog(t, 7, 8.2));
+  title.style.opacity = ta; title.style.transform = `scale(${.94 + .06 * eOut(prog(t, 2.2, 4))})`;
+  // end card
+  const es = TOTAL - END;
+  end.style.opacity = prog(t, es - .2, es + 1) * (1 - prog(t, TOTAL - 1.2, TOTAL));
+  end.style.display = t > es - .3 ? 'flex' : 'none';
+
+  dust.style.opacity = .75;
+  motes.forEach(m => {
+    const x = ((m.x + t * m.vx + Math.sin(t * .6 + m.ph) * 25) % W + W) % W, y = ((m.y - t * m.vy) % H + H) % H;
+    m.c.setAttribute('cx', x.toFixed(1)); m.c.setAttribute('cy', y.toFixed(1));
+    m.c.setAttribute('opacity', (.3 + .6 * Math.abs(Math.sin(t * m.f + m.ph))).toFixed(2));
+  });
+  grain.style.backgroundPosition = `${(t * 997) % 512 | 0}px ${(t * 613) % 512 | 0}px`;
+};
+window.DURATION = TOTAL;
+// transition times + kind, used by sfx.sh
+window.CUES = SHOTS.map((s, k) => ({ t: +s.start.toFixed(2), kind: k === 0 ? 'open' : s.tr })).concat([{ t: TOTAL - END, kind: 'end' }]);
+Promise.all([...document.images].map(i => i.complete ? 0 : new Promise(r => { i.onload = i.onerror = r; })))
+  .then(() => { const bad = [...document.images].filter(i => !i.naturalWidth).map(i => i.src); if (bad.length) console.log('missing', bad); })
+  .then(() => Promise.all(['bold 40px Plex', '40px Plex', 'bold 40px Cinzel', '40px Cunei'].map(f => document.fonts.load(f, 'اA𒅆'))))
+  .then(() => { window.READY = true; renderAt(0); });
+</script>
+</body>
+</html>
