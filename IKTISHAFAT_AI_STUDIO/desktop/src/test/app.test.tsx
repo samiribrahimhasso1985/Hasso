@@ -18,3 +18,30 @@ describe('app shell', () => {
     expect(await screen.findByText(dict.ar.notImpl, { exact: false })).toBeTruthy()
   })
 })
+
+import { readdirSync, readFileSync, statSync } from 'node:fs'
+import { join } from 'node:path'
+import { DE } from '../i18n/de'
+
+function sources(dir: string): string[] {
+  return readdirSync(dir).flatMap(f => { const p = join(dir, f); return statSync(p).isDirectory() ? sources(p) : p.endsWith('.tsx') && !p.includes('/test/') ? [p] : [] })
+}
+describe('German coverage', () => {
+  it('every L(lang, ar, en) text has a German translation', () => {
+    const re = /L\(lang,\s*(?:'(?:[^'\\]|\\.)*'|`[^`]*`),\s*(?:'((?:[^'\\]|\\.)*)'|`([^`]*)`)(,\s*[`'])?/g
+    const missing: string[] = []
+    for (const f of sources(join(__dirname, '..'))) {
+      const s = readFileSync(f, 'utf8'); let m
+      while ((m = re.exec(s))) { const en = (m[1] ?? m[2]).replace(/\\'/g, "'"); if (!m[3] && !DE[en]) missing.push(en) }
+    }
+    expect(missing).toEqual([])
+  })
+})
+
+describe('dictionary coverage', () => {
+  it("every t(lang, 'key') used exists in ar, en and de", () => {
+    const used = new Set<string>()
+    for (const f of sources(join(__dirname, '..'))) for (const m of readFileSync(f, 'utf8').matchAll(/\bt\(lang,\s*'(\w+)'\)/g)) used.add(m[1])
+    for (const l of ['ar', 'en', 'de'] as const) expect([...used].filter(k => !dict[l][k]), l).toEqual([])
+  })
+})

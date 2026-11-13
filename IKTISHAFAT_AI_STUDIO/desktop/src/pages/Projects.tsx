@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { api, Formats, Project } from '../services/api'
 import { Lang, t } from '../i18n'
+import { L } from '../components/widgets'
 import { Card, ErrorBox } from '../components/ui'
 export default function Projects({ lang, onChange }: { lang: Lang; onChange: () => void }) {
   const [list, setList] = useState<Project[]>([]); const [name, setName] = useState(''); const [desc, setDesc] = useState('')
@@ -19,9 +20,9 @@ export default function Projects({ lang, onChange }: { lang: Lang; onChange: () 
           <button className="btn" disabled={!name.trim()} onClick={() => run(async () => { await api.createProject({ name: name.trim(), description: desc, language: lang, format_id: fid, fps, ...(fid === 'custom' ? { width: cw, height: ch } : {}) }); setName(''); setDesc('') })}>{t(lang, 'create')}</button>
         </div>
         {fm && <div className="mt-3">
-          <div className="mb-1 text-sm opacity-70">{lang === 'ar' ? 'صيغة الفيديو' : 'Video format'}</div>
+          <div className="mb-1 text-sm opacity-70">{L(lang, 'صيغة الفيديو', 'Video format')}</div>
           <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="video format">
-            {[...fm.presets, { id: 'custom', aspect: lang === 'ar' ? 'مخصص' : 'Custom', width: cw, height: ch, use: '' }].map(p => {
+            {[...fm.presets, { id: 'custom', aspect: L(lang, 'مخصص', 'Custom'), width: cw, height: ch, use: '' }].map(p => {
               const k = 34 / Math.max(p.width, p.height)
               return <button key={p.id} role="radio" aria-checked={fid === p.id} onClick={() => setFid(p.id)} className={`flex w-36 items-center gap-2 rounded-lg border p-2 text-start text-xs ${fid === p.id ? 'border-gold bg-gold/15' : 'border-warm/20'}`}>
                 <span className="flex h-10 w-10 shrink-0 items-center justify-center"><span className="block border border-gold/70 bg-gold/10" style={{ width: p.width * k, height: p.height * k }} /></span>

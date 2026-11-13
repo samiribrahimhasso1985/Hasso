@@ -19,7 +19,7 @@ export default function AIModels({ lang, ai }: { lang: Lang; ai: AI }) {
         <Card key={p.id} title={p.label}>
           {p.id === 'ollama' ? <div className="text-sm">{p.reachable ? `${L(lang, 'متصل', 'Online')} — ${p.models.join(', ') || L(lang, 'لا نماذج مثبتة', 'no models installed')}` : L(lang, 'Ollama غير متصل. ثبّته من ollama.com وشغّله.', 'Ollama is offline. Install it from ollama.com and start it.')}</div> : (
             <div className="flex flex-wrap items-center gap-2">
-              <input className="input max-w-sm" type="password" autoComplete="off" aria-label={`${p.id}-key`} placeholder={p.configured ? '••••••••  (saved)' : 'API key'} value={keys[p.id] ?? ''} onChange={e => setKeys({ ...keys, [p.id]: e.target.value })} />
+              <input className="input max-w-sm" type="password" autoComplete="off" aria-label={`${p.id}-key`} placeholder={p.configured ? `••••••••  ${L(lang, '(محفوظ)', '(saved)')}` : L(lang, 'مفتاح API', 'API key')} value={keys[p.id] ?? ''} onChange={e => setKeys({ ...keys, [p.id]: e.target.value })} />
               <button className="btn" disabled={(keys[p.id] ?? '').length < 8} onClick={() => save(p.id)}>{L(lang, 'حفظ', 'Save')}</button>
               <button className="btn-ghost" disabled={!p.configured} onClick={() => test(p.id)}>Test</button>
               <button className="btn-ghost" disabled={!p.configured} onClick={() => del(p.id)}>{L(lang, 'حذف', 'Remove')}</button>

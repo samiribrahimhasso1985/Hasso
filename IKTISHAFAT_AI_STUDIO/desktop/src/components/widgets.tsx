@@ -2,8 +2,10 @@ import { ReactNode, useEffect, useRef, useState } from 'react'
 import { api, Clip, DavinciStatus, Media, Overview, Resources, Task } from '../services/api'
 import { AI } from '../services/useAI'
 import { Lang } from '../i18n'
+import { DE } from '../i18n/de'
 
-export const L = (lang: Lang, ar: string, en: string) => (lang === 'ar' ? ar : en)
+/** 3-language text: Arabic, English; German from the DE map (keyed by the English text) unless `de` is given. */
+export const L = (lang: Lang, ar: string, en: string, de?: string) => (lang === 'ar' ? ar : lang === 'de' ? de ?? DE[en] ?? en : en)
 export const W = ({ title, children, right }: { title: string; children: ReactNode; right?: ReactNode }) => (
   <section className="card flex min-h-0 flex-col"><div className="mb-2 flex items-center justify-between"><h3 className="font-bold text-warm">{title}</h3>{right}</div><div className="min-h-0 flex-1">{children}</div></section>)
 const Dot = ({ on }: { on: boolean | null }) => <span className={`inline-block h-2 w-2 rounded-full ${on ? 'bg-ok' : on === false ? 'bg-danger' : 'bg-warm/40'}`} />
@@ -60,8 +62,8 @@ export function Preview({ lang, media, target }: { lang: Lang; media: Media | nu
         : media.kind === 'video' ? <div>
             <div className="mx-auto overflow-hidden rounded-lg bg-black" style={box ? { aspectRatio: `${target!.width} / ${target!.height}`, maxHeight: '16rem' } : { maxHeight: '16rem' }}>
               <video key={media.id} src={api.mediaUrl(media.id)} controls className={`h-full w-full ${box ? 'object-cover' : 'object-contain'}`} /></div>
-            {target && <label className="mt-1 flex items-center gap-2 text-xs opacity-80"><input type="checkbox" checked={framed} onChange={e => setFramed(e.target.checked)} />{L(lang, `عرض بإطار المشروع (${target.aspect})`, `Show in project frame (${target.aspect})`)}
-              {media.fit?.status === 'reframe' && <span className="text-gold">{L(lang, `يُقصّ ~${media.fit.crop_percent}%`, `~${media.fit.crop_percent}% cropped`)}</span>}</label>}</div>
+            {target && <label className="mt-1 flex items-center gap-2 text-xs opacity-80"><input type="checkbox" checked={framed} onChange={e => setFramed(e.target.checked)} />{L(lang, `عرض بإطار المشروع (${target.aspect})`, `Show in project frame (${target.aspect})`, `Im Projektrahmen anzeigen (${target.aspect})`)}
+              {media.fit?.status === 'reframe' && <span className="text-gold">{L(lang, `يُقصّ ~${media.fit.crop_percent}%`, `~${media.fit.crop_percent}% cropped`, `~${media.fit.crop_percent} % beschnitten`)}</span>}</label>}</div>
         : media.kind === 'audio' ? <audio key={media.id} src={api.mediaUrl(media.id)} controls className="w-full" />
         : media.kind === 'image' ? <img alt="" src={api.mediaUrl(media.id)} className="max-h-72 rounded-lg" /> : <p>{media.kind}</p>}
     </W>)
@@ -131,7 +133,9 @@ export function Davinci({ lang, d, canSend, onSend, onRefresh, msg }: { lang: La
   return (
     <W title={L(lang, 'تكامل DaVinci Resolve', 'DaVinci Resolve Integration')}>
       <div className="flex items-center gap-2 text-sm"><Dot on={!!c} /><b>{c ? `${L(lang, 'متصل', 'Connected')} — ${d?.connection.version}` : L(lang, 'غير متصل', 'Not connected')}</b></div>
-      {!c && <div className="mt-1 text-xs opacity-70">{d?.connection.error ?? d?.note}</div>}
+      {!c && d && <div className="mt-1 text-xs opacity-70">{d.status === 'not_installed'
+        ? L(lang, 'لم يُكتشف DaVinci Resolve على هذا الجهاز.', 'DaVinci Resolve was not found on this computer.', 'DaVinci Resolve wurde auf diesem Computer nicht gefunden.')
+        : L(lang, 'شغّل Resolve (نسخة Studio) وفعّل: Preferences ← System ← General ← External scripting = Local.', 'Start Resolve (Studio) and enable Preferences > System > General > External scripting = Local.', 'Starte Resolve (Studio) und aktiviere Einstellungen > System > Allgemein > Externes Scripting = Lokal.')}</div>}
       <div className="mt-2 flex gap-2"><button className="btn-ghost" onClick={onRefresh}>{L(lang, 'تحديث', 'Refresh')}</button>
         <button className="btn" disabled={!c || !canSend} title={!c ? L(lang, 'يتطلب اتصالاً حقيقياً بـ Resolve', 'Requires a live Resolve connection') : ''} onClick={onSend}>{L(lang, 'إنشاء Timeline في Resolve', 'Create Timeline in Resolve')}</button></div>
       {msg && <div className="mt-2 text-xs text-gold">{msg}</div>}
@@ -146,7 +150,7 @@ const TRACK_COLORS: Record<string, string> = { V: 'bg-gold/30', A: 'bg-ok/40' }
 export function Timeline({ lang, clips, duration, tracks, onDelete }: { lang: Lang; clips: Clip[]; duration: number; tracks: string[]; onDelete: (id: number) => void }) {
   const total = Math.max(duration, 1)
   return (
-    <W title={`Timeline — ${fmt(duration)}`}>
+    <W title={`${L(lang, 'التايم لاين', 'Timeline')} — ${fmt(duration)}`}>
       {!clips.length && <p className="mb-2 text-sm opacity-70">{L(lang, 'التايم لاين فارغ. أضف مقاطع من Media Pool (＋).', 'Timeline is empty. Add clips from the Media Pool (＋).')}</p>}
       <div className="space-y-1" dir="ltr">
         {[...tracks].reverse().map(tr => (
@@ -164,7 +168,7 @@ export function Timeline({ lang, clips, duration, tracks, onDelete }: { lang: La
 
 export function MediaPool({ lang, items, selected, onSelect, onAdd, onAnalyze }: { lang: Lang; items: Media[]; selected: number | null; onSelect: (m: Media) => void; onAdd: (m: Media) => void; onAnalyze: (m: Media) => void }) {
   return (
-    <W title="Media Pool">
+    <W title={L(lang, 'مجمع الوسائط', 'Media Pool')}>
       {!items.length && <p className="text-sm opacity-70">{L(lang, 'استورد ملفات من مكتبة الوسائط.', 'Import files from Media Library.')}</p>}
       <div className="grid max-h-44 grid-cols-2 gap-2 overflow-y-auto">
         {items.map(m => (
@@ -172,7 +176,7 @@ export function MediaPool({ lang, items, selected, onSelect, onAdd, onAnalyze }:
             <button className="block w-full text-start" onClick={() => onSelect(m)}>
               <div className="flex h-12 items-center justify-center overflow-hidden rounded bg-ink">{m.kind === 'video' || m.kind === 'image' ? <img alt="" className="h-full w-full object-cover" src={api.thumbUrl(m.id)} /> : <span className="text-xl">{m.kind === 'audio' ? '🎵' : '📄'}</span>}</div>
               <div className="mt-1 truncate" dir="ltr">{m.path.split(/[\\/]/).pop()}</div></button>
-            {m.fit?.status === 'reframe' && <div className="text-[10px] text-gold">{L(lang, `إعادة تأطير ${m.fit.crop_percent}%`, `reframe ${m.fit.crop_percent}%`)}</div>}
+            {m.fit?.status === 'reframe' && <div className="text-[10px] text-gold">{L(lang, `إعادة تأطير ${m.fit.crop_percent}%`, `reframe ${m.fit.crop_percent}%`, `Neu ausrichten ${m.fit.crop_percent} %`)}</div>}
             <div className="mt-1 flex gap-1">{['video', 'audio', 'image'].includes(m.kind) && <button className="btn-ghost !px-1.5 !py-0 text-xs" aria-label="add to timeline" onClick={() => onAdd(m)}>＋</button>}
               {['video', 'audio'].includes(m.kind) && <button className="btn-ghost !px-1.5 !py-0 text-xs" onClick={() => onAnalyze(m)}>{L(lang, 'تحليل', 'Analyze')}</button>}</div>
           </div>))}
