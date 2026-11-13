@@ -24,7 +24,7 @@ import { join } from 'node:path'
 import { DE } from '../i18n/de'
 
 function sources(dir: string): string[] {
-  return readdirSync(dir).flatMap(f => { const p = join(dir, f); return statSync(p).isDirectory() ? sources(p) : p.endsWith('.tsx') && !p.includes('/test/') ? [p] : [] })
+  return readdirSync(dir).flatMap(f => { const p = join(dir, f); return statSync(p).isDirectory() ? sources(p) : p.endsWith('.tsx') && !p.endsWith('app.test.tsx') ? [p] : [] })
 }
 describe('German coverage', () => {
   it('every L(lang, ar, en) text has a German translation', () => {

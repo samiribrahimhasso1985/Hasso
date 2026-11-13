@@ -1,8 +1,10 @@
-name: build-windows-installer
+name: IKTISHAFAT Windows installer
 on:
   workflow_dispatch:
   push:
-    tags: ['v*']
+    branches: [claude/iktishafat-ai-studio-build-cbnvkp]
+    paths: ['IKTISHAFAT_AI_STUDIO/**', '.github/workflows/iktishafat-windows-installer.yml']
+    tags: ['iktishafat-v*']
 jobs:
   build:
     runs-on: windows-latest
@@ -12,11 +14,10 @@ jobs:
         with: { python-version: '3.12' }
       - uses: actions/setup-node@v4
         with: { node-version: 22 }
-      - name: Test backend
+      - name: Install backend dependencies
         working-directory: IKTISHAFAT_AI_STUDIO/backend
         run: |
-          pip install -r requirements-dev.txt pyinstaller
-          python -m pytest -q -m "not resolve"
+          pip install -r requirements.txt pyinstaller
       - name: Bundle backend (PyInstaller)
         working-directory: IKTISHAFAT_AI_STUDIO/backend
         env: { IKTISHAFAT_NO_AUTOINIT: '1' }

@@ -1,5 +1,9 @@
-name: tests
-on: [push, pull_request]
+name: IKTISHAFAT tests
+on:
+  push:
+    paths: ['IKTISHAFAT_AI_STUDIO/**']
+  pull_request:
+    paths: ['IKTISHAFAT_AI_STUDIO/**']
 jobs:
   backend:
     strategy:
