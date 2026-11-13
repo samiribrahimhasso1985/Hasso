@@ -1,0 +1,9 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+html, body, #root { height: 100%; }
+body { @apply bg-ink text-warm font-sans; }
+.card { @apply rounded-xl border border-gold/20 bg-navy p-4; }
+.btn { @apply rounded-lg bg-gold px-4 py-2 font-semibold text-ink hover:opacity-90 disabled:opacity-40; }
+.btn-ghost { @apply rounded-lg border border-gold/40 px-3 py-1.5 text-gold hover:bg-gold/10; }
+.input { @apply w-full rounded-lg border border-gold/30 bg-ink px-3 py-2 text-warm outline-none focus:border-gold; }

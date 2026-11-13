@@ -1,0 +1,27 @@
+name: tests
+on: [push, pull_request]
+jobs:
+  backend:
+    strategy:
+      matrix: { os: [ubuntu-latest, windows-latest] }
+    runs-on: ${{ matrix.os }}
+    defaults: { run: { working-directory: IKTISHAFAT_AI_STUDIO/backend } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+      - name: Install ffmpeg (Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+      - run: pip install -r requirements-dev.txt
+      # Resolve-dependent tests (marker "resolve") are excluded: they need a real, configured DaVinci Resolve.
+      - run: python -m pytest -q -m "not resolve"
+  frontend:
+    runs-on: ubuntu-latest
+    defaults: { run: { working-directory: IKTISHAFAT_AI_STUDIO/desktop } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: ELECTRON_SKIP_BINARY_DOWNLOAD=1 npm install --no-audit --no-fund
+      - run: npm run build && npm test
