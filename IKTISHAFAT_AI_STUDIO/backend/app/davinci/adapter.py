@@ -19,10 +19,19 @@ def _load_module():
         raise ResolveError("Resolve scripting module not found (is DaVinci Resolve installed?)")
     sys.path.append(d["scripting_module_path"])
     os.environ.setdefault("RESOLVE_SCRIPT_API", os.path.dirname(d["scripting_module_path"]))
+    if sys.platform == "win32":
+        lib = os.path.join(d["install_path"], "fusionscript.dll")
+        if os.path.isfile(lib):
+            os.environ.setdefault("RESOLVE_SCRIPT_LIB", lib)
     try:
         return importlib.import_module("DaVinciResolveScript")
     except Exception as e:  # noqa
         raise ResolveError(f"Cannot import DaVinciResolveScript: {e}")
+
+
+def fps_setting(fps: float) -> str:
+    """Resolve accepts only its listed rates, written like "25", "23.976", "29.97"."""
+    return str(int(fps)) if abs(fps - round(fps)) < 0.001 else f"{fps:.3f}".rstrip("0").rstrip(".")
 
 
 def connect(module=None):
@@ -51,7 +60,9 @@ def build_timeline(name: str, clips: list[dict], fps: float, module=None) -> dic
     proj = pm.GetCurrentProject() or pm.CreateProject(name)
     if not proj:
         raise ResolveError("No open project and could not create one")
-    proj.SetSetting("timelineFrameRate", str(fps))
+    if not proj.SetSetting("timelineFrameRate", fps_setting(fps)):
+        raise ResolveError(f"Resolve rejected timeline frame rate {fps_setting(fps)} "
+                           "(unsupported rate, or the open project already has timelines at another rate)")
     mp = proj.GetMediaPool()
     paths = sorted({c["path"] for c in clips})
     items = mp.ImportMedia(paths)
@@ -73,5 +84,6 @@ def build_timeline(name: str, clips: list[dict], fps: float, module=None) -> dic
                 for t in sorted({c["track"] for c in clips}))
     if found != len(clips):
         raise ResolveError(f"Verification failed: expected {len(clips)} clips in timeline, Resolve reports {found}")
-    proj.SaveProject() if hasattr(proj, "SaveProject") else None
+    if not pm.SaveProject():
+        raise ResolveError("Timeline built and verified, but Resolve could not save the project")
     return {"verified": True, "timeline": name, "clips": found}

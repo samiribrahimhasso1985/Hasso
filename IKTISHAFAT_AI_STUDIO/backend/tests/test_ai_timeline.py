@@ -132,7 +132,8 @@ class FakeResolve:
     def __init__(self, mp): self.p = FakeProj(mp)
     def GetProjectManager(self): return self
     def GetCurrentProject(self): return self.p
-    def GetVersionString(self): return "19.0.3"
+    def GetVersionString(self): return "21.1.1.0"
+    def SaveProject(self): return True
 
 class FakeMod:
     def __init__(self, resolve): self.r = resolve
@@ -145,12 +146,22 @@ CLIPS = [{"path": "/a.mp4", "track": "V1", "in_point": 0, "out_point": 2, "start
 def test_adapter_logic_verifies_timeline():
     res = adapter.build_timeline("T", CLIPS, 25, module=FakeMod(FakeResolve(FakeMP())))
     assert res == {"verified": True, "timeline": "T", "clips": 2}
-    assert adapter.status(FakeMod(FakeResolve(FakeMP())))["version"] == "19.0.3"
+    assert adapter.status(FakeMod(FakeResolve(FakeMP())))["version"] == "21.1.1.0"
 
 
 def test_adapter_reports_failed_verification():
     with pytest.raises(adapter.ResolveError, match="Verification failed"):
         adapter.build_timeline("T", CLIPS, 25, module=FakeMod(FakeResolve(FakeMP(drop=True))))
+
+
+def test_fps_setting_format():
+    assert [adapter.fps_setting(x) for x in (25.0, 24, 23.976, 29.97, 59.94, 30.0)] == ["25", "24", "23.976", "29.97", "59.94", "30"]
+
+
+def test_adapter_rejected_frame_rate():
+    r = FakeResolve(FakeMP()); r.p.SetSetting = lambda k, v: False
+    with pytest.raises(adapter.ResolveError, match="frame rate"):
+        adapter.build_timeline("T", CLIPS, 25, module=FakeMod(r))
 
 
 def test_adapter_not_connected():

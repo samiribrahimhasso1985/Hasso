@@ -36,6 +36,6 @@ def detect() -> dict:
         "scripting_module_found": module_found,
         "scripting_module_path": str(module_dir) if module_found else None,
         "live_connection": False,  # a real connection is only tested in Phase 5 with Resolve running
-        "note": "Installation detected only; connection to a running Resolve is verified in Phase 5."
+        "note": "Installation detected only. External scripting needs DaVinci Resolve Studio with Preferences > System > General > External scripting using = Local (the free version only runs scripts from inside Resolve)."
                 if installed else "DaVinci Resolve not detected on this machine. Mock adapter only (not a real integration test).",
     }
