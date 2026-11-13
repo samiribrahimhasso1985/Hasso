@@ -19,6 +19,12 @@ The Python core is UI-independent, so a PySide6 shell can later be added on the 
 
 **Not implemented yet:** camera/lighting/background assistants, storyboard generator, subtitles, audio/color/thumbnail studios, approval UI, installer. These pages say so on screen.
 
+## Video formats
+Each project has a target format: 16:9 (HD/4K), **9:16 (1080×1920, Shorts/TikTok/Reels)**, 1:1, 4:5, 21:9, 4:3 or custom size, plus frame rate. The media pool shows how much each clip must be reframed, the preview can show clips inside the project frame, the AI assistant knows the format, and the Resolve timeline is created at that size/rate.
+
+## Build the Windows installer
+`scripts\build_windows.bat` (Windows 11 + Python + Node) → `desktop\release\*.exe`. Also available as the GitHub workflow `build-windows.yml` once it is on the default branch. Not yet run on Windows by me: the bundled backend was verified on Linux only.
+
 ## Run
 - **Windows:** double-click `scripts\run_windows.bat` (needs Python 3.11+, Node 20+; FFmpeg recommended).
 - **Dev (any OS):** `scripts/run_dev.sh` → open http://localhost:5173 (backend on 127.0.0.1:8765).
