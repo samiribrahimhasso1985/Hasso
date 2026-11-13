@@ -1,0 +1,47 @@
+export type Lang = 'ar' | 'de' | 'en'
+export const dict: Record<Lang, Record<string, string>> = {
+  ar: {
+    tagline: 'اكتشف • استكشف • اكشف', dashboard: 'لوحة التحكم', projects: 'إدارة المشاريع', media: 'مكتبة الوسائط',
+    aiDirector: 'المخرج الذكي', camera: 'مساعد الكاميرا', lighting: 'مخرج الإضاءة', background: 'مصمم الخلفيات',
+    production: 'مراقب الإنتاج', storyboard: 'مولد Storyboard', smartEditor: 'المونتاج الذكي', subtitles: 'استوديو الترجمة',
+    audio: 'استوديو الصوت', color: 'استوديو الألوان', thumbnail: 'استوديو الصور المصغرة', davinci: 'DaVinci Resolve',
+    aiModels: 'نماذج الذكاء الاصطناعي', diagnostics: 'تشخيص النظام', settings: 'الإعدادات',
+    notImpl: 'هذه الوحدة لم تُنفَّذ بعد', plannedIn: 'مخططة في المرحلة', noProject: 'لا يوجد مشروع بعد',
+    newProject: 'مشروع جديد', name: 'الاسم', description: 'الوصف', create: 'إنشاء', backup: 'نسخ احتياطي', del: 'حذف',
+    confirmDel: 'سيتم عمل نسخة احتياطية ثم حذف مجلد المشروع. ملفاتك الأصلية لن تُمس. متابعة؟',
+    importFile: 'استيراد ملف', filePath: 'المسار الكامل للملف', import: 'استيراد', duplicate: 'ملف مكرر', missing: 'مفقود',
+    backendOff: 'الخلفية غير متصلة', recent: 'المشاريع الأخيرة', storage: 'التخزين', free: 'متاح', tasks: 'المهام',
+    language: 'اللغة', stage: 'المرحلة', current: 'المشروع الحالي', connected: 'متصل', disconnected: 'غير متصل',
+    refresh: 'تحديث', pickFile: 'اختيار ملف', search: 'بحث', all: 'الكل', notDetected: 'غير مكتشف',
+  },
+  en: {
+    tagline: 'DISCOVER • EXPLORE • REVEAL', dashboard: 'Dashboard', projects: 'Project Manager', media: 'Media Library',
+    aiDirector: 'AI Director', camera: 'Camera Assistant', lighting: 'Lighting Director', background: 'Background Designer',
+    production: 'Production Monitor', storyboard: 'Storyboard Generator', smartEditor: 'Smart Editor', subtitles: 'Subtitle Studio',
+    audio: 'Audio Studio', color: 'Color Studio', thumbnail: 'Thumbnail Studio', davinci: 'DaVinci Resolve',
+    aiModels: 'AI Models', diagnostics: 'System Diagnostics', settings: 'Settings',
+    notImpl: 'This module is not implemented yet', plannedIn: 'Planned for phase', noProject: 'No project yet',
+    newProject: 'New project', name: 'Name', description: 'Description', create: 'Create', backup: 'Backup', del: 'Delete',
+    confirmDel: 'A backup will be made, then the project folder deleted. Your original media is never touched. Continue?',
+    importFile: 'Import file', filePath: 'Full file path', import: 'Import', duplicate: 'Duplicate file', missing: 'Missing',
+    backendOff: 'Backend not connected', recent: 'Recent projects', storage: 'Storage', free: 'free', tasks: 'Tasks',
+    language: 'Language', stage: 'Stage', current: 'Current project', connected: 'Connected', disconnected: 'Disconnected',
+    refresh: 'Refresh', pickFile: 'Choose file', search: 'Search', all: 'All', notDetected: 'Not detected',
+  },
+  de: {
+    tagline: 'ENTDECKEN • ERFORSCHEN • ENTHÜLLEN', dashboard: 'Dashboard', projects: 'Projektverwaltung', media: 'Medienbibliothek',
+    aiDirector: 'KI-Regisseur', camera: 'Kamera-Assistent', lighting: 'Lichtregie', background: 'Hintergrund-Designer',
+    production: 'Produktionsmonitor', storyboard: 'Storyboard-Generator', smartEditor: 'Smart Editor', subtitles: 'Untertitel-Studio',
+    audio: 'Audio-Studio', color: 'Color-Studio', thumbnail: 'Thumbnail-Studio', davinci: 'DaVinci Resolve',
+    aiModels: 'KI-Modelle', diagnostics: 'Systemdiagnose', settings: 'Einstellungen',
+    notImpl: 'Dieses Modul ist noch nicht implementiert', plannedIn: 'Geplant für Phase', noProject: 'Noch kein Projekt',
+    newProject: 'Neues Projekt', name: 'Name', description: 'Beschreibung', create: 'Erstellen', backup: 'Backup', del: 'Löschen',
+    confirmDel: 'Es wird ein Backup erstellt, dann der Projektordner gelöscht. Originalmedien bleiben unberührt. Fortfahren?',
+    importFile: 'Datei importieren', filePath: 'Vollständiger Dateipfad', import: 'Importieren', duplicate: 'Doppelte Datei', missing: 'Fehlt',
+    backendOff: 'Backend nicht verbunden', recent: 'Letzte Projekte', storage: 'Speicher', free: 'frei', tasks: 'Aufgaben',
+    language: 'Sprache', stage: 'Phase', current: 'Aktuelles Projekt', connected: 'Verbunden', disconnected: 'Getrennt',
+    refresh: 'Aktualisieren', pickFile: 'Datei wählen', search: 'Suche', all: 'Alle', notDetected: 'Nicht erkannt',
+  },
+}
+export const isRtl = (l: Lang) => l === 'ar'
+export const t = (l: Lang, k: string) => dict[l][k] ?? dict.en[k] ?? k
