@@ -1,0 +1,1 @@
+CREATE DATABASE ftn_test OWNER ftn;
