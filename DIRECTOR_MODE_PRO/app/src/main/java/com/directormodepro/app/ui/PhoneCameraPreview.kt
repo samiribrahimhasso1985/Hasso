@@ -193,7 +193,8 @@ private fun CameraSurface(lens: CameraLens, modifier: Modifier) {
         var pending = recorder.prepareRecording(context, output)
         if (context.granted(Manifest.permission.RECORD_AUDIO)) pending = pending.withAudioEnabled() else notice = noAudioText
         recordedSeconds = 0
-        recording = pending.start(ContextCompat.getMainExecutor(context)) { event ->
+        recording = try {
+            pending.start(ContextCompat.getMainExecutor(context)) { event ->
             when (event) {
                 is VideoRecordEvent.Status -> recordedSeconds = event.recordingStats.recordedDurationNanos / 1_000_000_000
                 is VideoRecordEvent.Finalize -> {
@@ -202,6 +203,11 @@ private fun CameraSurface(lens: CameraLens, modifier: Modifier) {
                 }
                 else -> Unit
             }
+            }
+        } catch (e: RuntimeException) {
+            // e.g. no storage permission on Android 8-9, or the recorder is busy: show it instead of failing silently.
+            error = e.message ?: e.javaClass.simpleName
+            null
         }
     }
 
@@ -232,19 +238,21 @@ private fun CameraSurface(lens: CameraLens, modifier: Modifier) {
             }
         }
 
-        // Record button: red dot = start, red square = stop.
+        // Large, labelled record button (bottom corner). Disabled until the camera is really bound.
         if (camera != null && error == null) {
-            Box(
-                Modifier.align(Alignment.CenterEnd).padding(10.dp).size(40.dp)
-                    .border(2.dp, White, CircleShape).padding(5.dp)
-                    .clickable { if (recording == null) startRecording() else recording?.stop() },
-                contentAlignment = Alignment.Center
+            Button(
+                onClick = { if (recording == null) startRecording() else recording?.stop() },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (recording == null) Live else White,
+                    contentColor = if (recording == null) White else Live
+                ),
+                shape = RoundedCornerShape(24.dp),
+                modifier = Modifier.align(Alignment.BottomEnd).padding(8.dp)
             ) {
-                if (recording == null) {
-                    Box(Modifier.fillMaxSize().background(Live, CircleShape))
-                } else {
-                    Box(Modifier.size(14.dp).background(Live, RoundedCornerShape(3.dp)))
-                }
+                Text(
+                    stringResource(if (recording == null) R.string.rec_start else R.string.rec_stop),
+                    fontSize = 13.sp, fontWeight = FontWeight.Bold
+                )
             }
         }
 

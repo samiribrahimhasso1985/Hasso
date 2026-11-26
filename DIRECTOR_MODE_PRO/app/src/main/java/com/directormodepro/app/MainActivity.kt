@@ -35,7 +35,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import com.directormodepro.app.camera.core.CameraConnectionStatus
 import com.directormodepro.app.camera.core.CameraId
+import com.directormodepro.app.ui.text
+import com.directormodepro.app.ui.theme.Danger
+import com.directormodepro.app.ui.theme.Live
 import com.directormodepro.app.camera.core.CameraLens
 import com.directormodepro.app.camera.core.CameraSourceDraft
 import com.directormodepro.app.camera.core.CameraTransport
@@ -216,27 +222,41 @@ private fun CameraPreviewCard(ui: SourceUiState, onTest: () -> Unit) {
     val camera = ui.source
     val isPhone = camera.transport == CameraTransport.BUILT_IN
     var previewOn by rememberSaveable(camera.id.value) { mutableStateOf(false) }
+    // Only one view may own the camera at a time: when full screen is open, the card shows a placeholder.
+    var fullScreen by rememberSaveable(camera.id.value) { mutableStateOf(false) }
+    val lens = CameraLens.fromEndpoint(camera.endpoint) ?: CameraLens.BACK
     val uri = ui.previewUri
+    if (fullScreen && isPhone) {
+        val failed = ui.status.connection == CameraConnectionStatus.ERROR
+        FullScreenCamera(
+            name = camera.name, lens = lens, ready = uri != null,
+            status = if (failed) ui.status.message.text() else null,
+            onClose = { fullScreen = false }
+        )
+    }
     Card(colors = CardDefaults.cardColors(containerColor = Panel), shape = RoundedCornerShape(16.dp)) {
         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Box(Modifier.fillMaxWidth().aspectRatio(16f / 9f).background(Screen, RoundedCornerShape(10.dp)).border(1.dp, Outline, RoundedCornerShape(10.dp)), contentAlignment = Alignment.Center) {
-                if (uri != null && previewOn && isPhone) {
-                    PhoneCameraPreview(CameraLens.fromEndpoint(camera.endpoint) ?: CameraLens.BACK, Modifier.fillMaxSize())
-                } else if (uri != null && previewOn) {
+                if (uri != null && previewOn && isPhone && !fullScreen) {
+                    PhoneCameraPreview(lens, Modifier.fillMaxSize())
+                } else if (uri != null && previewOn && !isPhone) {
                     RtspPreview(uri, Modifier.fillMaxSize())
                 } else {
                     Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Icon(Icons.Default.CameraAlt, null, tint = Color(0xFF536473), modifier = Modifier.size(34.dp))
                         Text(stringResource(R.string.no_signal), color = Color(0xFF71808D), fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
+                        val failed = ui.status.connection == CameraConnectionStatus.ERROR
                         Text(
-                            stringResource(
-                                when {
-                                    isPhone -> R.string.preview_hint_phone
-                                    uri != null -> R.string.preview_hint_ready
-                                    else -> R.string.preview_hint_test
-                                }
-                            ),
-                            color = Color(0xFF536473), fontSize = 10.sp
+                            when {
+                                // Show the real reason (e.g. no such lens) instead of a generic hint.
+                                failed -> ui.status.message.text()
+                                fullScreen -> stringResource(R.string.fullscreen_active)
+                                isPhone -> stringResource(R.string.preview_hint_phone)
+                                uri != null -> stringResource(R.string.preview_hint_ready)
+                                else -> stringResource(R.string.preview_hint_test)
+                            },
+                            color = if (failed) Danger else Color(0xFF536473), fontSize = 10.sp,
+                            modifier = Modifier.padding(horizontal = 10.dp)
                         )
                     }
                 }
@@ -249,6 +269,15 @@ private fun CameraPreviewCard(ui: SourceUiState, onTest: () -> Unit) {
                     Text(listOf(camera.brand.label(), camera.model).filter { it.isNotBlank() }.joinToString(" "), fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
                     Text(camera.transport.label(), color = Muted, fontSize = 11.sp)
                 }
+                if (isPhone) {
+                    TextButton(onClick = {
+                        if (uri == null) onTest()
+                        previewOn = true
+                        fullScreen = true
+                    }) {
+                        Text(stringResource(R.string.fullscreen_record), color = Live, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                    }
+                }
                 if (uri != null || isPhone) {
                     TextButton(onClick = {
                         // A phone camera needs no network test: check the lens on the first start.
@@ -257,6 +286,27 @@ private fun CameraPreviewCard(ui: SourceUiState, onTest: () -> Unit) {
                     }) {
                         Text(stringResource(if (previewOn) R.string.preview_stop else R.string.preview_start), color = Accent, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                     }
+                }
+            }
+        }
+    }
+}
+
+/** Full-screen phone camera for recording; Back or the close button returns to the multiview. */
+@Composable
+private fun FullScreenCamera(name: String, lens: CameraLens, ready: Boolean, status: String?, onClose: () -> Unit) {
+    Dialog(onDismissRequest = onClose, properties = DialogProperties(usePlatformDefaultWidth = false)) {
+        Box(Modifier.fillMaxSize().background(Color.Black)) {
+            if (ready) {
+                PhoneCameraPreview(lens, Modifier.fillMaxSize())
+            } else {
+                Text(status ?: stringResource(R.string.preview_connecting), color = White, fontSize = 13.sp,
+                    modifier = Modifier.align(Alignment.Center).padding(24.dp))
+            }
+            Row(Modifier.align(Alignment.TopStart).fillMaxWidth().padding(10.dp), verticalAlignment = Alignment.CenterVertically) {
+                Text(name.uppercase(), color = White, fontSize = 12.sp, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
+                Button(onClick = onClose, colors = ButtonDefaults.buttonColors(containerColor = Panel, contentColor = White)) {
+                    Text(stringResource(R.string.close), fontSize = 12.sp)
                 }
             }
         }
@@ -328,5 +378,5 @@ private fun SettingRow(title: String, value: String) {
 }
 
 private object BuildInfo {
-    const val VERSION_NAME = "0.4.0"
+    const val VERSION_NAME = "0.4.1"
 }

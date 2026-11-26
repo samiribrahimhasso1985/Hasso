@@ -169,4 +169,9 @@
     <string name="rec_no_audio">No microphone permission: recording without sound.</string>
     <string name="rec_failed">Recording failed (code %1$d).</string>
     <string name="camera_error">Camera error: %1$s</string>
+    <string name="rec_start">● REC</string>
+    <string name="rec_stop">■ STOP</string>
+    <string name="fullscreen_record">● RECORD</string>
+    <string name="fullscreen_active">Open in full screen</string>
+    <string name="close">Close</string>
 </resources>

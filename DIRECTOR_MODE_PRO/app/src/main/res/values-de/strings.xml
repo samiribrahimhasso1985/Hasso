@@ -167,4 +167,9 @@
     <string name="rec_no_audio">Keine Mikrofonberechtigung: Aufnahme ohne Ton.</string>
     <string name="rec_failed">Aufnahme fehlgeschlagen (Code %1$d).</string>
     <string name="camera_error">Kamerafehler: %1$s</string>
+    <string name="rec_start">● AUFNAHME</string>
+    <string name="rec_stop">■ STOPP</string>
+    <string name="fullscreen_record">● FILMEN</string>
+    <string name="fullscreen_active">Im Vollbild geöffnet</string>
+    <string name="close">Schließen</string>
 </resources>

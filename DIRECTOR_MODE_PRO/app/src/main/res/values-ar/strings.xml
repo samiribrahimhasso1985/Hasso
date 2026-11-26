@@ -167,4 +167,9 @@
     <string name="rec_no_audio">لا يوجد إذن للميكروفون: التسجيل بدون صوت.</string>
     <string name="rec_failed">فشل التسجيل (رمز %1$d).</string>
     <string name="camera_error">خطأ في الكاميرا: %1$s</string>
+    <string name="rec_start">● تسجيل</string>
+    <string name="rec_stop">■ إيقاف</string>
+    <string name="fullscreen_record">● تصوير</string>
+    <string name="fullscreen_active">مفتوحة في وضع ملء الشاشة</string>
+    <string name="close">إغلاق</string>
 </resources>
