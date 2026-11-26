@@ -18,7 +18,7 @@
     <string name="multiview_count">SOURCES: %1$d</string>
     <string name="add_camera_source">Add camera source</string>
     <string name="system_status">SYSTEM STATUS</string>
-    <string name="system_status_title">Generic RTSP receive-only adapter available</string>
+    <string name="system_status_title">Phone cameras and RTSP streams available</string>
     <string name="system_status_body">Sony and DJI remain integration targets: no remote control until a validated protocol is tested on real hardware.</string>
 
     <string name="no_signal">NO SIGNAL</string>
@@ -35,7 +35,7 @@
     <string name="cameras_title">CAMERA SOURCES</string>
     <string name="cameras_subtitle">Add your cameras and streams. Only connections that pass a real test show as reachable.</string>
     <string name="cameras_empty_title">No camera sources yet</string>
-    <string name="cameras_empty_tip">Tip: an RTSP stream (from an IP camera, an HDMI encoder or OBS) can be previewed today.</string>
+    <string name="cameras_empty_tip">Tip: start with the camera of this phone, or add an RTSP stream from an IP camera, an HDMI encoder or OBS.</string>
     <string name="cd_edit">Edit %1$s</string>
     <string name="cd_remove">Remove %1$s</string>
     <string name="delete_title">Remove %1$s?</string>
@@ -144,10 +144,29 @@
     <string name="settings_platform">Platform</string>
     <string name="settings_platform_value">Android 8.0 and newer</string>
     <string name="settings_architecture">Camera architecture</string>
-    <string name="settings_architecture_value">Pluggable adapters • RTSP receive-only</string>
+    <string name="settings_architecture_value">Pluggable adapters • phone camera • RTSP receive-only</string>
     <string name="settings_storage">Storage</string>
     <string name="settings_storage_value">On-device database (no cloud sync)</string>
     <string name="settings_privacy">Privacy</string>
     <string name="settings_privacy_value">Local-first • no passwords stored</string>
     <string name="settings_footer">Camera data stays on this device. Stream URLs are only contacted when you press Test connection or Start preview.</string>
+    <string name="brand_device">This phone</string>
+    <string name="transport_builtin">Phone camera</string>
+    <string name="lens_back">Back camera</string>
+    <string name="lens_front">Front camera</string>
+    <string name="field_lens">Lens</string>
+    <string name="preset_phone">Phone camera</string>
+    <string name="badge_on_device">ON-DEVICE</string>
+    <string name="reason_phone">This phone\'s own camera via Android CameraX: live preview, video recording to the gallery and zoom.</string>
+    <string name="msg_phone_ready">%1$s ready</string>
+    <string name="msg_phone_missing">This device has no %1$s.</string>
+    <string name="msg_wrong_config">This source is configured for a different connection type.</string>
+    <string name="err_lens">Choose the back or the front camera.</string>
+    <string name="preview_hint_phone">Tap Start preview to open the phone camera</string>
+    <string name="perm_camera_needed">Camera permission is needed for the preview.</string>
+    <string name="perm_allow">Allow camera</string>
+    <string name="rec_saved">Video saved to gallery (Movies/DirectorModePro).</string>
+    <string name="rec_no_audio">No microphone permission: recording without sound.</string>
+    <string name="rec_failed">Recording failed (code %1$d).</string>
+    <string name="camera_error">Camera error: %1$s</string>
 </resources>

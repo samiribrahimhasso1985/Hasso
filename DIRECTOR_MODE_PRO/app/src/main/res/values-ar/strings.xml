@@ -16,7 +16,7 @@
     <string name="multiview_count">المصادر: %1$d</string>
     <string name="add_camera_source">إضافة مصدر كاميرا</string>
     <string name="system_status">حالة النظام</string>
-    <string name="system_status_title">محوّل RTSP العام للاستقبال فقط متاح</string>
+    <string name="system_status_title">كاميرات الهاتف وبث RTSP متاحة</string>
     <string name="system_status_body">تبقى Sony وDJI أهداف تكامل: لا تحكم عن بُعد حتى يُختبر بروتوكول موثّق على الجهاز الحقيقي.</string>
 
     <string name="no_signal">لا توجد إشارة</string>
@@ -33,7 +33,7 @@
     <string name="cameras_title">مصادر الكاميرات</string>
     <string name="cameras_subtitle">أضف كاميراتك ومصادر البث. لا يظهر الاتصال كمتاح إلا بعد نجاح اختبار حقيقي.</string>
     <string name="cameras_empty_title">لا توجد مصادر كاميرا بعد</string>
-    <string name="cameras_empty_tip">نصيحة: يمكنك اليوم معاينة بث RTSP قادم من كاميرا IP أو جهاز تحويل HDMI أو برنامج OBS.</string>
+    <string name="cameras_empty_tip">نصيحة: ابدأ بكاميرا هذا الهاتف، أو أضف بث RTSP من كاميرا IP أو جهاز تحويل HDMI أو برنامج OBS.</string>
     <string name="cd_edit">تعديل %1$s</string>
     <string name="cd_remove">حذف %1$s</string>
     <string name="delete_title">حذف %1$s؟</string>
@@ -142,10 +142,29 @@
     <string name="settings_platform">المنصة</string>
     <string name="settings_platform_value">Android 8.0 وأحدث</string>
     <string name="settings_architecture">بنية الكاميرات</string>
-    <string name="settings_architecture_value">محوّلات قابلة للإضافة • استقبال RTSP فقط</string>
+    <string name="settings_architecture_value">محوّلات قابلة للإضافة • كاميرا الهاتف • استقبال RTSP فقط</string>
     <string name="settings_storage">التخزين</string>
     <string name="settings_storage_value">قاعدة بيانات على الجهاز (بدون مزامنة سحابية)</string>
     <string name="settings_privacy">الخصوصية</string>
     <string name="settings_privacy_value">محلي أولاً • لا تُحفظ كلمات مرور</string>
     <string name="settings_footer">بيانات الكاميرات تبقى على هذا الجهاز. لا يتصل التطبيق بروابط البث إلا عند الضغط على «اختبار الاتصال» أو «بدء المعاينة».</string>
+    <string name="brand_device">هذا الهاتف</string>
+    <string name="transport_builtin">كاميرا الهاتف</string>
+    <string name="lens_back">الكاميرا الخلفية</string>
+    <string name="lens_front">الكاميرا الأمامية</string>
+    <string name="field_lens">العدسة</string>
+    <string name="preset_phone">كاميرا الهاتف</string>
+    <string name="badge_on_device">على الجهاز</string>
+    <string name="reason_phone">كاميرا هذا الهاتف عبر Android CameraX: معاينة مباشرة، وتسجيل فيديو في المعرض، وزوم.</string>
+    <string name="msg_phone_ready">%1$s جاهزة</string>
+    <string name="msg_phone_missing">هذا الجهاز لا يحتوي على %1$s.</string>
+    <string name="msg_wrong_config">هذا المصدر مضبوط على نوع اتصال مختلف.</string>
+    <string name="err_lens">اختر الكاميرا الخلفية أو الأمامية.</string>
+    <string name="preview_hint_phone">اضغط «بدء المعاينة» لفتح كاميرا الهاتف</string>
+    <string name="perm_camera_needed">يلزم إذن الكاميرا لعرض المعاينة.</string>
+    <string name="perm_allow">السماح بالكاميرا</string>
+    <string name="rec_saved">حُفظ الفيديو في المعرض (Movies/DirectorModePro).</string>
+    <string name="rec_no_audio">لا يوجد إذن للميكروفون: التسجيل بدون صوت.</string>
+    <string name="rec_failed">فشل التسجيل (رمز %1$d).</string>
+    <string name="camera_error">خطأ في الكاميرا: %1$s</string>
 </resources>

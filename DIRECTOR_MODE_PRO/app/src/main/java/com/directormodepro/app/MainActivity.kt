@@ -35,7 +35,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.directormodepro.app.camera.core.CameraId
+import com.directormodepro.app.camera.core.CameraLens
 import com.directormodepro.app.camera.core.CameraSourceDraft
+import com.directormodepro.app.camera.core.CameraTransport
+import com.directormodepro.app.ui.PhoneCameraPreview
 import com.directormodepro.app.camera.core.toDraft
 import com.directormodepro.app.ui.BadgePill
 import com.directormodepro.app.ui.CameraSourcesScreen
@@ -117,7 +121,7 @@ fun DirectorModeApp(viewModel: DirectorViewModel = viewModel(factory = DirectorV
         ) { padding ->
             when (selectedTab) {
                 0 -> StudioScreen(Modifier.padding(padding), projectName, sources,
-                    onProjectChange = { projectName = it }, onAdd = { editor = EditorRequest(null) })
+                    onProjectChange = { projectName = it }, onAdd = { editor = EditorRequest(null) }, onTest = viewModel::testConnection)
                 1 -> CameraSourcesScreen(
                     modifier = Modifier.padding(padding),
                     sources = sources,
@@ -153,7 +157,7 @@ fun DirectorModeApp(viewModel: DirectorViewModel = viewModel(factory = DirectorV
 @Composable
 private fun StudioScreen(
     modifier: Modifier, projectName: String, sources: List<SourceUiState>,
-    onProjectChange: (String) -> Unit, onAdd: () -> Unit
+    onProjectChange: (String) -> Unit, onAdd: () -> Unit, onTest: (CameraId) -> Unit
 ) {
     LazyVerticalGrid(
         columns = GridCells.Adaptive(minSize = 300.dp),
@@ -189,7 +193,7 @@ private fun StudioScreen(
                 Text(stringResource(R.string.multiview_count, sources.size), color = Muted, fontSize = 10.sp)
             }
         }
-        items(sources, key = { it.source.id.value }) { ui -> CameraPreviewCard(ui) }
+        items(sources, key = { it.source.id.value }) { ui -> CameraPreviewCard(ui, onTest = { onTest(ui.source.id) }) }
         item(span = { GridItemSpan(maxLineSpan) }) {
             OutlinedButton(onClick = onAdd, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp), colors = ButtonDefaults.outlinedButtonColors(contentColor = Accent)) {
                 Icon(Icons.Default.Add, null); Spacer(Modifier.width(8.dp)); Text(stringResource(R.string.add_camera_source).uppercase())
@@ -208,21 +212,30 @@ private fun StudioScreen(
 }
 
 @Composable
-private fun CameraPreviewCard(ui: SourceUiState) {
+private fun CameraPreviewCard(ui: SourceUiState, onTest: () -> Unit) {
     val camera = ui.source
+    val isPhone = camera.transport == CameraTransport.BUILT_IN
     var previewOn by rememberSaveable(camera.id.value) { mutableStateOf(false) }
     val uri = ui.previewUri
     Card(colors = CardDefaults.cardColors(containerColor = Panel), shape = RoundedCornerShape(16.dp)) {
         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Box(Modifier.fillMaxWidth().aspectRatio(16f / 9f).background(Screen, RoundedCornerShape(10.dp)).border(1.dp, Outline, RoundedCornerShape(10.dp)), contentAlignment = Alignment.Center) {
-                if (uri != null && previewOn) {
+                if (uri != null && previewOn && isPhone) {
+                    PhoneCameraPreview(CameraLens.fromEndpoint(camera.endpoint) ?: CameraLens.BACK, Modifier.fillMaxSize())
+                } else if (uri != null && previewOn) {
                     RtspPreview(uri, Modifier.fillMaxSize())
                 } else {
                     Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Icon(Icons.Default.CameraAlt, null, tint = Color(0xFF536473), modifier = Modifier.size(34.dp))
                         Text(stringResource(R.string.no_signal), color = Color(0xFF71808D), fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
                         Text(
-                            stringResource(if (uri != null) R.string.preview_hint_ready else R.string.preview_hint_test),
+                            stringResource(
+                                when {
+                                    isPhone -> R.string.preview_hint_phone
+                                    uri != null -> R.string.preview_hint_ready
+                                    else -> R.string.preview_hint_test
+                                }
+                            ),
                             color = Color(0xFF536473), fontSize = 10.sp
                         )
                     }
@@ -236,8 +249,12 @@ private fun CameraPreviewCard(ui: SourceUiState) {
                     Text(listOf(camera.brand.label(), camera.model).filter { it.isNotBlank() }.joinToString(" "), fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
                     Text(camera.transport.label(), color = Muted, fontSize = 11.sp)
                 }
-                if (uri != null) {
-                    TextButton(onClick = { previewOn = !previewOn }) {
+                if (uri != null || isPhone) {
+                    TextButton(onClick = {
+                        // A phone camera needs no network test: check the lens on the first start.
+                        if (uri == null) onTest()
+                        previewOn = !previewOn
+                    }) {
                         Text(stringResource(if (previewOn) R.string.preview_stop else R.string.preview_start), color = Accent, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                     }
                 }
@@ -311,5 +328,5 @@ private fun SettingRow(title: String, value: String) {
 }
 
 private object BuildInfo {
-    const val VERSION_NAME = "0.3.0"
+    const val VERSION_NAME = "0.4.0"
 }

@@ -18,10 +18,13 @@ import com.directormodepro.app.camera.core.toDescriptor
  * not in Compose screens. Levels only move up after real hardware validation.
  */
 class DefaultCameraAdapterFactory(
-    private val rtspProbe: RtspProbe = SocketRtspProbe()
+    private val rtspProbe: RtspProbe = SocketRtspProbe(),
+    private val phoneCameras: PhoneCameraAvailability = PhoneCameraAvailability { false }
 ) : CameraAdapterFactory {
 
     override fun integrationFor(brand: CameraBrand, transport: CameraTransport): IntegrationInfo = when {
+        // The phone's own cameras use Google's documented CameraX API, so they are a real integration.
+        transport == CameraTransport.BUILT_IN -> IntegrationInfo(IntegrationLevel.ON_DEVICE, IntegrationReason.PHONE_CAMERA)
         transport == CameraTransport.RTSP -> IntegrationInfo(IntegrationLevel.RECEIVE_ONLY, IntegrationReason.GENERIC_RTSP)
         // Sony Camera Remote SDK does not list Android; a validated bridge or protocol is required first.
         brand == CameraBrand.SONY -> IntegrationInfo(IntegrationLevel.INTEGRATION_TARGET, IntegrationReason.SONY_TARGET)
@@ -37,6 +40,7 @@ class DefaultCameraAdapterFactory(
         val info = integrationFor(source.brand, source.transport)
         return when (info.level) {
             IntegrationLevel.RECEIVE_ONLY -> RtspCameraAdapter(source.toDescriptor(), rtspProbe)
+            IntegrationLevel.ON_DEVICE -> PhoneCameraAdapter(source.toDescriptor(), phoneCameras)
             else -> UnsupportedCameraAdapter(source.toDescriptor(), info.reason)
         }
     }

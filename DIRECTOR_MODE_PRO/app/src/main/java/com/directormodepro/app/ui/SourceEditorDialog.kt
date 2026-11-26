@@ -36,6 +36,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.directormodepro.app.camera.core.CameraBrand
+import com.directormodepro.app.camera.core.CameraLens
 import com.directormodepro.app.camera.core.CameraSourceDraft
 import com.directormodepro.app.camera.core.CameraSourceValidator
 import com.directormodepro.app.camera.core.CameraTransport
@@ -52,7 +53,10 @@ import com.directormodepro.app.ui.theme.White
 /** [label] null = use the translated "RTSP stream" label; camera model names stay untranslated. */
 private data class Preset(val label: String?, val draft: CameraSourceDraft)
 
+private const val PHONE_PRESET = "phone-camera-preset"
+
 private val presets = listOf(
+    Preset(PHONE_PRESET, CameraSourceDraft(brand = CameraBrand.DEVICE, transport = CameraTransport.BUILT_IN, endpoint = CameraLens.BACK.endpointValue)),
     Preset(null, CameraSourceDraft(brand = CameraBrand.GENERIC, transport = CameraTransport.RTSP)),
     Preset("Sony FX3", CameraSourceDraft(brand = CameraBrand.SONY, model = "FX3", transport = CameraTransport.WIFI)),
     Preset("DJI Osmo Action 5 Pro", CameraSourceDraft(brand = CameraBrand.DJI, model = "Osmo Action 5 Pro", transport = CameraTransport.WIFI))
@@ -86,10 +90,18 @@ fun SourceEditorDialog(
                 Text(stringResource(R.string.quick_start), color = Muted, fontSize = 12.sp)
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     presets.forEach { preset ->
-                        val label = preset.label ?: stringResource(R.string.preset_rtsp)
+                        val label = when (preset.label) {
+                            null -> stringResource(R.string.preset_rtsp)
+                            PHONE_PRESET -> stringResource(R.string.preset_phone)
+                            else -> preset.label
+                        }
                         AssistChip(
                             onClick = {
-                                draft = preset.draft.copy(name = draft.name.ifBlank { label }, endpoint = draft.endpoint)
+                                val keepEndpoint = preset.draft.transport != CameraTransport.BUILT_IN && draft.transport != CameraTransport.BUILT_IN
+                                draft = preset.draft.copy(
+                                    name = draft.name.ifBlank { label },
+                                    endpoint = if (keepEndpoint) draft.endpoint else preset.draft.endpoint
+                                )
                                 errors = emptyList()
                             },
                             label = { Text(label, fontSize = 11.sp) },
@@ -127,9 +139,29 @@ fun SourceEditorDialog(
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     selectableTransports.forEach { transport ->
                         FilterChip(
-                            selected = draft.transport == transport, onClick = { draft = draft.copy(transport = transport) },
+                            selected = draft.transport == transport,
+                            onClick = {
+                                draft = when {
+                                    transport == CameraTransport.BUILT_IN -> draft.copy(transport = transport, endpoint = CameraLens.BACK.endpointValue)
+                                    draft.transport == CameraTransport.BUILT_IN -> draft.copy(transport = transport, endpoint = "")
+                                    else -> draft.copy(transport = transport)
+                                }
+                            },
                             label = { Text(transport.label(), fontSize = 11.sp) }, colors = chipColors
                         )
+                    }
+                }
+
+                if (draft.transport == CameraTransport.BUILT_IN) {
+                    Text(stringResource(R.string.field_lens), color = Muted, fontSize = 12.sp)
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        val selectedLens = CameraLens.fromEndpoint(draft.endpoint) ?: CameraLens.BACK
+                        CameraLens.entries.forEach { lens ->
+                            FilterChip(
+                                selected = selectedLens == lens, onClick = { draft = draft.copy(endpoint = lens.endpointValue) },
+                                label = { Text(lens.label(), fontSize = 11.sp) }, colors = chipColors
+                            )
+                        }
                     }
                 }
 

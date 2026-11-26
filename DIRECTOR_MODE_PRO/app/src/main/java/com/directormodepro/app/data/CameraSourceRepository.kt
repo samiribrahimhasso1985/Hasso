@@ -1,6 +1,8 @@
 package com.directormodepro.app.data
 
 import com.directormodepro.app.camera.core.CameraId
+import com.directormodepro.app.camera.core.CameraLens
+import com.directormodepro.app.camera.core.CameraTransport
 import com.directormodepro.app.camera.core.CameraSource
 import com.directormodepro.app.camera.core.CameraSourceDraft
 import com.directormodepro.app.camera.core.CameraSourceValidator
@@ -95,6 +97,10 @@ class CameraSourceRepository(
     private fun CameraSourceDraft.normalized() = copy(
         name = name.trim(),
         model = model.trim(),
-        endpoint = if (CameraSourceValidator.usesEndpoint(transport)) endpoint.trim() else ""
+        endpoint = when {
+            transport == CameraTransport.BUILT_IN -> (CameraLens.fromEndpoint(endpoint) ?: CameraLens.BACK).endpointValue
+            CameraSourceValidator.usesEndpoint(transport) -> endpoint.trim()
+            else -> ""
+        }
     )
 }

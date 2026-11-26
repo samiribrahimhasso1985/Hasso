@@ -8,6 +8,7 @@ import com.directormodepro.app.R
 import com.directormodepro.app.camera.core.CameraBrand
 import com.directormodepro.app.camera.core.CameraCapabilities
 import com.directormodepro.app.camera.core.CameraConnectionStatus
+import com.directormodepro.app.camera.core.CameraLens
 import com.directormodepro.app.camera.core.CameraSourceValidator
 import com.directormodepro.app.camera.core.CameraTransport
 import com.directormodepro.app.camera.core.IntegrationLevel
@@ -32,6 +33,7 @@ internal fun CameraBrand.label(): String = when (this) {
     CameraBrand.BLACKMAGIC -> "Blackmagic Design"
     CameraBrand.PANASONIC -> "Panasonic"
     CameraBrand.GENERIC -> stringResource(R.string.brand_generic)
+    CameraBrand.DEVICE -> stringResource(R.string.brand_device)
 }
 
 @Composable
@@ -43,12 +45,13 @@ internal fun CameraTransport.label(): String = stringResource(
         CameraTransport.ETHERNET -> R.string.transport_ethernet
         CameraTransport.USB -> R.string.transport_usb
         CameraTransport.HDMI_CAPTURE -> R.string.transport_hdmi
+        CameraTransport.BUILT_IN -> R.string.transport_builtin
         CameraTransport.UNKNOWN -> R.string.transport_unknown
     }
 )
 
 internal val selectableTransports = listOf(
-    CameraTransport.RTSP, CameraTransport.SRT, CameraTransport.WIFI,
+    CameraTransport.BUILT_IN, CameraTransport.RTSP, CameraTransport.SRT, CameraTransport.WIFI,
     CameraTransport.ETHERNET, CameraTransport.USB, CameraTransport.HDMI_CAPTURE
 )
 
@@ -56,6 +59,7 @@ internal data class Badge(@param:StringRes val text: Int, val fg: Color, val bg:
 
 internal fun IntegrationLevel.badge() = when (this) {
     IntegrationLevel.RECEIVE_ONLY -> Badge(R.string.badge_receive_only, Accent, AccentBg)
+    IntegrationLevel.ON_DEVICE -> Badge(R.string.badge_on_device, Accent, AccentBg)
     IntegrationLevel.INTEGRATION_TARGET -> Badge(R.string.badge_integration_target, Warning, WarningBg)
     IntegrationLevel.UNSUPPORTED -> Badge(R.string.badge_unsupported, Muted, Panel2)
 }
@@ -66,13 +70,20 @@ internal fun statusBadge(status: CameraConnectionStatus, level: IntegrationLevel
     CameraConnectionStatus.CONNECTED -> Badge(R.string.status_reachable, Accent, AccentBg)
     CameraConnectionStatus.STREAMING -> Badge(R.string.status_live, Danger, DangerBg)
     CameraConnectionStatus.ERROR ->
-        if (level == IntegrationLevel.RECEIVE_ONLY) Badge(R.string.status_error, Danger, DangerBg)
+        if (level.isConnectable()) Badge(R.string.status_error, Danger, DangerBg)
         else Badge(R.string.status_not_available, Muted, Panel2)
 }
+
+/** Levels whose adapters can actually connect (and therefore fail with a real error). */
+internal fun IntegrationLevel.isConnectable() = this == IntegrationLevel.RECEIVE_ONLY || this == IntegrationLevel.ON_DEVICE
+
+@Composable
+internal fun CameraLens.label(): String = stringResource(if (this == CameraLens.FRONT) R.string.lens_front else R.string.lens_back)
 
 @Composable
 internal fun IntegrationReason.text(): String = stringResource(
     when (this) {
+        IntegrationReason.PHONE_CAMERA -> R.string.reason_phone
         IntegrationReason.GENERIC_RTSP -> R.string.reason_generic_rtsp
         IntegrationReason.SONY_TARGET -> R.string.reason_sony
         IntegrationReason.DJI_TARGET -> R.string.reason_dji
@@ -99,6 +110,9 @@ internal fun StatusMessage.text(): String = when (this) {
     StatusMessage.RtspUrlRequired -> stringResource(R.string.msg_rtsp_required)
     StatusMessage.RtspUrlInvalid -> stringResource(R.string.msg_rtsp_invalid)
     is StatusMessage.NotAvailable -> reason.text()
+    is StatusMessage.PhoneCameraReady -> stringResource(R.string.msg_phone_ready, lens.label())
+    is StatusMessage.PhoneCameraMissing -> stringResource(R.string.msg_phone_missing, lens.label())
+    StatusMessage.WrongConfiguration -> stringResource(R.string.msg_wrong_config)
 }
 
 @Composable
@@ -117,6 +131,7 @@ internal fun ValidationCode.text(): String = when (this) {
     ValidationCode.HOST_INVALID -> stringResource(R.string.err_host)
     ValidationCode.TRANSPORT_REQUIRED -> stringResource(R.string.err_transport)
     ValidationCode.SOURCE_NOT_FOUND -> stringResource(R.string.err_not_found)
+    ValidationCode.LENS_INVALID -> stringResource(R.string.err_lens)
 }
 
 internal fun CameraCapabilities.asLabeledList(): List<Pair<Int, Boolean>> = listOf(

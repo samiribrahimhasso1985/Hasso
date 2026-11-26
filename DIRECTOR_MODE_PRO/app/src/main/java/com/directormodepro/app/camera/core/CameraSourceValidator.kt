@@ -8,7 +8,7 @@ enum class SourceField { NAME, MODEL, ENDPOINT }
 enum class ValidationCode {
     NAME_REQUIRED, NAME_TOO_LONG, MODEL_TOO_LONG,
     URL_REQUIRED, URL_TOO_LONG, URL_INVALID, URL_WRONG_SCHEME, RTSPS_UNSUPPORTED,
-    URL_HAS_CREDENTIALS, URL_NO_HOST, PORT_INVALID, HOST_INVALID, TRANSPORT_REQUIRED, SOURCE_NOT_FOUND
+    URL_HAS_CREDENTIALS, URL_NO_HOST, PORT_INVALID, HOST_INVALID, TRANSPORT_REQUIRED, SOURCE_NOT_FOUND, LENS_INVALID
 }
 
 /** Language-neutral validation result; the UI shows a localized message for [code]. */
@@ -24,6 +24,9 @@ object CameraSourceValidator {
     fun usesEndpoint(transport: CameraTransport): Boolean = transport in setOf(
         CameraTransport.WIFI, CameraTransport.ETHERNET, CameraTransport.RTSP, CameraTransport.SRT
     )
+
+    /** Transports that persist an endpoint value (URL, host, or the built-in lens). */
+    fun storesEndpoint(transport: CameraTransport): Boolean = usesEndpoint(transport) || transport == CameraTransport.BUILT_IN
 
     fun validate(draft: CameraSourceDraft): List<ValidationError> {
         val errors = mutableListOf<ValidationError>()
@@ -41,6 +44,8 @@ object CameraSourceValidator {
             CameraTransport.SRT -> validateStreamUrl(endpoint, "srt")
             CameraTransport.WIFI, CameraTransport.ETHERNET ->
                 if (endpoint.isEmpty() || parseHostPort(endpoint) != null) null else ValidationCode.HOST_INVALID
+            CameraTransport.BUILT_IN ->
+                if (endpoint.isEmpty() || CameraLens.fromEndpoint(endpoint) != null) null else ValidationCode.LENS_INVALID
             CameraTransport.UNKNOWN -> ValidationCode.TRANSPORT_REQUIRED
             else -> null
         }

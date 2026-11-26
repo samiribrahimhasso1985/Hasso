@@ -1,15 +1,16 @@
 # DIRECTOR MODE PRO — Android
 
-Version: 0.3.0 (versionCode 3)
+Version: 0.4.0 (versionCode 4)
 Package: `com.directormodepro.app`
 Minimum Android: 8.0 (API 26) • Target/compile SDK 36
 Language: Kotlin + Jetpack Compose (Material 3)
 
-## What works in 0.3.0
+## What works in 0.4.0
 
 | Area | Status |
 |---|---|
 | **Languages: English, العربية (RTL), Deutsch** — in-app picker in Settings, also in Android 13+ system settings | ✅ Implemented, completeness checked by `LocalizationTest` |
+| **Phone cameras** (back/front) via CameraX: live preview, video recording to `Movies/DirectorModePro`, zoom | ✅ Implemented — **not yet run on a device** |
 | Camera source management (add / edit / remove, brand, model, transport, endpoint) | ✅ Implemented |
 | Local persistence (Room database `director_mode_pro.db`) | ✅ Implemented, survives restarts |
 | Generic **RTSP receive-only** adapter: real `DESCRIBE` connection test, SDP video-track check | ✅ Implemented, unit-tested against a local RTSP responder |
@@ -44,6 +45,7 @@ Adding a camera = one new adapter + one branch in `DefaultCameraAdapterFactory`.
 | `androidx.room` 2.8.4 + KSP 2.3.4 | Relational local DB; the YouTube Director scope (projects, scenes, shots, team) needs relations and migrations, so Room was chosen over DataStore. Schemas exported to `app/schemas/`. |
 | `androidx.media3` 1.8.0 (exoplayer, exoplayer-rtsp, ui) | Google-maintained player with a built-in RTSP client; avoids bundling native decoders. |
 | `lifecycle-viewmodel-compose` / `lifecycle-runtime-compose` 2.9.4 | ViewModel + lifecycle-aware Flow collection; same version as the existing lifecycle dependency. |
+| `androidx.camera` 1.5.1 (camera2, lifecycle, video, view) | Google's official API for the built-in cameras: preview, recording, zoom. |
 | `androidx.appcompat` 1.7.1 | Per-app language switching (`AppCompatDelegate.setApplicationLocales`) that also works on Android 8–12. |
 | `junit` 4.13.2, `kotlinx-coroutines-test` 1.10.2 | Unit tests. |
 
@@ -54,7 +56,7 @@ Requirements: JDK 17+ (CI uses 17), Android SDK Platform 36, Build-Tools 36. Gra
 ```bash
 cd DIRECTOR_MODE_PRO
 echo "sdk.dir=/path/to/Android/sdk" > local.properties   # Android Studio creates this automatically
-./gradlew :app:testDebugUnitTest      # 48 JVM unit tests
+./gradlew :app:testDebugUnitTest      # 53 JVM unit tests
 ./gradlew :app:assembleDebug          # -> app/build/outputs/apk/debug/app-debug.apk
 ./gradlew :app:connectedDebugAndroidTest   # Room DAO test, needs a device/emulator
 ```

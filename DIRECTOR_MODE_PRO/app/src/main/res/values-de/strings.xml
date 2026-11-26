@@ -16,7 +16,7 @@
     <string name="multiview_count">QUELLEN: %1$d</string>
     <string name="add_camera_source">Kameraquelle hinzufügen</string>
     <string name="system_status">SYSTEMSTATUS</string>
-    <string name="system_status_title">Generischer RTSP-Empfangsadapter verfügbar</string>
+    <string name="system_status_title">Handykameras und RTSP-Streams verfügbar</string>
     <string name="system_status_body">Sony und DJI bleiben Integrationsziele: keine Fernsteuerung, bis ein validiertes Protokoll an echter Hardware getestet wurde.</string>
 
     <string name="no_signal">KEIN SIGNAL</string>
@@ -33,7 +33,7 @@
     <string name="cameras_title">KAMERAQUELLEN</string>
     <string name="cameras_subtitle">Fügen Sie Ihre Kameras und Streams hinzu. Nur Verbindungen, die einen echten Test bestehen, werden als erreichbar angezeigt.</string>
     <string name="cameras_empty_title">Noch keine Kameraquellen</string>
-    <string name="cameras_empty_tip">Tipp: Ein RTSP-Stream (von einer IP-Kamera, einem HDMI-Encoder oder OBS) kann schon heute angezeigt werden.</string>
+    <string name="cameras_empty_tip">Tipp: Beginnen Sie mit der Kamera dieses Geräts oder fügen Sie einen RTSP-Stream von einer IP-Kamera, einem HDMI-Encoder oder OBS hinzu.</string>
     <string name="cd_edit">%1$s bearbeiten</string>
     <string name="cd_remove">%1$s entfernen</string>
     <string name="delete_title">%1$s entfernen?</string>
@@ -142,10 +142,29 @@
     <string name="settings_platform">Plattform</string>
     <string name="settings_platform_value">Android 8.0 und neuer</string>
     <string name="settings_architecture">Kamera-Architektur</string>
-    <string name="settings_architecture_value">Erweiterbare Adapter • nur RTSP-Empfang</string>
+    <string name="settings_architecture_value">Erweiterbare Adapter • Handykamera • nur RTSP-Empfang</string>
     <string name="settings_storage">Speicherung</string>
     <string name="settings_storage_value">Datenbank auf dem Gerät (keine Cloud-Synchronisierung)</string>
     <string name="settings_privacy">Datenschutz</string>
     <string name="settings_privacy_value">Lokal zuerst • keine Passwörter gespeichert</string>
     <string name="settings_footer">Kameradaten bleiben auf diesem Gerät. Stream-URLs werden nur kontaktiert, wenn Sie „Verbindung testen“ oder „Vorschau starten“ drücken.</string>
+    <string name="brand_device">Dieses Gerät</string>
+    <string name="transport_builtin">Handykamera</string>
+    <string name="lens_back">Rückkamera</string>
+    <string name="lens_front">Frontkamera</string>
+    <string name="field_lens">Objektiv</string>
+    <string name="preset_phone">Handykamera</string>
+    <string name="badge_on_device">AUF DEM GERÄT</string>
+    <string name="reason_phone">Die eigene Kamera dieses Geräts über Android CameraX: Live-Vorschau, Videoaufnahme in die Galerie und Zoom.</string>
+    <string name="msg_phone_ready">%1$s bereit</string>
+    <string name="msg_phone_missing">Dieses Gerät hat keine %1$s.</string>
+    <string name="msg_wrong_config">Diese Quelle ist für eine andere Verbindungsart eingerichtet.</string>
+    <string name="err_lens">Wählen Sie die Rück- oder die Frontkamera.</string>
+    <string name="preview_hint_phone">„Vorschau starten“ tippen, um die Handykamera zu öffnen</string>
+    <string name="perm_camera_needed">Für die Vorschau wird die Kameraberechtigung benötigt.</string>
+    <string name="perm_allow">Kamera erlauben</string>
+    <string name="rec_saved">Video in der Galerie gespeichert (Movies/DirectorModePro).</string>
+    <string name="rec_no_audio">Keine Mikrofonberechtigung: Aufnahme ohne Ton.</string>
+    <string name="rec_failed">Aufnahme fehlgeschlagen (Code %1$d).</string>
+    <string name="camera_error">Kamerafehler: %1$s</string>
 </resources>

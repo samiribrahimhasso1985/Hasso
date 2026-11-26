@@ -2,6 +2,7 @@ package com.directormodepro.app
 
 import android.app.Application
 import android.content.Context
+import com.directormodepro.app.camera.adapters.Camera2Availability
 import com.directormodepro.app.camera.adapters.DefaultCameraAdapterFactory
 import com.directormodepro.app.camera.core.CameraAdapterFactory
 import com.directormodepro.app.camera.core.CameraConnectionManager
@@ -13,7 +14,7 @@ import com.directormodepro.app.data.db.RoomCameraSourceStore
 class AppContainer(context: Context) {
     val database: DirectorDatabase = DirectorDatabase.create(context)
     val sourceRepository = CameraSourceRepository(RoomCameraSourceStore(database.cameraSources()))
-    val adapterFactory: CameraAdapterFactory = DefaultCameraAdapterFactory()
+    val adapterFactory: CameraAdapterFactory = DefaultCameraAdapterFactory(phoneCameras = Camera2Availability(context))
     val connectionManager = CameraConnectionManager(adapterFactory)
 }
 

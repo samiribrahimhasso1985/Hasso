@@ -17,6 +17,17 @@ Record every manual run below (date, device, Android version, result).
 | A7 | Rotate / tablet width | Grid shows 2+ columns, no clipped dialogs | not yet run |
 | A8 | `./gradlew :app:connectedDebugAndroidTest` | CameraSourceDaoTest passes | not yet run |
 
+## A2. Phone camera (any real phone)
+| # | Step | Expected | Result |
+|---|---|---|---|
+| P1 | Add source → preset *Phone camera* → back lens | Card shows ON-DEVICE | not yet run |
+| P2 | Studio → START PREVIEW | Permission dialog; after allowing: live image, ● LIVE | not yet run |
+| P3 | Deny camera permission | "Allow camera" button, no crash | not yet run |
+| P4 | Red button → record 10 s → stop | Timer counts; "Video saved"; file in Gallery › Movies/DirectorModePro with sound | not yet run |
+| P5 | Zoom slider | Image zooms smoothly | not yet run |
+| P6 | Front lens source | Selfie camera preview | not yet run |
+| P7 | Home button while recording | Recording stops and is saved | not yet run |
+
 ## B. Real RTSP stream (same Wi-Fi network)
 | # | Step | Expected | Result |
 |---|---|---|---|

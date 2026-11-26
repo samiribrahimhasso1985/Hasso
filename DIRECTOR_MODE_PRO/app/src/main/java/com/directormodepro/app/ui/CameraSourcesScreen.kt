@@ -54,6 +54,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.directormodepro.app.camera.core.CameraConnectionStatus
 import com.directormodepro.app.camera.core.CameraId
+import com.directormodepro.app.camera.core.CameraLens
+import com.directormodepro.app.camera.core.CameraTransport
 import com.directormodepro.app.camera.core.IntegrationLevel
 import com.directormodepro.app.ui.theme.Accent
 import com.directormodepro.app.ui.theme.Bg
@@ -186,7 +188,9 @@ private fun SourceCard(
                 verticalArrangement = Arrangement.spacedBy(3.dp)
             ) {
                 Text(source.transport.label(), fontSize = 12.sp, fontWeight = FontWeight.Medium)
-                if (source.endpoint.isNotBlank()) {
+                if (source.transport == CameraTransport.BUILT_IN) {
+                    Text((CameraLens.fromEndpoint(source.endpoint) ?: CameraLens.BACK).label(), color = Muted, fontSize = 11.sp)
+                } else if (source.endpoint.isNotBlank()) {
                     LtrText(source.endpoint, color = Muted, fontSize = 11.sp, maxLines = 2)
                 }
                 Text(ui.integration.reason.text(), color = Muted, fontSize = 10.sp)
@@ -215,7 +219,7 @@ private fun SourceCard(
                         CircularProgressIndicator(Modifier.size(14.dp), color = Accent, strokeWidth = 2.dp)
                         Spacer(Modifier.width(8.dp))
                     }
-                    Text(stringResource(if (ui.integration.level == IntegrationLevel.RECEIVE_ONLY) R.string.test_connection else R.string.check_support), fontSize = 11.sp)
+                    Text(stringResource(if (ui.integration.level.isConnectable()) R.string.test_connection else R.string.check_support), fontSize = 11.sp)
                 }
                 if (ui.status.connection == CameraConnectionStatus.CONNECTED || ui.status.connection == CameraConnectionStatus.ERROR) {
                     TextButton(onClick = onDisconnect) { Text(stringResource(R.string.reset), color = Muted, fontSize = 11.sp) }
