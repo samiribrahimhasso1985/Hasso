@@ -39,7 +39,7 @@ class EgoQuery {
   includePending = true;
 
   @IsOptional()
-  @IsIn(['en', 'de', 'ar'])
+  @IsIn(['en', 'de', 'ar', 'ku'])
   locale?: string;
 }
 
@@ -61,7 +61,7 @@ class PathQuery {
   includePending = false;
 
   @IsOptional()
-  @IsIn(['en', 'de', 'ar'])
+  @IsIn(['en', 'de', 'ar', 'ku'])
   locale?: string;
 }
 

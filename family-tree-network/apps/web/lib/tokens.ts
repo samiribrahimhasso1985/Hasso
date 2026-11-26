@@ -17,6 +17,8 @@ export const PALETTE = {
   dustyOlive: '#989985',
   slateBlueGray: '#87939A',
   softCocoa: '#A18D80',
+  /** EZIDNET accent (EZ-11): highlights and badges only — 2.09:1 on Warm Sand, never text or thin lines. */
+  softGold: '#C9A34F',
 } as const;
 
 /** Semantic tokens. "ink" variants keep the palette hue but reach 4.5:1 for small text. */

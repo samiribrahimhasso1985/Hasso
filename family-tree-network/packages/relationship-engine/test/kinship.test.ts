@@ -83,6 +83,21 @@ describe('kinship derivation (only from confirmed facts)', () => {
     expect(label(g, 'peter', 'omar', 'ar')).toBe('الصهر');
   });
 
+  it('Kurmanji (draft) distinguishes paternal and maternal relatives like Arabic', () => {
+    expect(label(g, 'omar', 'khaled', 'ku')).toBe('Bav');
+    expect(label(g, 'omar', 'layla', 'ku')).toBe('Dayik');
+    expect(label(g, 'omar', 'mahmoud', 'ku')).toBe('Mam');
+    expect(label(g, 'omar', 'nadia', 'ku')).toBe('Xaltî');
+    expect(label(g, 'omar', 'karim', 'ku')).toBe('Pismam');
+    expect(label(g, 'omar', 'rania', 'ku')).toBe('Dotxaltî');
+    expect(label(g, 'mahmoud', 'omar', 'ku')).toBe('Biraza');
+    expect(label(g, 'nadia', 'sara', 'ku')).toBe('Xwarza');
+    expect(label(g, 'omar', 'anna', 'ku')).toBe('Jin');
+    expect(label(g, 'peter', 'omar', 'ku')).toBe('Zava');
+    expect(label(g, 'zaid', 'anna', 'ku')).toBe('Zirdayik');
+    expect(label(g, 'omar', 'ibrahim', 'ku')).toBe('Bapîr');
+  });
+
   it('declared extended relations work when intermediates are unknown', () => {
     const h = new GraphIndex([person('x', 'MALE'), person('u', 'MALE'), person('c', 'FEMALE')]);
     rel(h, 'x', 'UNCLE', 'u', { attributes: { lineageSide: 'MATERNAL' } });

@@ -81,7 +81,7 @@ test('request → appears in the other person’s inbox → confirmed', async ()
   await julia.page.selectOption('[data-testid=type-select]', 'TRAVEL_FRIEND');
   await julia.page.click('[data-testid=btn-add-submit]');
   await julia.page.waitForSelector('[data-testid=add-result]');
-  assert.match(await julia.page.textContent('[data-testid=add-result]'), /Pending/);
+  assert.match(await julia.page.textContent('[data-testid=add-result]'), /Proposed/);
   await julia.page.close();
 
   const daniel = await loginAs('daniel');

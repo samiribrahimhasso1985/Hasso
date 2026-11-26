@@ -20,7 +20,7 @@ export class RegisterDto {
   gender?: 'MALE' | 'FEMALE' | 'UNSPECIFIED';
 
   @IsOptional()
-  @IsIn(['en', 'de', 'ar'])
+  @IsIn(['en', 'de', 'ar', 'ku'])
   locale?: string;
 }
 

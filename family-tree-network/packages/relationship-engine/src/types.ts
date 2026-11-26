@@ -7,7 +7,8 @@
  * are adapters around it.
  */
 
-export type Locale = 'en' | 'de' | 'ar';
+/** en, de, ar (RTL) and ku = Kurmanji in Latin (Hawar) script. */
+export type Locale = 'en' | 'de' | 'ar' | 'ku';
 
 export type Gender = 'MALE' | 'FEMALE' | 'UNSPECIFIED';
 

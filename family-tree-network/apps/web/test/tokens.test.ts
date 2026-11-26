@@ -11,7 +11,7 @@ describe('design tokens (Modern Luxury / Editorial Minimalism)', () => {
     const map: Record<string, keyof typeof PALETTE> = {
       'warm-sand': 'warmSand', 'pale-beige': 'paleBeige', 'soft-cream': 'softCream', 'deep-graphite': 'deepGraphite',
       'stone-gray': 'stoneGray', 'warm-gray': 'warmGray', 'muted-terracotta': 'mutedTerracotta',
-      'dusty-olive': 'dustyOlive', 'slate-blue-gray': 'slateBlueGray', 'soft-cocoa': 'softCocoa',
+      'dusty-olive': 'dustyOlive', 'slate-blue-gray': 'slateBlueGray', 'soft-cocoa': 'softCocoa', 'soft-gold': 'softGold',
     };
     for (const [v, k] of Object.entries(map)) expect(cssVar(v), v).toBe(PALETTE[k].toLowerCase());
     expect(cssVar('text-2')).toBe(TOKENS.textSecondary.toLowerCase());

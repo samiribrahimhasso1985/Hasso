@@ -27,6 +27,7 @@ const FORMER: Record<Locale, LocalizedLabel> = {
   en: { neutral: 'Former spouse', male: 'Former husband', female: 'Former wife' },
   de: { neutral: 'Ehemalige/r Ehepartner/in', male: 'Ex-Ehemann', female: 'Ex-Ehefrau' },
   ar: { neutral: 'الزوج/ة السابق/ة', male: 'الزوج السابق', female: 'الزوجة السابقة' },
+  ku: { neutral: 'Hevjînê berê', male: 'Mêrê berê', female: 'Jina berê' },
 };
 
 type G = { m: string; f: string; n: string };
@@ -108,6 +109,29 @@ const QUAL: Record<Locale, Record<string, string>> = {
   en: { ADOPTIVE: 'adoptive', STEP: 'step', FOSTER: 'foster', GUARDIAN: 'guardian' },
   de: { ADOPTIVE: 'Adoption', STEP: 'Stief', FOSTER: 'Pflege', GUARDIAN: 'Vormundschaft' },
   ar: { ADOPTIVE: 'بالتبنّي', STEP: 'بالمصاهرة', FOSTER: 'بالرعاية', GUARDIAN: 'بالوصاية' },
+  ku: { ADOPTIVE: 'bi xwedîkirinê', STEP: 'zir', FOSTER: 'bi parastinê', GUARDIAN: 'bi serperiştiyê' },
+};
+
+/** Kurmanji (Latin/Hawar) — DRAFT, needs native-speaker review (docs/ezidnet/LOCALIZATION.md). */
+const KU: Record<string, G> = {
+  SELF: g('Ez', 'Ez', 'Ez'),
+  PARENT: g('Bav', 'Dayik', 'Dê/Bav'),
+  CHILD: g('Kur', 'Keç', 'Zarok'),
+  SIBLING: g('Bira', 'Xwişk', 'Bira/Xwişk'),
+  HALF_SIBLING: g('Birayê nîvî', 'Xwişka nîvî', 'Bira/Xwişka nîvî'),
+  GRANDPARENT: g('Bapîr', 'Dapîr', 'Bapîr/Dapîr'),
+  GRANDCHILD: g('Nevî', 'Nevî', 'Nevî'),
+  SPOUSE: g('Mêr', 'Jin', 'Hevjîn'),
+  FORMER_SPOUSE: g('Mêrê berê', 'Jina berê', 'Hevjînê berê'),
+  PARTNER: g('Heval (hevjîn)', 'Heval (hevjîn)', 'Heval (hevjîn)'),
+  FIANCE: g('Dergistî', 'Dergistî', 'Dergistî'),
+  STEP_PARENT: g('Zirbav', 'Zirdayik', 'Zirbav/Zirdayik'),
+  STEP_CHILD: g('Zirkur', 'Zirkeç', 'Zirzarok'),
+  PARENT_IN_LAW: g('Xezûr', 'Xesû', 'Xezûr/Xesû'),
+  CHILD_IN_LAW: g('Zava', 'Bûk', 'Zava/Bûk'),
+  SIBLING_IN_LAW: g('Bûra/Tî', 'Jinbira/Dişî', 'Xizmê bi zewacê'),
+  RELATIVE_BY_MARRIAGE: g('Xizmê bi zewacê', 'Xizma bi zewacê', 'Xizm bi zewacê'),
+  NONE: g('Têkiliya malbatî tune', 'Têkiliya malbatî tune', 'Têkiliya malbatî tune'),
 };
 
 /** Human label for a derived kinship: "<target> is the <label> of <subject>". */
@@ -147,6 +171,7 @@ function baseKinshipLabel(k: Kinship, gender: Gender, locale: Locale): string {
     }
     return sel(DE[key] ?? DE.NONE, gender);
   }
+  if (locale === 'ku') return kurmanjiKinship(k, key, gender);
   // Arabic: paternal/maternal distinction matters (عم/عمة vs خال/خالة).
   if (key === 'UNCLE_AUNT') {
     const paternal = k.lineageSide === 'PATERNAL';
@@ -188,4 +213,36 @@ function baseKinshipLabel(k: Kinship, gender: Gender, locale: Locale): string {
 
 function lower1(s: string, greats: number) {
   return greats ? s.toLowerCase() : s;
+}
+
+/** Kurmanji kinship terms (draft). Like Arabic, Kurmanji distinguishes paternal (mam, met) and maternal (xal, xaltî) sides. */
+function kurmanjiKinship(k: Kinship, key: string, gender: Gender): string {
+  const paternal = k.lineageSide === 'PATERNAL';
+  const maternal = k.lineageSide === 'MATERNAL';
+  if (key === 'UNCLE_AUNT') {
+    const s =
+      gender === 'FEMALE'
+        ? paternal ? 'Met' : maternal ? 'Xaltî' : 'Met/Xaltî'
+        : gender === 'MALE'
+          ? paternal ? 'Mam' : maternal ? 'Xal' : 'Mam/Xal'
+          : paternal ? 'Mam/Met' : maternal ? 'Xal/Xaltî' : 'Mam/Xal';
+    return k.greats > 0 ? `${s} (${k.greats + 1} nifş jor)` : s;
+  }
+  if (key === 'NEPHEW_NIECE') {
+    // brother's child = biraza, sister's child = xwarza (gender-neutral in Kurmanji)
+    const base = k.siblingGender === 'MALE' ? 'Biraza' : k.siblingGender === 'FEMALE' ? 'Xwarza' : 'Biraza/Xwarza';
+    return k.greats > 0 ? `${base} (${k.greats + 1} nifş jêr)` : base;
+  }
+  if (key === 'COUSIN') {
+    if (k.cousinDegree === 1 && k.removed === 0) {
+      const head = gender === 'FEMALE' ? 'Dot' : 'Pis';
+      const ua = k.uncleAuntGender;
+      const tail = paternal ? (ua === 'FEMALE' ? 'met' : ua === 'MALE' ? 'mam' : 'mam/met') : maternal ? (ua === 'FEMALE' ? 'xaltî' : ua === 'MALE' ? 'xal' : 'xal/xaltî') : 'mam/xal';
+      return gender === 'UNSPECIFIED' ? `Pis/Dot${tail}` : `${head}${tail}`;
+    }
+    return `Xizm (pileya ${k.cousinDegree + 1})${k.removed ? `, ${k.removed} nifş cuda` : ''}`;
+  }
+  if (key === 'GRANDPARENT') return k.greats ? `${sel(KU.GRANDPARENT, gender)}ê mezin${k.greats > 1 ? ` (${k.greats})` : ''}` : sel(KU.GRANDPARENT, gender);
+  if (key === 'GRANDCHILD') return k.greats ? `Nevîçirk${k.greats > 1 ? ` (${k.greats})` : ''}` : sel(KU.GRANDCHILD, gender);
+  return sel(KU[key] ?? KU.NONE, gender);
 }

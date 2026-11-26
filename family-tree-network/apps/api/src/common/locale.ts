@@ -1,7 +1,7 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 import type { Locale } from '@ftn/relationship-engine';
 
-const SUPPORTED: Locale[] = ['en', 'de', 'ar'];
+const SUPPORTED: Locale[] = ['en', 'de', 'ar', 'ku'];
 
 /** Locale from ?locale=, then Accept-Language, then English. */
 export const ReqLocale = createParamDecorator((_: unknown, ctx: ExecutionContext): Locale => {
@@ -20,4 +20,5 @@ export const NO_CONNECTION: Record<Locale, string> = {
   en: 'No verified connection found',
   de: 'Keine bestätigte Verbindung gefunden',
   ar: 'لم يتم العثور على صلة موثّقة',
+  ku: 'Têkiliyeke piştrastkirî nehat dîtin',
 };

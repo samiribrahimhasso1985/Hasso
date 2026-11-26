@@ -1,7 +1,7 @@
 /** Brand mark: one central person joined to four relationship circles — calm, palette colours only. */
 export function Logo({ size = 32 }: { size?: number }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 48 48" role="img" aria-label="FAMILY NETWORK">
+    <svg width={size} height={size} viewBox="0 0 48 48" role="img" aria-label="EZIDNET">
       {[
         [24, 8, '#8B8C7A'],
         [40, 24, '#A68371'],

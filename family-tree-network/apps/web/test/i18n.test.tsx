@@ -17,13 +17,15 @@ describe('i18n', () => {
     const keys = Object.keys(DICTS.en).sort();
     expect(Object.keys(DICTS.de).sort()).toEqual(keys);
     expect(Object.keys(DICTS.ar).sort()).toEqual(keys);
-    for (const l of ['en', 'de', 'ar'] as const) for (const k of keys) expect(DICTS[l][k as keyof typeof DICTS.en], `${l}.${k}`).toBeTruthy();
+    expect(Object.keys(DICTS.ku).sort()).toEqual(keys);
+    for (const l of ['en', 'de', 'ar', 'ku'] as const) for (const k of keys) expect(DICTS[l][k as keyof typeof DICTS.en], `${l}.${k}`).toBeTruthy();
   });
 
   it('Arabic is RTL, German and English are LTR', () => {
     expect(dirOf('ar')).toBe('rtl');
     expect(dirOf('de')).toBe('ltr');
     expect(dirOf('en')).toBe('ltr');
+    expect(dirOf('ku')).toBe('ltr'); // Kurmanji in Latin (Hawar) script
   });
 
   it('switching language updates text and the document direction', async () => {

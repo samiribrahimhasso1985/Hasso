@@ -22,9 +22,9 @@ describe('catalog', () => {
     }
   });
 
-  it('every type has labels in all three languages', () => {
+  it('every type has labels in all four languages (en, de, ar, ku)', () => {
     for (const t of RELATIONSHIP_TYPES) {
-      for (const l of ['en', 'de', 'ar'] as const) {
+      for (const l of ['en', 'de', 'ar', 'ku'] as const) {
         expect(t.labels[l].neutral).toBeTruthy();
         expect(t.inverseLabels[l].neutral).toBeTruthy();
       }

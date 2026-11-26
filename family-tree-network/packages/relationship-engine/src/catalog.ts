@@ -39,6 +39,10 @@ export interface RelationshipTypeDef {
   sortOrder: number;
 }
 
+/**
+ * Kurmanji (`ku`, Latin/Hawar script) labels are a DRAFT and must be reviewed by native speakers
+ * before public release (docs/ezidnet/LOCALIZATION.md).
+ */
 const same = (l: LabelSet) => ({ labels: l, inverseLabels: l });
 
 export const RELATIONSHIP_TYPES: readonly RelationshipTypeDef[] = [
@@ -55,11 +59,13 @@ export const RELATIONSHIP_TYPES: readonly RelationshipTypeDef[] = [
       en: { neutral: 'Parent', male: 'Father', female: 'Mother' },
       de: { neutral: 'Elternteil', male: 'Vater', female: 'Mutter' },
       ar: { neutral: 'والد/ة', male: 'الأب', female: 'الأم' },
+      ku: { neutral: 'Dê/Bav', male: 'Bav', female: 'Dayik' },
     },
     inverseLabels: {
       en: { neutral: 'Child', male: 'Son', female: 'Daughter' },
       de: { neutral: 'Kind', male: 'Sohn', female: 'Tochter' },
       ar: { neutral: 'ابن/ة', male: 'الابن', female: 'الابنة' },
+      ku: { neutral: 'Zarok', male: 'Kur', female: 'Keç' },
     },
   },
   {
@@ -74,6 +80,7 @@ export const RELATIONSHIP_TYPES: readonly RelationshipTypeDef[] = [
       en: { neutral: 'Sibling', male: 'Brother', female: 'Sister' },
       de: { neutral: 'Geschwister', male: 'Bruder', female: 'Schwester' },
       ar: { neutral: 'أخ/أخت', male: 'الأخ', female: 'الأخت' },
+      ku: { neutral: 'Bira/Xwişk', male: 'Bira', female: 'Xwişk' },
     }),
   },
   // ───────────── FAMILY (declared extended) ─────────────
@@ -91,11 +98,13 @@ export const RELATIONSHIP_TYPES: readonly RelationshipTypeDef[] = [
       en: { neutral: 'Grandparent', male: 'Grandfather', female: 'Grandmother' },
       de: { neutral: 'Großelternteil', male: 'Großvater', female: 'Großmutter' },
       ar: { neutral: 'الجد/ة', male: 'الجد', female: 'الجدة' },
+      ku: { neutral: 'Bapîr/Dapîr', male: 'Bapîr', female: 'Dapîr' },
     },
     inverseLabels: {
       en: { neutral: 'Grandchild', male: 'Grandson', female: 'Granddaughter' },
       de: { neutral: 'Enkelkind', male: 'Enkel', female: 'Enkelin' },
       ar: { neutral: 'الحفيد/ة', male: 'الحفيد', female: 'الحفيدة' },
+      ku: { neutral: 'Nevî', male: 'Nevî', female: 'Nevî' },
     },
   },
   {
@@ -110,11 +119,13 @@ export const RELATIONSHIP_TYPES: readonly RelationshipTypeDef[] = [
       en: { neutral: 'Uncle/Aunt', male: 'Uncle', female: 'Aunt' },
       de: { neutral: 'Onkel/Tante', male: 'Onkel', female: 'Tante' },
       ar: { neutral: 'العم/الخال', male: 'العم/الخال', female: 'العمة/الخالة' },
+      ku: { neutral: 'Mam/Xal', male: 'Mam/Xal', female: 'Met/Xaltî' },
     },
     inverseLabels: {
       en: { neutral: 'Nephew/Niece', male: 'Nephew', female: 'Niece' },
       de: { neutral: 'Neffe/Nichte', male: 'Neffe', female: 'Nichte' },
       ar: { neutral: 'ابن/ة الأخ أو الأخت', male: 'ابن الأخ/الأخت', female: 'ابنة الأخ/الأخت' },
+      ku: { neutral: 'Biraza/Xwarza' },
     },
   },
   {
@@ -129,6 +140,7 @@ export const RELATIONSHIP_TYPES: readonly RelationshipTypeDef[] = [
       en: { neutral: 'Cousin' },
       de: { neutral: 'Cousin/Cousine', male: 'Cousin', female: 'Cousine' },
       ar: { neutral: 'ابن/ة العم أو الخال', male: 'ابن العم/الخال', female: 'ابنة العم/الخال' },
+      ku: { neutral: 'Pismam/Pisxal', male: 'Pismam/Pisxal', female: 'Dotmam/Dotxal' },
     }),
   },
   // ───────────── UNION ─────────────
@@ -144,6 +156,7 @@ export const RELATIONSHIP_TYPES: readonly RelationshipTypeDef[] = [
       en: { neutral: 'Spouse', male: 'Husband', female: 'Wife' },
       de: { neutral: 'Ehepartner', male: 'Ehemann', female: 'Ehefrau' },
       ar: { neutral: 'الزوج/ة', male: 'الزوج', female: 'الزوجة' },
+      ku: { neutral: 'Hevjîn', male: 'Mêr', female: 'Jin' },
     }),
   },
   {
@@ -158,6 +171,7 @@ export const RELATIONSHIP_TYPES: readonly RelationshipTypeDef[] = [
       en: { neutral: 'Partner' },
       de: { neutral: 'Partner/in', male: 'Partner', female: 'Partnerin' },
       ar: { neutral: 'الشريك/ة', male: 'الشريك', female: 'الشريكة' },
+      ku: { neutral: 'Heval (hevjîn)' },
     }),
   },
   {
@@ -171,62 +185,63 @@ export const RELATIONSHIP_TYPES: readonly RelationshipTypeDef[] = [
       en: { neutral: 'Fiancé(e)', male: 'Fiancé', female: 'Fiancée' },
       de: { neutral: 'Verlobte/r', male: 'Verlobter', female: 'Verlobte' },
       ar: { neutral: 'الخطيب/ة', male: 'الخطيب', female: 'الخطيبة' },
+      ku: { neutral: 'Dergistî' },
     }),
   },
   // ───────────── FRIENDSHIP ─────────────
   ...(
     [
-      ['FRIEND', 'Friend', 'Freund/in', 'صديق', 80],
-      ['CLOSE_FRIEND', 'Close friend', 'Enge/r Freund/in', 'صديق مقرّب', 81],
-      ['CHILDHOOD_FRIEND', 'Childhood friend', 'Kindheitsfreund/in', 'صديق الطفولة', 82],
-      ['SCHOOL_FRIEND', 'School friend', 'Schulfreund/in', 'صديق المدرسة', 83],
-      ['TRAVEL_FRIEND', 'Travel friend', 'Reisefreund/in', 'صديق السفر', 84],
+      ['FRIEND', 'Friend', 'Freund/in', 'صديق', 'Heval', 80],
+      ['CLOSE_FRIEND', 'Close friend', 'Enge/r Freund/in', 'صديق مقرّب', 'Hevalê nêzîk', 81],
+      ['CHILDHOOD_FRIEND', 'Childhood friend', 'Kindheitsfreund/in', 'صديق الطفولة', 'Hevalê zarokatiyê', 82],
+      ['SCHOOL_FRIEND', 'School friend', 'Schulfreund/in', 'صديق المدرسة', 'Hevalê dibistanê', 83],
+      ['TRAVEL_FRIEND', 'Travel friend', 'Reisefreund/in', 'صديق السفر', 'Hevalê rêwîtiyê', 84],
     ] as const
   ).map(
-    ([key, en, de, ar, sortOrder]): RelationshipTypeDef => ({
+    ([key, en, de, ar, ku, sortOrder]): RelationshipTypeDef => ({
       key,
       category: 'FRIENDSHIP',
       directionality: 'SYMMETRIC',
       sensitive: false,
       defaultVisibility: 'NETWORK',
       sortOrder,
-      ...same({ en: { neutral: en }, de: { neutral: de }, ar: { neutral: ar } }),
+      ...same({ en: { neutral: en }, de: { neutral: de }, ar: { neutral: ar }, ku: { neutral: ku } }),
     }),
   ),
   // ───────────── SOCIAL ─────────────
   ...(
     [
-      ['NEIGHBOR', 'Neighbor', 'Nachbar/in', 'جار', 90],
-      ['ACQUAINTANCE', 'Acquaintance', 'Bekannte/r', 'معرفة', 91],
+      ['NEIGHBOR', 'Neighbor', 'Nachbar/in', 'جار', 'Cîran', 90],
+      ['ACQUAINTANCE', 'Acquaintance', 'Bekannte/r', 'معرفة', 'Nas', 91],
     ] as const
   ).map(
-    ([key, en, de, ar, sortOrder]): RelationshipTypeDef => ({
+    ([key, en, de, ar, ku, sortOrder]): RelationshipTypeDef => ({
       key,
       category: 'SOCIAL',
       directionality: 'SYMMETRIC',
       sensitive: false,
       defaultVisibility: 'NETWORK',
       sortOrder,
-      ...same({ en: { neutral: en }, de: { neutral: de }, ar: { neutral: ar } }),
+      ...same({ en: { neutral: en }, de: { neutral: de }, ar: { neutral: ar }, ku: { neutral: ku } }),
     }),
   ),
   // ───────────── PROFESSIONAL ─────────────
   ...(
     [
-      ['COLLEAGUE', 'Colleague', 'Kollege/Kollegin', 'زميل عمل', 100],
-      ['FORMER_COLLEAGUE', 'Former colleague', 'Ehemalige/r Kollege/in', 'زميل سابق', 101],
-      ['BUSINESS_PARTNER', 'Business partner', 'Geschäftspartner/in', 'شريك أعمال', 102],
-      ['PROFESSIONAL_CONTACT', 'Professional contact', 'Beruflicher Kontakt', 'جهة اتصال مهنية', 103],
+      ['COLLEAGUE', 'Colleague', 'Kollege/Kollegin', 'زميل عمل', 'Hevkar', 100],
+      ['FORMER_COLLEAGUE', 'Former colleague', 'Ehemalige/r Kollege/in', 'زميل سابق', 'Hevkarê berê', 101],
+      ['BUSINESS_PARTNER', 'Business partner', 'Geschäftspartner/in', 'شريك أعمال', 'Şirîkê karsaziyê', 102],
+      ['PROFESSIONAL_CONTACT', 'Professional contact', 'Beruflicher Kontakt', 'جهة اتصال مهنية', 'Têkiliya pîşeyî', 103],
     ] as const
   ).map(
-    ([key, en, de, ar, sortOrder]): RelationshipTypeDef => ({
+    ([key, en, de, ar, ku, sortOrder]): RelationshipTypeDef => ({
       key,
       category: 'PROFESSIONAL',
       directionality: 'SYMMETRIC',
       sensitive: false,
       defaultVisibility: 'NETWORK',
       sortOrder,
-      ...same({ en: { neutral: en }, de: { neutral: de }, ar: { neutral: ar } }),
+      ...same({ en: { neutral: en }, de: { neutral: de }, ar: { neutral: ar }, ku: { neutral: ku } }),
     }),
   ),
   {
@@ -240,11 +255,13 @@ export const RELATIONSHIP_TYPES: readonly RelationshipTypeDef[] = [
       en: { neutral: 'Manager' },
       de: { neutral: 'Vorgesetzte/r' },
       ar: { neutral: 'المدير' },
+      ku: { neutral: 'Rêveber' },
     },
     inverseLabels: {
       en: { neutral: 'Employee' },
       de: { neutral: 'Mitarbeiter/in' },
       ar: { neutral: 'الموظف' },
+      ku: { neutral: 'Karmend' },
     },
   },
   // ───────────── CUSTOM ─────────────
@@ -259,6 +276,7 @@ export const RELATIONSHIP_TYPES: readonly RelationshipTypeDef[] = [
       en: { neutral: 'Custom' },
       de: { neutral: 'Benutzerdefiniert' },
       ar: { neutral: 'مخصّص' },
+      ku: { neutral: 'Taybet' },
     }),
   },
 ];

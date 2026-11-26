@@ -42,7 +42,7 @@ export default function AuthScreen({ onSession }: { onSession: (s: Session) => v
         <Constellation />
         <div className="auth-hero-text">
           <Logo size={48} />
-          <div className="brand-word">FAMILY NETWORK</div>
+          <div className="brand-word">EZIDNET</div>
           <h1>{t.tagline}</h1>
           <p className="muted">{t.welcomeBody}</p>
         </div>
