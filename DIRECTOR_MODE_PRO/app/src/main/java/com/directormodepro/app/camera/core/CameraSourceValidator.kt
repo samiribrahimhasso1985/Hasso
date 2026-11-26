@@ -5,7 +5,14 @@ import java.net.URISyntaxException
 
 enum class SourceField { NAME, MODEL, ENDPOINT }
 
-data class ValidationError(val field: SourceField, val message: String)
+enum class ValidationCode {
+    NAME_REQUIRED, NAME_TOO_LONG, MODEL_TOO_LONG,
+    URL_REQUIRED, URL_TOO_LONG, URL_INVALID, URL_WRONG_SCHEME, RTSPS_UNSUPPORTED,
+    URL_HAS_CREDENTIALS, URL_NO_HOST, PORT_INVALID, HOST_INVALID, TRANSPORT_REQUIRED, SOURCE_NOT_FOUND
+}
+
+/** Language-neutral validation result; the UI shows a localized message for [code]. */
+data class ValidationError(val field: SourceField, val code: ValidationCode)
 
 /** Pure validation for user-entered camera sources. No Android dependencies, so it is unit-testable. */
 object CameraSourceValidator {
@@ -22,44 +29,40 @@ object CameraSourceValidator {
         val errors = mutableListOf<ValidationError>()
         val name = draft.name.trim()
         when {
-            name.isEmpty() -> errors += ValidationError(SourceField.NAME, "Name is required.")
-            name.length > MAX_NAME_LENGTH ->
-                errors += ValidationError(SourceField.NAME, "Name must be $MAX_NAME_LENGTH characters or fewer.")
+            name.isEmpty() -> errors += ValidationError(SourceField.NAME, ValidationCode.NAME_REQUIRED)
+            name.length > MAX_NAME_LENGTH -> errors += ValidationError(SourceField.NAME, ValidationCode.NAME_TOO_LONG)
         }
         if (draft.model.trim().length > MAX_MODEL_LENGTH) {
-            errors += ValidationError(SourceField.MODEL, "Model must be $MAX_MODEL_LENGTH characters or fewer.")
+            errors += ValidationError(SourceField.MODEL, ValidationCode.MODEL_TOO_LONG)
         }
         val endpoint = draft.endpoint.trim()
         val endpointError = when (draft.transport) {
             CameraTransport.RTSP -> validateStreamUrl(endpoint, "rtsp")
             CameraTransport.SRT -> validateStreamUrl(endpoint, "srt")
             CameraTransport.WIFI, CameraTransport.ETHERNET ->
-                if (endpoint.isEmpty() || parseHostPort(endpoint) != null) null
-                else "Enter a host or IP address, optionally with a port (e.g. 192.168.1.20:8080)."
-            CameraTransport.UNKNOWN -> "Choose a connection method."
+                if (endpoint.isEmpty() || parseHostPort(endpoint) != null) null else ValidationCode.HOST_INVALID
+            CameraTransport.UNKNOWN -> ValidationCode.TRANSPORT_REQUIRED
             else -> null
         }
         if (endpointError != null) errors += ValidationError(SourceField.ENDPOINT, endpointError)
         return errors
     }
 
-    private fun validateStreamUrl(endpoint: String, scheme: String): String? {
-        if (endpoint.isEmpty()) return "Stream URL is required, e.g. $scheme://192.168.1.50:554/stream"
-        if (endpoint.length > MAX_ENDPOINT_LENGTH) return "URL is too long."
+    private fun validateStreamUrl(endpoint: String, scheme: String): ValidationCode? {
+        if (endpoint.isEmpty()) return ValidationCode.URL_REQUIRED
+        if (endpoint.length > MAX_ENDPOINT_LENGTH) return ValidationCode.URL_TOO_LONG
         val uri = try {
             URI(endpoint)
         } catch (e: URISyntaxException) {
-            return "This is not a valid URL."
+            return ValidationCode.URL_INVALID
         }
         val actualScheme = uri.scheme?.lowercase()
-        if (scheme == "rtsp" && actualScheme == "rtsps") return "Secure RTSP (rtsps://) is not supported yet."
-        if (actualScheme != scheme) return "URL must start with $scheme://"
-        if (uri.rawUserInfo != null) {
-            return "Usernames/passwords in the URL are not stored by this build. " +
-                "Use a stream without authentication until secure credential storage is added."
-        }
-        if (uri.host.isNullOrBlank()) return "URL must include a host name or IP address."
-        if (uri.port != -1 && uri.port !in 1..65535) return "Port must be between 1 and 65535."
+        if (scheme == "rtsp" && actualScheme == "rtsps") return ValidationCode.RTSPS_UNSUPPORTED
+        if (actualScheme != scheme) return ValidationCode.URL_WRONG_SCHEME
+        // Credentials are rejected so no secret is ever persisted in plain text.
+        if (uri.rawUserInfo != null) return ValidationCode.URL_HAS_CREDENTIALS
+        if (uri.host.isNullOrBlank()) return ValidationCode.URL_NO_HOST
+        if (uri.port != -1 && uri.port !in 1..65535) return ValidationCode.PORT_INVALID
         return null
     }
 

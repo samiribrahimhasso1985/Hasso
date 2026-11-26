@@ -18,6 +18,7 @@ import com.directormodepro.app.camera.core.CameraStatus
 import com.directormodepro.app.camera.core.CameraTransport
 import com.directormodepro.app.camera.core.IntegrationInfo
 import com.directormodepro.app.camera.core.SourceField
+import com.directormodepro.app.camera.core.ValidationCode
 import com.directormodepro.app.camera.core.ValidationError
 import com.directormodepro.app.data.CameraSourceRepository
 import com.directormodepro.app.data.SaveResult
@@ -88,7 +89,7 @@ class DirectorViewModel(
                 when (result) {
                     is SaveResult.Saved -> emptyList()
                     is SaveResult.Invalid -> result.errors
-                    SaveResult.NotFound -> listOf(ValidationError(SourceField.NAME, "This source no longer exists."))
+                    SaveResult.NotFound -> listOf(ValidationError(SourceField.NAME, ValidationCode.SOURCE_NOT_FOUND))
                 }
             )
         }

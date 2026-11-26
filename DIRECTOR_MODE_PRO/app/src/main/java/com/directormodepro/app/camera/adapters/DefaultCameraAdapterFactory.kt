@@ -10,6 +10,7 @@ import com.directormodepro.app.camera.core.CameraSource
 import com.directormodepro.app.camera.core.CameraTransport
 import com.directormodepro.app.camera.core.IntegrationInfo
 import com.directormodepro.app.camera.core.IntegrationLevel
+import com.directormodepro.app.camera.core.IntegrationReason
 import com.directormodepro.app.camera.core.toDescriptor
 
 /**
@@ -21,35 +22,22 @@ class DefaultCameraAdapterFactory(
 ) : CameraAdapterFactory {
 
     override fun integrationFor(brand: CameraBrand, transport: CameraTransport): IntegrationInfo = when {
-        transport == CameraTransport.RTSP -> IntegrationInfo(
-            IntegrationLevel.RECEIVE_ONLY,
-            "Generic RTSP receiver: live preview only, no camera control."
-        )
-        brand == CameraBrand.SONY -> IntegrationInfo(
-            IntegrationLevel.INTEGRATION_TARGET,
-            "Sony integration target. Sony's Camera Remote SDK does not list Android; a validated bridge " +
-                "or protocol is required first. For video now, use an HDMI encoder that outputs RTSP."
-        )
-        brand == CameraBrand.DJI -> IntegrationInfo(
-            IntegrationLevel.INTEGRATION_TARGET,
-            "DJI integration target. No public third-party control SDK has been validated for Osmo Action cameras."
-        )
-        transport == CameraTransport.SRT -> IntegrationInfo(
-            IntegrationLevel.UNSUPPORTED, "SRT receive is planned; no SRT decoder is bundled yet."
-        )
-        transport == CameraTransport.USB || transport == CameraTransport.HDMI_CAPTURE -> IntegrationInfo(
-            IntegrationLevel.UNSUPPORTED, "USB/UVC capture is planned for a later milestone."
-        )
-        else -> IntegrationInfo(
-            IntegrationLevel.UNSUPPORTED, "No validated adapter exists for this camera and connection yet."
-        )
+        transport == CameraTransport.RTSP -> IntegrationInfo(IntegrationLevel.RECEIVE_ONLY, IntegrationReason.GENERIC_RTSP)
+        // Sony Camera Remote SDK does not list Android; a validated bridge or protocol is required first.
+        brand == CameraBrand.SONY -> IntegrationInfo(IntegrationLevel.INTEGRATION_TARGET, IntegrationReason.SONY_TARGET)
+        // No public third-party control SDK has been validated for Osmo Action cameras.
+        brand == CameraBrand.DJI -> IntegrationInfo(IntegrationLevel.INTEGRATION_TARGET, IntegrationReason.DJI_TARGET)
+        transport == CameraTransport.SRT -> IntegrationInfo(IntegrationLevel.UNSUPPORTED, IntegrationReason.SRT_PLANNED)
+        transport == CameraTransport.USB || transport == CameraTransport.HDMI_CAPTURE ->
+            IntegrationInfo(IntegrationLevel.UNSUPPORTED, IntegrationReason.USB_PLANNED)
+        else -> IntegrationInfo(IntegrationLevel.UNSUPPORTED, IntegrationReason.NO_ADAPTER)
     }
 
     override fun create(source: CameraSource): CameraAdapter {
         val info = integrationFor(source.brand, source.transport)
         return when (info.level) {
             IntegrationLevel.RECEIVE_ONLY -> RtspCameraAdapter(source.toDescriptor(), rtspProbe)
-            else -> UnsupportedCameraAdapter(source.toDescriptor(), info.summary)
+            else -> UnsupportedCameraAdapter(source.toDescriptor(), info.reason)
         }
     }
 }

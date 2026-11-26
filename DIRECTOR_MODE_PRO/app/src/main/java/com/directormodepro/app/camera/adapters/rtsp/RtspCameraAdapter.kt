@@ -8,6 +8,7 @@ import com.directormodepro.app.camera.core.CameraConnectionStatus
 import com.directormodepro.app.camera.core.CameraDescriptor
 import com.directormodepro.app.camera.core.CameraResult
 import com.directormodepro.app.camera.core.CameraStatus
+import com.directormodepro.app.camera.core.StatusMessage
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -30,31 +31,32 @@ class RtspCameraAdapter(
 
     override suspend fun connect(config: CameraConnectionConfig): CameraResult {
         val raw = (config as? CameraConnectionConfig.Rtsp)?.uri
-            ?: return fail("This source needs an rtsp:// stream URL.")
-        val uri = RtspUri.parse(raw) ?: return fail("The stream URL is not a valid rtsp:// address.")
+            ?: return fail(StatusMessage.RtspUrlRequired)
+        val uri = RtspUri.parse(raw) ?: return fail(StatusMessage.RtspUrlInvalid)
 
-        mutableStatus.value = CameraStatus(CameraConnectionStatus.CONNECTING, "Contacting ${uri.host}:${uri.port}…")
+        mutableStatus.value = CameraStatus(CameraConnectionStatus.CONNECTING, StatusMessage.Contacting(uri.host, uri.port))
         val result = withTimeoutOrNull(timeoutMillis) { probe.describe(uri) } ?: RtspProbeResult.TimedOut
 
         return when (result) {
             is RtspProbeResult.Reachable -> {
                 if (!result.sdp.hasVideo) {
-                    fail("Server answered, but the stream has no video track.")
+                    fail(StatusMessage.NoVideoTrack)
                 } else {
                     capabilities = CameraCapabilities(livePreview = true)
                     connectedUri = uri.raw
-                    val codecs = result.sdp.videoCodecs.joinToString().ifEmpty { "unknown codec" }
-                    mutableStatus.value = CameraStatus(CameraConnectionStatus.CONNECTED, "Stream reachable • video: $codecs")
+                    mutableStatus.value = CameraStatus(
+                        CameraConnectionStatus.CONNECTED, StatusMessage.StreamReachable(result.sdp.videoCodecs)
+                    )
                     CameraResult.Success
                 }
             }
             is RtspProbeResult.Rejected -> when (result.statusCode) {
-                401, 403 -> fail("Stream requires authentication, which this build does not support yet.")
-                404 -> fail("Stream path not found on the server (404).")
-                else -> fail("Server refused the stream: ${result.statusCode} ${result.reason}".trim())
+                401, 403 -> fail(StatusMessage.AuthenticationRequired)
+                404 -> fail(StatusMessage.StreamNotFound)
+                else -> fail(StatusMessage.ServerRefused(result.statusCode, result.reason))
             }
-            is RtspProbeResult.NetworkError -> fail("Network error: ${result.message}")
-            RtspProbeResult.TimedOut -> fail("No answer from the server within ${timeoutMillis / 1000} s.")
+            is RtspProbeResult.NetworkError -> fail(StatusMessage.NetworkError(result.message))
+            RtspProbeResult.TimedOut -> fail(StatusMessage.TimedOut(timeoutMillis / 1000))
         }
     }
 
@@ -72,10 +74,10 @@ class RtspCameraAdapter(
     override suspend fun getPreviewUri(): String? =
         connectedUri.takeIf { mutableStatus.value.connection == CameraConnectionStatus.CONNECTED }
 
-    private fun fail(message: String): CameraResult {
+    private fun fail(message: StatusMessage): CameraResult {
         capabilities = CameraCapabilities()
         connectedUri = null
         mutableStatus.value = CameraStatus(CameraConnectionStatus.ERROR, message)
-        return CameraResult.Failure(message)
+        return CameraResult.Failure(message.toString())
     }
 }

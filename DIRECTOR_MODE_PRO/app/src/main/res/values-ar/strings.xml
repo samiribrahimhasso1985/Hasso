@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="nav_studio">الاستوديو</string>
+    <string name="nav_cameras">الكاميرات</string>
+    <string name="nav_tools">الأدوات</string>
+    <string name="nav_settings">الإعدادات</string>
+
+    <string name="studio_kicker">مساحة عمل المخرج</string>
+    <string name="studio_headline">اللقطة الجيدة تبدأ هنا.</string>
+    <string name="studio_tagline">منصّة إنتاج متعددة الكاميرات في جيبك</string>
+    <string name="production_current">الإنتاج الحالي</string>
+    <string name="production_phase">ما قبل الإنتاج</string>
+    <string name="production_default_name">إنتاج بدون عنوان</string>
+    <string name="production_name_label">اسم الإنتاج</string>
+    <string name="multiview_title">العرض المتعدد للكاميرات</string>
+    <string name="multiview_count">المصادر: %1$d</string>
+    <string name="add_camera_source">إضافة مصدر كاميرا</string>
+    <string name="system_status">حالة النظام</string>
+    <string name="system_status_title">محوّل RTSP العام للاستقبال فقط متاح</string>
+    <string name="system_status_body">تبقى Sony وDJI أهداف تكامل: لا تحكم عن بُعد حتى يُختبر بروتوكول موثّق على الجهاز الحقيقي.</string>
+
+    <string name="no_signal">لا توجد إشارة</string>
+    <string name="preview_hint_ready">البث متاح — ابدأ المعاينة</string>
+    <string name="preview_hint_test">اختبر الاتصال من تبويب الكاميرات</string>
+    <string name="preview_start">بدء المعاينة</string>
+    <string name="preview_stop">إيقاف المعاينة</string>
+    <string name="preview_connecting">جارٍ الاتصال</string>
+    <string name="preview_buffering">جارٍ التحميل</string>
+    <string name="preview_live">● مباشر</string>
+    <string name="preview_ended">انتهى البث</string>
+    <string name="preview_error">خطأ في التشغيل</string>
+
+    <string name="cameras_title">مصادر الكاميرات</string>
+    <string name="cameras_subtitle">أضف كاميراتك ومصادر البث. لا يظهر الاتصال كمتاح إلا بعد نجاح اختبار حقيقي.</string>
+    <string name="cameras_empty_title">لا توجد مصادر كاميرا بعد</string>
+    <string name="cameras_empty_tip">نصيحة: يمكنك اليوم معاينة بث RTSP قادم من كاميرا IP أو جهاز تحويل HDMI أو برنامج OBS.</string>
+    <string name="cd_edit">تعديل %1$s</string>
+    <string name="cd_remove">حذف %1$s</string>
+    <string name="delete_title">حذف %1$s؟</string>
+    <string name="delete_body">سيُحذف المصدر من هذا الجهاز ويُغلق أي اتصال مفتوح.</string>
+    <string name="delete_confirm">حذف</string>
+    <string name="cancel">إلغاء</string>
+    <string name="save">حفظ</string>
+    <string name="verified_capabilities">الإمكانيات المؤكدة</string>
+    <string name="test_connection">اختبار الاتصال</string>
+    <string name="check_support">فحص الدعم</string>
+    <string name="reset">إعادة تعيين</string>
+
+    <string name="cap_preview">معاينة</string>
+    <string name="cap_record">تسجيل</string>
+    <string name="cap_iso">ISO</string>
+    <string name="cap_shutter">الغالق</string>
+    <string name="cap_iris">فتحة العدسة</string>
+    <string name="cap_wb">توازن الأبيض</string>
+    <string name="cap_focus">التركيز</string>
+    <string name="cap_zoom">الزوم</string>
+    <string name="cap_battery">البطارية</string>
+    <string name="cap_media">التخزين</string>
+
+    <string name="badge_receive_only">استقبال فقط</string>
+    <string name="badge_integration_target">هدف تكامل</string>
+    <string name="badge_unsupported">غير مدعوم</string>
+    <string name="status_offline">غير متصل</string>
+    <string name="status_testing">جارٍ الاختبار…</string>
+    <string name="status_reachable">متاح</string>
+    <string name="status_live">مباشر</string>
+    <string name="status_error">خطأ</string>
+    <string name="status_not_available">غير متاح</string>
+
+    <string name="brand_generic">عام / أخرى</string>
+    <string name="transport_rtsp">بث RTSP</string>
+    <string name="transport_srt">بث SRT</string>
+    <string name="transport_wifi">Wi-Fi</string>
+    <string name="transport_ethernet">إيثرنت / شبكة محلية</string>
+    <string name="transport_usb">USB-C / UVC</string>
+    <string name="transport_hdmi">التقاط HDMI</string>
+    <string name="transport_unknown">غير معروف</string>
+
+    <string name="reason_generic_rtsp">مستقبل RTSP عام: معاينة مباشرة فقط، بدون تحكم بالكاميرا.</string>
+    <string name="reason_sony">هدف تكامل Sony. حزمة Sony Camera Remote SDK لا تدعم Android، ويلزم أولاً جسر أو بروتوكول موثّق ومُختبر. للحصول على الصورة الآن استخدم جهاز تحويل HDMI يُخرج بث RTSP.</string>
+    <string name="reason_dji">هدف تكامل DJI. لم يُتحقق من وجود حزمة تحكم عامة للمطورين لكاميرات Osmo Action.</string>
+    <string name="reason_srt">استقبال SRT مخطط له؛ لا يوجد مفكك SRT مدمج بعد.</string>
+    <string name="reason_usb">التقاط USB/UVC مخطط له في مرحلة لاحقة.</string>
+    <string name="reason_none">لا يوجد محوّل مُختبر لهذه الكاميرا وطريقة الاتصال بعد.</string>
+
+    <string name="msg_not_connected">غير متصل</string>
+    <string name="msg_contacting">جارٍ الاتصال بـ %1$s:%2$d…</string>
+    <string name="msg_reachable">البث متاح • الفيديو: %1$s</string>
+    <string name="msg_unknown_codec">ترميز غير معروف</string>
+    <string name="msg_no_video">استجاب الخادم، لكن البث لا يحتوي على مسار فيديو.</string>
+    <string name="msg_auth">البث يتطلب تسجيل دخول، وهذا الإصدار لا يدعم ذلك بعد.</string>
+    <string name="msg_not_found">مسار البث غير موجود على الخادم (404).</string>
+    <string name="msg_refused">رفض الخادم البث: %1$d %2$s</string>
+    <string name="msg_network">خطأ في الشبكة: %1$s</string>
+    <string name="msg_timeout">لم يستجب الخادم خلال %1$d ثانية.</string>
+    <string name="msg_rtsp_required">هذا المصدر يحتاج رابط بث يبدأ بـ rtsp://</string>
+    <string name="msg_rtsp_invalid">رابط البث ليس عنوان rtsp:// صالحاً.</string>
+
+    <string name="err_name_required">الاسم مطلوب.</string>
+    <string name="err_name_too_long">يجب ألا يتجاوز الاسم %1$d حرفاً.</string>
+    <string name="err_model_too_long">يجب ألا يتجاوز اسم الموديل %1$d حرفاً.</string>
+    <string name="err_url_required">رابط البث مطلوب.</string>
+    <string name="err_url_too_long">الرابط طويل جداً.</string>
+    <string name="err_url_invalid">هذا ليس رابطاً صالحاً.</string>
+    <string name="err_url_scheme">يجب أن يبدأ الرابط بـ rtsp:// أو srt:// حسب طريقة الاتصال.</string>
+    <string name="err_rtsps">بث RTSP الآمن (rtsps://) غير مدعوم بعد.</string>
+    <string name="err_credentials">لا يتم حفظ اسم المستخدم أو كلمة المرور داخل الرابط. استخدم بثاً بدون كلمة مرور حتى تُضاف خاصية التخزين الآمن.</string>
+    <string name="err_no_host">يجب أن يحتوي الرابط على اسم جهاز أو عنوان IP.</string>
+    <string name="err_port">يجب أن يكون المنفذ بين 1 و65535.</string>
+    <string name="err_host">أدخل اسم الجهاز أو عنوان IP، ويمكن إضافة المنفذ (مثال: 192.168.1.20:8080).</string>
+    <string name="err_transport">اختر طريقة الاتصال.</string>
+    <string name="err_not_found">هذا المصدر لم يعد موجوداً.</string>
+
+    <string name="editor_add_title">إضافة مصدر كاميرا</string>
+    <string name="editor_edit_title">تعديل %1$s</string>
+    <string name="quick_start">بداية سريعة</string>
+    <string name="preset_rtsp">بث RTSP</string>
+    <string name="field_name">اسم المصدر</string>
+    <string name="field_brand">الشركة المصنّعة</string>
+    <string name="field_model">الموديل (اختياري)</string>
+    <string name="field_connection">طريقة الاتصال</string>
+    <string name="field_stream_url">رابط البث</string>
+    <string name="field_host_optional">اسم الجهاز أو IP (اختياري)</string>
+    <string name="endpoint_hint">لا تضع اسم مستخدم أو كلمة مرور.</string>
+
+    <string name="tools_title">أدوات السينما</string>
+    <string name="tools_subtitle">أدوات مراقبة مخطط لها ضمن خط الإنتاج.</string>
+    <string name="tool_waveform">مراقب الموجة (Waveform)</string>
+    <string name="tool_false_color">الألوان الزائفة (False Color)</string>
+    <string name="tool_peaking">إبراز التركيز (Peaking)</string>
+    <string name="tool_zebra">الحمار الوحشي (Zebra)</string>
+    <string name="tool_lut">عارض LUT مخصص</string>
+    <string name="tool_safe_frame">إطارات الأمان</string>
+    <string name="tool_audio">مقياس مستوى الصوت</string>
+    <string name="planned">مخطط له</string>
+
+    <string name="settings_title">الإعدادات</string>
+    <string name="settings_language">اللغة</string>
+    <string name="language_system">لغة النظام</string>
+    <string name="settings_version">إصدار التطبيق</string>
+    <string name="settings_version_value">%1$s • أساس محرك الكاميرات</string>
+    <string name="settings_platform">المنصة</string>
+    <string name="settings_platform_value">Android 8.0 وأحدث</string>
+    <string name="settings_architecture">بنية الكاميرات</string>
+    <string name="settings_architecture_value">محوّلات قابلة للإضافة • استقبال RTSP فقط</string>
+    <string name="settings_storage">التخزين</string>
+    <string name="settings_storage_value">قاعدة بيانات على الجهاز (بدون مزامنة سحابية)</string>
+    <string name="settings_privacy">الخصوصية</string>
+    <string name="settings_privacy_value">محلي أولاً • لا تُحفظ كلمات مرور</string>
+    <string name="settings_footer">بيانات الكاميرات تبقى على هذا الجهاز. لا يتصل التطبيق بروابط البث إلا عند الضغط على «اختبار الاتصال» أو «بدء المعاينة».</string>
+</resources>

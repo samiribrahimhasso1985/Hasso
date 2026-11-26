@@ -43,6 +43,7 @@ class CameraConnectionManagerTest {
         manager.sync(listOf(sony))
         assertTrue(manager.testConnection(sony.id) is CameraResult.Unsupported)
         assertEquals(CameraConnectionStatus.ERROR, manager.status(sony.id)!!.value.connection)
+        assertEquals(StatusMessage.NotAvailable(IntegrationReason.SONY_TARGET), manager.status(sony.id)!!.value.message)
         assertEquals(CameraCapabilities(), manager.capabilities(sony.id))
         assertNull(manager.previewUri(sony.id))
     }

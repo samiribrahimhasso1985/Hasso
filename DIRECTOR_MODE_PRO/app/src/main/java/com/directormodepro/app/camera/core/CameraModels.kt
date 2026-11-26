@@ -31,9 +31,25 @@ data class CameraCapabilities(
     val mediaStorage: Boolean = false
 )
 
+/** Language-neutral status messages; the UI turns them into localized text. */
+sealed interface StatusMessage {
+    data object NotConnected : StatusMessage
+    data class Contacting(val host: String, val port: Int) : StatusMessage
+    data class StreamReachable(val videoCodecs: List<String>) : StatusMessage
+    data object NoVideoTrack : StatusMessage
+    data object AuthenticationRequired : StatusMessage
+    data object StreamNotFound : StatusMessage
+    data class ServerRefused(val statusCode: Int, val reason: String) : StatusMessage
+    data class NetworkError(val detail: String) : StatusMessage
+    data class TimedOut(val seconds: Long) : StatusMessage
+    data object RtspUrlRequired : StatusMessage
+    data object RtspUrlInvalid : StatusMessage
+    data class NotAvailable(val reason: IntegrationReason) : StatusMessage
+}
+
 data class CameraStatus(
     val connection: CameraConnectionStatus = CameraConnectionStatus.DISCONNECTED,
-    val message: String = "Not connected",
+    val message: StatusMessage = StatusMessage.NotConnected,
     val batteryPercent: Int? = null,
     val recording: Boolean = false
 )
@@ -115,4 +131,7 @@ enum class IntegrationLevel {
     UNSUPPORTED
 }
 
-data class IntegrationInfo(val level: IntegrationLevel, val summary: String)
+/** Why an integration has its level; mapped to localized text in the UI. */
+enum class IntegrationReason { GENERIC_RTSP, SONY_TARGET, DJI_TARGET, SRT_PLANNED, USB_PLANNED, NO_ADAPTER }
+
+data class IntegrationInfo(val level: IntegrationLevel, val reason: IntegrationReason)

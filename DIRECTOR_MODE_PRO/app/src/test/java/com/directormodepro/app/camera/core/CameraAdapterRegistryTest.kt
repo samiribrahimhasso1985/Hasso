@@ -10,7 +10,7 @@ import org.junit.Test
 
 class CameraAdapterRegistryTest {
     private fun adapter(id: String) = UnsupportedCameraAdapter(
-        CameraDescriptor(CameraId(id), id, CameraBrand.SONY, "FX3", setOf(CameraTransport.WIFI)), "not validated"
+        CameraDescriptor(CameraId(id), id, CameraBrand.SONY, "FX3", setOf(CameraTransport.WIFI)), IntegrationReason.SONY_TARGET
     )
 
     @Test fun registerFindAndList() {
@@ -37,6 +37,7 @@ class CameraAdapterRegistryTest {
         val result = a.connect(CameraConnectionConfig.Network("10.0.0.1"))
         assertTrue(result is CameraResult.Unsupported)
         assertEquals(CameraConnectionStatus.ERROR, a.status.value.connection)
+        assertEquals(StatusMessage.NotAvailable(IntegrationReason.SONY_TARGET), a.status.value.message)
         assertEquals(CameraCapabilities(), a.getCapabilities())
         assertTrue(a.execute(CameraCommand.StartRecording) is CameraResult.Unsupported)
         a.disconnect()

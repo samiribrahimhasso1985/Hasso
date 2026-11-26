@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="nav_studio">Studio</string>
+    <string name="nav_cameras">Kameras</string>
+    <string name="nav_tools">Werkzeuge</string>
+    <string name="nav_settings">Einstellungen</string>
+
+    <string name="studio_kicker">ARBEITSPLATZ DER REGIE</string>
+    <string name="studio_headline">Der gute Take beginnt hier.</string>
+    <string name="studio_tagline">Ihr mobiles Mehrkamera-Produktionspult</string>
+    <string name="production_current">AKTUELLE PRODUKTION</string>
+    <string name="production_phase">VORPRODUKTION</string>
+    <string name="production_default_name">Unbenannte Produktion</string>
+    <string name="production_name_label">Produktionsname</string>
+    <string name="multiview_title">KAMERA-MULTIVIEW</string>
+    <string name="multiview_count">QUELLEN: %1$d</string>
+    <string name="add_camera_source">Kameraquelle hinzufügen</string>
+    <string name="system_status">SYSTEMSTATUS</string>
+    <string name="system_status_title">Generischer RTSP-Empfangsadapter verfügbar</string>
+    <string name="system_status_body">Sony und DJI bleiben Integrationsziele: keine Fernsteuerung, bis ein validiertes Protokoll an echter Hardware getestet wurde.</string>
+
+    <string name="no_signal">KEIN SIGNAL</string>
+    <string name="preview_hint_ready">Stream erreichbar – Vorschau starten</string>
+    <string name="preview_hint_test">Verbindung unter „Kameras“ testen</string>
+    <string name="preview_start">VORSCHAU STARTEN</string>
+    <string name="preview_stop">VORSCHAU STOPPEN</string>
+    <string name="preview_connecting">VERBINDE</string>
+    <string name="preview_buffering">PUFFERN</string>
+    <string name="preview_live">● LIVE</string>
+    <string name="preview_ended">STREAM BEENDET</string>
+    <string name="preview_error">WIEDERGABEFEHLER</string>
+
+    <string name="cameras_title">KAMERAQUELLEN</string>
+    <string name="cameras_subtitle">Fügen Sie Ihre Kameras und Streams hinzu. Nur Verbindungen, die einen echten Test bestehen, werden als erreichbar angezeigt.</string>
+    <string name="cameras_empty_title">Noch keine Kameraquellen</string>
+    <string name="cameras_empty_tip">Tipp: Ein RTSP-Stream (von einer IP-Kamera, einem HDMI-Encoder oder OBS) kann schon heute angezeigt werden.</string>
+    <string name="cd_edit">%1$s bearbeiten</string>
+    <string name="cd_remove">%1$s entfernen</string>
+    <string name="delete_title">%1$s entfernen?</string>
+    <string name="delete_body">Die Quelle wird von diesem Gerät gelöscht und jede offene Verbindung wird geschlossen.</string>
+    <string name="delete_confirm">Entfernen</string>
+    <string name="cancel">Abbrechen</string>
+    <string name="save">Speichern</string>
+    <string name="verified_capabilities">BESTÄTIGTE FUNKTIONEN</string>
+    <string name="test_connection">VERBINDUNG TESTEN</string>
+    <string name="check_support">UNTERSTÜTZUNG PRÜFEN</string>
+    <string name="reset">ZURÜCKSETZEN</string>
+
+    <string name="cap_preview">Vorschau</string>
+    <string name="cap_record">Aufnahme</string>
+    <string name="cap_iso">ISO</string>
+    <string name="cap_shutter">Verschluss</string>
+    <string name="cap_iris">Blende</string>
+    <string name="cap_wb">Weißabgleich</string>
+    <string name="cap_focus">Fokus</string>
+    <string name="cap_zoom">Zoom</string>
+    <string name="cap_battery">Akku</string>
+    <string name="cap_media">Speicher</string>
+
+    <string name="badge_receive_only">NUR EMPFANG</string>
+    <string name="badge_integration_target">INTEGRATIONSZIEL</string>
+    <string name="badge_unsupported">NICHT UNTERSTÜTZT</string>
+    <string name="status_offline">OFFLINE</string>
+    <string name="status_testing">TESTE…</string>
+    <string name="status_reachable">ERREICHBAR</string>
+    <string name="status_live">LIVE</string>
+    <string name="status_error">FEHLER</string>
+    <string name="status_not_available">NICHT VERFÜGBAR</string>
+
+    <string name="brand_generic">Generisch / Andere</string>
+    <string name="transport_rtsp">RTSP-Stream</string>
+    <string name="transport_srt">SRT-Stream</string>
+    <string name="transport_wifi">WLAN</string>
+    <string name="transport_ethernet">Ethernet / LAN</string>
+    <string name="transport_usb">USB-C / UVC</string>
+    <string name="transport_hdmi">HDMI-Capture</string>
+    <string name="transport_unknown">Unbekannt</string>
+
+    <string name="reason_generic_rtsp">Generischer RTSP-Empfänger: nur Live-Vorschau, keine Kamerasteuerung.</string>
+    <string name="reason_sony">Sony-Integrationsziel. Das Sony Camera Remote SDK unterstützt kein Android; zuerst ist eine validierte Brücke oder ein validiertes Protokoll nötig. Für Bild jetzt: einen HDMI-Encoder mit RTSP-Ausgang verwenden.</string>
+    <string name="reason_dji">DJI-Integrationsziel. Für Osmo-Action-Kameras wurde kein öffentliches Steuerungs-SDK für Drittanbieter validiert.</string>
+    <string name="reason_srt">SRT-Empfang ist geplant; es ist noch kein SRT-Decoder enthalten.</string>
+    <string name="reason_usb">USB/UVC-Capture ist für einen späteren Meilenstein geplant.</string>
+    <string name="reason_none">Für diese Kamera und Verbindung gibt es noch keinen validierten Adapter.</string>
+
+    <string name="msg_not_connected">Nicht verbunden</string>
+    <string name="msg_contacting">Verbinde mit %1$s:%2$d…</string>
+    <string name="msg_reachable">Stream erreichbar • Video: %1$s</string>
+    <string name="msg_unknown_codec">unbekannter Codec</string>
+    <string name="msg_no_video">Der Server hat geantwortet, aber der Stream enthält keine Videospur.</string>
+    <string name="msg_auth">Der Stream erfordert eine Anmeldung, die diese Version noch nicht unterstützt.</string>
+    <string name="msg_not_found">Stream-Pfad auf dem Server nicht gefunden (404).</string>
+    <string name="msg_refused">Server hat den Stream abgelehnt: %1$d %2$s</string>
+    <string name="msg_network">Netzwerkfehler: %1$s</string>
+    <string name="msg_timeout">Keine Antwort vom Server innerhalb von %1$d s.</string>
+    <string name="msg_rtsp_required">Diese Quelle benötigt eine rtsp://-Stream-URL.</string>
+    <string name="msg_rtsp_invalid">Die Stream-URL ist keine gültige rtsp://-Adresse.</string>
+
+    <string name="err_name_required">Name ist erforderlich.</string>
+    <string name="err_name_too_long">Der Name darf höchstens %1$d Zeichen lang sein.</string>
+    <string name="err_model_too_long">Das Modell darf höchstens %1$d Zeichen lang sein.</string>
+    <string name="err_url_required">Stream-URL ist erforderlich.</string>
+    <string name="err_url_too_long">Die URL ist zu lang.</string>
+    <string name="err_url_invalid">Das ist keine gültige URL.</string>
+    <string name="err_url_scheme">Die URL muss passend zur Verbindungsart mit rtsp:// oder srt:// beginnen.</string>
+    <string name="err_rtsps">Sicheres RTSP (rtsps://) wird noch nicht unterstützt.</string>
+    <string name="err_credentials">Benutzernamen/Passwörter in der URL werden nicht gespeichert. Verwenden Sie einen Stream ohne Anmeldung, bis eine sichere Zugangsdaten-Speicherung hinzugefügt ist.</string>
+    <string name="err_no_host">Die URL muss einen Hostnamen oder eine IP-Adresse enthalten.</string>
+    <string name="err_port">Der Port muss zwischen 1 und 65535 liegen.</string>
+    <string name="err_host">Host oder IP-Adresse eingeben, optional mit Port (z. B. 192.168.1.20:8080).</string>
+    <string name="err_transport">Wählen Sie eine Verbindungsart.</string>
+    <string name="err_not_found">Diese Quelle existiert nicht mehr.</string>
+
+    <string name="editor_add_title">Kameraquelle hinzufügen</string>
+    <string name="editor_edit_title">%1$s bearbeiten</string>
+    <string name="quick_start">Schnellstart</string>
+    <string name="preset_rtsp">RTSP-Stream</string>
+    <string name="field_name">Name der Quelle</string>
+    <string name="field_brand">Kamerahersteller</string>
+    <string name="field_model">Modell (optional)</string>
+    <string name="field_connection">Verbindungsart</string>
+    <string name="field_stream_url">Stream-URL</string>
+    <string name="field_host_optional">Host oder IP (optional)</string>
+    <string name="endpoint_hint">Keine Benutzernamen oder Passwörter eingeben.</string>
+
+    <string name="tools_title">KINO-WERKZEUGE</string>
+    <string name="tools_subtitle">Geplante Monitoring-Werkzeuge für die Produktion.</string>
+    <string name="tool_waveform">Waveform-Monitor</string>
+    <string name="tool_false_color">Falschfarben</string>
+    <string name="tool_peaking">Fokus-Peaking</string>
+    <string name="tool_zebra">Zebra</string>
+    <string name="tool_lut">Eigener LUT-Viewer</string>
+    <string name="tool_safe_frame">Sicherheitsrahmen</string>
+    <string name="tool_audio">Audiopegelmesser</string>
+    <string name="planned">GEPLANT</string>
+
+    <string name="settings_title">EINSTELLUNGEN</string>
+    <string name="settings_language">Sprache</string>
+    <string name="language_system">Systemstandard</string>
+    <string name="settings_version">App-Version</string>
+    <string name="settings_version_value">%1$s • Grundlage der Kamera-Engine</string>
+    <string name="settings_platform">Plattform</string>
+    <string name="settings_platform_value">Android 8.0 und neuer</string>
+    <string name="settings_architecture">Kamera-Architektur</string>
+    <string name="settings_architecture_value">Erweiterbare Adapter • nur RTSP-Empfang</string>
+    <string name="settings_storage">Speicherung</string>
+    <string name="settings_storage_value">Datenbank auf dem Gerät (keine Cloud-Synchronisierung)</string>
+    <string name="settings_privacy">Datenschutz</string>
+    <string name="settings_privacy_value">Lokal zuerst • keine Passwörter gespeichert</string>
+    <string name="settings_footer">Kameradaten bleiben auf diesem Gerät. Stream-URLs werden nur kontaktiert, wenn Sie „Verbindung testen“ oder „Vorschau starten“ drücken.</string>
+</resources>

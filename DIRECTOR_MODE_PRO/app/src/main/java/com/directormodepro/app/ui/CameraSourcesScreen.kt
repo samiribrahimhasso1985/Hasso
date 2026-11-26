@@ -43,6 +43,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextDirection
+import androidx.compose.ui.unit.TextUnit
+import com.directormodepro.app.R
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -58,11 +63,20 @@ import com.directormodepro.app.ui.theme.Panel
 import com.directormodepro.app.ui.theme.Panel2
 import com.directormodepro.app.ui.theme.White
 
+/** URLs and IP addresses always read left-to-right, also inside the Arabic (RTL) layout. */
+@Composable
+internal fun LtrText(text: String, color: androidx.compose.ui.graphics.Color, fontSize: TextUnit, maxLines: Int = 1, modifier: Modifier = Modifier) {
+    Text(
+        text, color = color, fontSize = fontSize, maxLines = maxLines, overflow = TextOverflow.Ellipsis, modifier = modifier,
+        style = TextStyle(textDirection = TextDirection.Ltr)
+    )
+}
+
 @Composable
 internal fun BadgePill(badge: Badge, modifier: Modifier = Modifier) {
     Surface(color = badge.bg, shape = CircleShape, modifier = modifier) {
         Text(
-            badge.text, color = badge.fg, fontSize = 8.sp, fontWeight = FontWeight.Bold, letterSpacing = 0.8.sp,
+            stringResource(badge.text), color = badge.fg, fontSize = 8.sp, fontWeight = FontWeight.Bold, letterSpacing = 0.8.sp,
             modifier = Modifier.padding(vertical = 4.dp, horizontal = 7.dp)
         )
     }
@@ -89,22 +103,16 @@ fun CameraSourcesScreen(
     ) {
         item(span = { GridItemSpan(maxLineSpan) }) {
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                Text("CAMERA SOURCES", fontSize = 22.sp, fontWeight = FontWeight.Bold)
-                Text(
-                    "Add your cameras and streams. Only connections that pass a real test show as reachable.",
-                    color = Muted, fontSize = 13.sp
-                )
+                Text(stringResource(R.string.cameras_title), fontSize = 22.sp, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.cameras_subtitle), color = Muted, fontSize = 13.sp)
             }
         }
         if (sources.isEmpty()) {
             item(span = { GridItemSpan(maxLineSpan) }) {
                 Card(colors = CardDefaults.cardColors(containerColor = Panel), shape = RoundedCornerShape(14.dp)) {
                     Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        Text("No camera sources yet", fontWeight = FontWeight.SemiBold)
-                        Text(
-                            "Tip: an RTSP stream (from an IP camera, an HDMI encoder or OBS) can be previewed today.",
-                            color = Muted, fontSize = 12.sp
-                        )
+                        Text(stringResource(R.string.cameras_empty_title), fontWeight = FontWeight.SemiBold)
+                        Text(stringResource(R.string.cameras_empty_tip), color = Muted, fontSize = 12.sp)
                     }
                 }
             }
@@ -123,7 +131,7 @@ fun CameraSourcesScreen(
                 onClick = onAdd, modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(containerColor = Accent, contentColor = Bg)
             ) {
-                Icon(Icons.Default.Add, null); Spacer(Modifier.width(8.dp)); Text("Add camera source")
+                Icon(Icons.Default.Add, null); Spacer(Modifier.width(8.dp)); Text(stringResource(R.string.add_camera_source))
             }
         }
     }
@@ -131,12 +139,12 @@ fun CameraSourcesScreen(
     pendingDelete?.let { target ->
         AlertDialog(
             onDismissRequest = { pendingDelete = null },
-            title = { Text("Remove ${target.source.name}?") },
-            text = { Text("The source is deleted from this device and any open connection is closed.") },
+            title = { Text(stringResource(R.string.delete_title, target.source.name)) },
+            text = { Text(stringResource(R.string.delete_body)) },
             confirmButton = {
-                TextButton(onClick = { onDelete(target.source.id); pendingDelete = null }) { Text("Remove", color = Danger) }
+                TextButton(onClick = { onDelete(target.source.id); pendingDelete = null }) { Text(stringResource(R.string.delete_confirm), color = Danger) }
             },
-            dismissButton = { TextButton(onClick = { pendingDelete = null }) { Text("Cancel", color = Muted) } },
+            dismissButton = { TextButton(onClick = { pendingDelete = null }) { Text(stringResource(R.string.cancel), color = Muted) } },
             containerColor = Panel, titleContentColor = White, textContentColor = White
         )
     }
@@ -164,8 +172,8 @@ private fun SourceCard(
                         color = Muted, fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis
                     )
                 }
-                IconButton(onClick = onEdit) { Icon(Icons.Default.Edit, "Edit ${source.name}", tint = Muted) }
-                IconButton(onClick = onDelete) { Icon(Icons.Default.Delete, "Remove ${source.name}", tint = Muted) }
+                IconButton(onClick = onEdit) { Icon(Icons.Default.Edit, stringResource(R.string.cd_edit, source.name), tint = Muted) }
+                IconButton(onClick = onDelete) { Icon(Icons.Default.Delete, stringResource(R.string.cd_remove, source.name), tint = Muted) }
             }
 
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -179,19 +187,19 @@ private fun SourceCard(
             ) {
                 Text(source.transport.label(), fontSize = 12.sp, fontWeight = FontWeight.Medium)
                 if (source.endpoint.isNotBlank()) {
-                    Text(source.endpoint, color = Muted, fontSize = 11.sp, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                    LtrText(source.endpoint, color = Muted, fontSize = 11.sp, maxLines = 2)
                 }
-                Text(ui.integration.summary, color = Muted, fontSize = 10.sp)
+                Text(ui.integration.reason.text(), color = Muted, fontSize = 10.sp)
             }
 
-            Text(ui.status.message, fontSize = 12.sp, color = if (ui.status.connection == CameraConnectionStatus.ERROR) Danger else White)
+            Text(ui.status.message.text(), fontSize = 12.sp, color = if (ui.status.connection == CameraConnectionStatus.ERROR) Danger else White)
 
-            Text("VERIFIED CAPABILITIES", color = Muted, fontSize = 9.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.2.sp)
+            Text(stringResource(R.string.verified_capabilities), color = Muted, fontSize = 9.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.2.sp)
             FlowRow(horizontalArrangement = Arrangement.spacedBy(5.dp), verticalArrangement = Arrangement.spacedBy(5.dp)) {
                 ui.capabilities.asLabeledList().forEach { (label, on) ->
                     Surface(color = if (on) Accent.copy(alpha = 0.18f) else Panel2, shape = RoundedCornerShape(6.dp)) {
                         Text(
-                            (if (on) "✓ " else "") + label, fontSize = 9.sp, color = if (on) Accent else Muted.copy(alpha = 0.6f),
+                            (if (on) "✓ " else "") + stringResource(label), fontSize = 9.sp, color = if (on) Accent else Muted.copy(alpha = 0.6f),
                             modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp)
                         )
                     }
@@ -207,10 +215,10 @@ private fun SourceCard(
                         CircularProgressIndicator(Modifier.size(14.dp), color = Accent, strokeWidth = 2.dp)
                         Spacer(Modifier.width(8.dp))
                     }
-                    Text(if (ui.integration.level == IntegrationLevel.RECEIVE_ONLY) "TEST CONNECTION" else "CHECK SUPPORT", fontSize = 11.sp)
+                    Text(stringResource(if (ui.integration.level == IntegrationLevel.RECEIVE_ONLY) R.string.test_connection else R.string.check_support), fontSize = 11.sp)
                 }
                 if (ui.status.connection == CameraConnectionStatus.CONNECTED || ui.status.connection == CameraConnectionStatus.ERROR) {
-                    TextButton(onClick = onDisconnect) { Text("RESET", color = Muted, fontSize = 11.sp) }
+                    TextButton(onClick = onDisconnect) { Text(stringResource(R.string.reset), color = Muted, fontSize = 11.sp) }
                 }
             }
         }

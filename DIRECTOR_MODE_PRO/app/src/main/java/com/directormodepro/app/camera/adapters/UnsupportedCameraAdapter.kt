@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.StateFlow
  */
 class UnsupportedCameraAdapter(
     override val descriptor: CameraDescriptor,
-    private val explanation: String
+    private val reason: IntegrationReason
 ) : CameraAdapter {
     private val mutableStatus = MutableStateFlow(CameraStatus())
     override val status: StateFlow<CameraStatus> = mutableStatus
@@ -18,9 +18,9 @@ class UnsupportedCameraAdapter(
     override suspend fun connect(config: CameraConnectionConfig): CameraResult {
         mutableStatus.value = CameraStatus(
             connection = CameraConnectionStatus.ERROR,
-            message = explanation
+            message = StatusMessage.NotAvailable(reason)
         )
-        return CameraResult.Unsupported(explanation)
+        return CameraResult.Unsupported("Integration not available: $reason")
     }
 
     override suspend fun disconnect() {

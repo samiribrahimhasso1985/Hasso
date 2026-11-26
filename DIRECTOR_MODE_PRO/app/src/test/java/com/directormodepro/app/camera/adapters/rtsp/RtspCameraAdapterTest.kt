@@ -9,6 +9,7 @@ import com.directormodepro.app.camera.core.CameraDescriptor
 import com.directormodepro.app.camera.core.CameraId
 import com.directormodepro.app.camera.core.CameraResult
 import com.directormodepro.app.camera.core.CameraTransport
+import com.directormodepro.app.camera.core.StatusMessage
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -36,7 +37,7 @@ class RtspCameraAdapterTest {
         assertEquals(CameraResult.Success, a.connect(CameraConnectionConfig.Rtsp(url)))
         assertEquals(RtspUri(url, "10.0.0.5", 8554), probed)
         assertEquals(CameraConnectionStatus.CONNECTED, a.status.value.connection)
-        assertTrue(a.status.value.message.contains("H264"))
+        assertEquals(StatusMessage.StreamReachable(listOf("H264")), a.status.value.message)
         assertEquals(CameraCapabilities(livePreview = true), a.getCapabilities())
         assertEquals(url, a.getPreviewUri())
     }
@@ -44,32 +45,32 @@ class RtspCameraAdapterTest {
     @Test fun audioOnlyStreamIsAnError() = runTest {
         val a = adapter(RtspProbeResult.Reachable(SdpSummary(false, true, emptyList())))
         assertTrue(a.connect(CameraConnectionConfig.Rtsp(url)) is CameraResult.Failure)
-        assertEquals(CameraConnectionStatus.ERROR, a.status.value.connection)
+        assertEquals(StatusMessage.NoVideoTrack, a.status.value.message)
         assertEquals(CameraCapabilities(), a.getCapabilities())
     }
 
     @Test fun authenticationRequiredIsReported() = runTest {
         val a = adapter(RtspProbeResult.Rejected(401, "Unauthorized"))
         assertTrue(a.connect(CameraConnectionConfig.Rtsp(url)) is CameraResult.Failure)
-        assertTrue(a.status.value.message.contains("authentication"))
+        assertEquals(StatusMessage.AuthenticationRequired, a.status.value.message)
     }
 
     @Test fun notFoundAndNetworkErrorsAreReported() = runTest {
         val notFound = adapter(RtspProbeResult.Rejected(404, "Not Found"))
         notFound.connect(CameraConnectionConfig.Rtsp(url))
-        assertTrue(notFound.status.value.message.contains("404"))
+        assertEquals(StatusMessage.StreamNotFound, notFound.status.value.message)
 
         val offline = adapter(RtspProbeResult.NetworkError("Connection refused"))
         offline.connect(CameraConnectionConfig.Rtsp(url))
         assertEquals(CameraConnectionStatus.ERROR, offline.status.value.connection)
-        assertTrue(offline.status.value.message.contains("Connection refused"))
+        assertEquals(StatusMessage.NetworkError("Connection refused"), offline.status.value.message)
     }
 
     @Test fun hangingServerTimesOut() = runTest {
         val a = RtspCameraAdapter(descriptor, { awaitCancellation() }, timeoutMillis = 3_000)
         assertTrue(a.connect(CameraConnectionConfig.Rtsp(url)) is CameraResult.Failure)
         assertEquals(CameraConnectionStatus.ERROR, a.status.value.connection)
-        assertTrue(a.status.value.message.contains("3 s"))
+        assertEquals(StatusMessage.TimedOut(3), a.status.value.message)
     }
 
     @Test fun wrongConfigOrBadUrlFailsWithoutProbing() = runTest {

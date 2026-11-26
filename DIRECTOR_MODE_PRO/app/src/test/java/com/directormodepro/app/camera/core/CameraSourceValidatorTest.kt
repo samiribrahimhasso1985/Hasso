@@ -17,7 +17,7 @@ class CameraSourceValidatorTest {
 
     @Test fun nameIsRequiredAndBounded() {
         val blank = CameraSourceValidator.validate(rtsp("rtsp://h/s").copy(name = "   "))
-        assertEquals(SourceField.NAME, blank.single().field)
+        assertEquals(ValidationError(SourceField.NAME, ValidationCode.NAME_REQUIRED), blank.single())
         val long = CameraSourceValidator.validate(rtsp("rtsp://h/s").copy(name = "x".repeat(41)))
         assertEquals(SourceField.NAME, long.single().field)
     }
@@ -27,13 +27,13 @@ class CameraSourceValidatorTest {
     @Test fun wrongSchemeRejected() = assertEquals(1, endpointErrors(rtsp("http://192.168.1.5/stream")).size)
 
     @Test fun rtspsReportedAsUnsupported() =
-        assertTrue(endpointErrors(rtsp("rtsps://host/stream")).single().message.contains("not supported"))
+        assertEquals(ValidationCode.RTSPS_UNSUPPORTED, endpointErrors(rtsp("rtsps://host/stream")).single().code)
 
     @Test fun credentialsInUrlAreRejected() {
         val error = endpointErrors(rtsp("rtsp://admin:secret@192.168.1.5/stream")).single()
-        assertTrue(error.message.contains("passwords"))
-        // The message must never echo the secret back.
-        assertTrue(!error.message.contains("secret"))
+        assertEquals(ValidationCode.URL_HAS_CREDENTIALS, error.code)
+        // The error carries no copy of the input, so the secret cannot leak into UI or logs.
+        assertTrue(!error.toString().contains("secret"))
     }
 
     @Test fun missingHostRejected() = assertEquals(1, endpointErrors(rtsp("rtsp:///stream")).size)

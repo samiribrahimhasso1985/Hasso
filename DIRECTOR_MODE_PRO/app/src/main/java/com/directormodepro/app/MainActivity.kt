@@ -1,7 +1,10 @@
 package com.directormodepro.app
 
 import android.os.Bundle
-import androidx.activity.ComponentActivity
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.os.LocaleListCompat
+import androidx.compose.ui.res.stringResource
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -52,7 +55,8 @@ import com.directormodepro.app.ui.theme.Panel2
 import com.directormodepro.app.ui.theme.Screen
 import com.directormodepro.app.ui.theme.White
 
-class MainActivity : ComponentActivity() {
+/** AppCompatActivity is required for in-app language switching on Android 8–12. */
+class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent { DirectorModeApp() }
@@ -67,7 +71,8 @@ private data class EditorRequest(val editing: SourceUiState?)
 fun DirectorModeApp(viewModel: DirectorViewModel = viewModel(factory = DirectorViewModel.Factory)) {
     var selectedTab by rememberSaveable { mutableIntStateOf(0) }
     var editor by remember { mutableStateOf<EditorRequest?>(null) }
-    var projectName by rememberSaveable { mutableStateOf("Untitled Production") }
+    val defaultProduction = stringResource(R.string.production_default_name)
+    var projectName by rememberSaveable { mutableStateOf(defaultProduction) }
     val sources by viewModel.sources.collectAsStateWithLifecycle()
 
     MaterialTheme(colorScheme = darkColorScheme(
@@ -92,7 +97,10 @@ fun DirectorModeApp(viewModel: DirectorViewModel = viewModel(factory = DirectorV
             },
             bottomBar = {
                 NavigationBar(containerColor = Panel, contentColor = White) {
-                    val items = listOf("Studio", "Cameras", "Tools", "Settings")
+                    val items = listOf(
+                        stringResource(R.string.nav_studio), stringResource(R.string.nav_cameras),
+                        stringResource(R.string.nav_tools), stringResource(R.string.nav_settings)
+                    )
                     val icons = listOf(Icons.Default.GridView, Icons.Default.CameraAlt, Icons.Default.Tune, Icons.Default.Settings)
                     items.forEachIndexed { index, label ->
                         NavigationBarItem(
@@ -127,7 +135,7 @@ fun DirectorModeApp(viewModel: DirectorViewModel = viewModel(factory = DirectorV
         editor?.let { request ->
             val editing = request.editing
             SourceEditorDialog(
-                title = if (editing == null) "Add camera source" else "Edit ${editing.source.name}",
+                title = if (editing == null) stringResource(R.string.editor_add_title) else stringResource(R.string.editor_edit_title, editing.source.name),
                 initial = editing?.source?.toDraft() ?: CameraSourceDraft(),
                 integrationFor = viewModel::integrationFor,
                 onSave = { draft, done ->
@@ -156,43 +164,43 @@ private fun StudioScreen(
     ) {
         item(span = { GridItemSpan(maxLineSpan) }) {
             Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
-                Text("DIRECTOR'S WORKSPACE", color = Accent, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
-                Text("Good take starts here.", color = White, fontSize = 25.sp, fontWeight = FontWeight.Bold)
-                Text("Your portable multi-camera production desk", color = Muted, fontSize = 13.sp)
+                Text(stringResource(R.string.studio_kicker), color = Accent, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
+                Text(stringResource(R.string.studio_headline), color = White, fontSize = 25.sp, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.studio_tagline), color = Muted, fontSize = 13.sp)
             }
         }
         item(span = { GridItemSpan(maxLineSpan) }) {
             Card(colors = CardDefaults.cardColors(containerColor = Panel), shape = RoundedCornerShape(18.dp)) {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("CURRENT PRODUCTION", color = Muted, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.4.sp)
+                        Text(stringResource(R.string.production_current), color = Muted, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.4.sp)
                         Spacer(Modifier.weight(1f))
-                        Surface(color = AccentBg, shape = CircleShape) { Text(" PRE-PRODUCTION ", color = Accent, fontSize = 9.sp, modifier = Modifier.padding(horizontal = 8.dp, vertical = 5.dp)) }
+                        Surface(color = AccentBg, shape = CircleShape) { Text(" " + stringResource(R.string.production_phase) + " ", color = Accent, fontSize = 9.sp, modifier = Modifier.padding(horizontal = 8.dp, vertical = 5.dp)) }
                     }
                     Text(projectName, fontSize = 20.sp, fontWeight = FontWeight.SemiBold)
-                    OutlinedTextField(value = projectName, onValueChange = onProjectChange, label = { Text("Production name") }, singleLine = true, modifier = Modifier.fillMaxWidth(), colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Accent, focusedLabelColor = Accent))
+                    OutlinedTextField(value = projectName, onValueChange = onProjectChange, label = { Text(stringResource(R.string.production_name_label)) }, singleLine = true, modifier = Modifier.fillMaxWidth(), colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Accent, focusedLabelColor = Accent))
                 }
             }
         }
         item(span = { GridItemSpan(maxLineSpan) }) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("CAMERA MULTIVIEW", fontWeight = FontWeight.Bold, fontSize = 12.sp, letterSpacing = 1.2.sp)
+                Text(stringResource(R.string.multiview_title), fontWeight = FontWeight.Bold, fontSize = 12.sp, letterSpacing = 1.2.sp)
                 Spacer(Modifier.weight(1f))
-                Text("${sources.size} SOURCES", color = Muted, fontSize = 10.sp)
+                Text(stringResource(R.string.multiview_count, sources.size), color = Muted, fontSize = 10.sp)
             }
         }
         items(sources, key = { it.source.id.value }) { ui -> CameraPreviewCard(ui) }
         item(span = { GridItemSpan(maxLineSpan) }) {
             OutlinedButton(onClick = onAdd, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp), colors = ButtonDefaults.outlinedButtonColors(contentColor = Accent)) {
-                Icon(Icons.Default.Add, null); Spacer(Modifier.width(8.dp)); Text("ADD CAMERA SOURCE")
+                Icon(Icons.Default.Add, null); Spacer(Modifier.width(8.dp)); Text(stringResource(R.string.add_camera_source).uppercase())
             }
         }
         item(span = { GridItemSpan(maxLineSpan) }) {
             Card(colors = CardDefaults.cardColors(containerColor = Panel2), shape = RoundedCornerShape(16.dp)) {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Text("SYSTEM STATUS", color = Accent, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.4.sp)
-                    Text("Generic RTSP receive-only adapter available", fontWeight = FontWeight.SemiBold)
-                    Text("Sony and DJI remain integration targets: no remote control until a validated protocol is tested on real hardware.", color = Muted, fontSize = 12.sp)
+                    Text(stringResource(R.string.system_status), color = Accent, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.4.sp)
+                    Text(stringResource(R.string.system_status_title), fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(R.string.system_status_body), color = Muted, fontSize = 12.sp)
                 }
             }
         }
@@ -212,9 +220,9 @@ private fun CameraPreviewCard(ui: SourceUiState) {
                 } else {
                     Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Icon(Icons.Default.CameraAlt, null, tint = Color(0xFF536473), modifier = Modifier.size(34.dp))
-                        Text("NO SIGNAL", color = Color(0xFF71808D), fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
+                        Text(stringResource(R.string.no_signal), color = Color(0xFF71808D), fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
                         Text(
-                            if (uri != null) "Stream reachable — start preview" else "Test the connection in Cameras",
+                            stringResource(if (uri != null) R.string.preview_hint_ready else R.string.preview_hint_test),
                             color = Color(0xFF536473), fontSize = 10.sp
                         )
                     }
@@ -230,7 +238,7 @@ private fun CameraPreviewCard(ui: SourceUiState) {
                 }
                 if (uri != null) {
                     TextButton(onClick = { previewOn = !previewOn }) {
-                        Text(if (previewOn) "STOP PREVIEW" else "START PREVIEW", color = Accent, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                        Text(stringResource(if (previewOn) R.string.preview_stop else R.string.preview_start), color = Accent, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                     }
                 }
             }
@@ -241,13 +249,14 @@ private fun CameraPreviewCard(ui: SourceUiState) {
 @Composable
 private fun ToolsScreen(modifier: Modifier) {
     Column(modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Text("CINEMA TOOLS", fontSize = 22.sp, fontWeight = FontWeight.Bold)
-        Text("Monitoring tools planned for the production pipeline.", color = Muted, fontSize = 13.sp)
-        listOf("Waveform Monitor", "False Color", "Focus Peaking", "Zebra", "Custom LUT Viewer", "Safe Frame Guides", "Audio Level Meter").forEach { tool ->
+        Text(stringResource(R.string.tools_title), fontSize = 22.sp, fontWeight = FontWeight.Bold)
+        Text(stringResource(R.string.tools_subtitle), color = Muted, fontSize = 13.sp)
+        listOf(R.string.tool_waveform, R.string.tool_false_color, R.string.tool_peaking, R.string.tool_zebra, R.string.tool_lut, R.string.tool_safe_frame, R.string.tool_audio).forEach { toolRes ->
+            val tool = stringResource(toolRes)
             Row(Modifier.fillMaxWidth().background(Panel, RoundedCornerShape(12.dp)).padding(15.dp), verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Default.Tune, null, tint = Accent)
                 Spacer(Modifier.width(12.dp)); Text(tool, Modifier.weight(1f), fontWeight = FontWeight.Medium)
-                Text("PLANNED", color = Muted, fontSize = 9.sp)
+                Text(stringResource(R.string.planned), color = Muted, fontSize = 9.sp)
             }
         }
     }
@@ -256,14 +265,41 @@ private fun ToolsScreen(modifier: Modifier) {
 @Composable
 private fun SettingsScreen(modifier: Modifier) {
     Column(modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-        Text("SETTINGS", fontSize = 22.sp, fontWeight = FontWeight.Bold)
-        SettingRow("App version", "${BuildInfo.VERSION_NAME} • Camera engine foundation")
-        SettingRow("Platform", "Android 8.0 and newer")
-        SettingRow("Camera architecture", "Pluggable adapters • RTSP receive-only")
-        SettingRow("Storage", "On-device Room database (no cloud sync)")
-        SettingRow("Privacy", "Local-first design • no credentials stored")
-        SettingRow("Language", "English / Arabic (planned)")
-        Text("Camera data stays on this device. Stream URLs are only contacted when you press Test connection or Start preview.", color = Muted, fontSize = 12.sp)
+        Text(stringResource(R.string.settings_title), fontSize = 22.sp, fontWeight = FontWeight.Bold)
+        LanguagePicker()
+        SettingRow(stringResource(R.string.settings_version), stringResource(R.string.settings_version_value, BuildInfo.VERSION_NAME))
+        SettingRow(stringResource(R.string.settings_platform), stringResource(R.string.settings_platform_value))
+        SettingRow(stringResource(R.string.settings_architecture), stringResource(R.string.settings_architecture_value))
+        SettingRow(stringResource(R.string.settings_storage), stringResource(R.string.settings_storage_value))
+        SettingRow(stringResource(R.string.settings_privacy), stringResource(R.string.settings_privacy_value))
+        Text(stringResource(R.string.settings_footer), color = Muted, fontSize = 12.sp)
+    }
+}
+
+/** Language tags offered in the app; "" follows the phone's system language. Names are shown in their own language. */
+private val appLanguages = listOf("" to null, "ar" to "العربية", "de" to "Deutsch", "en" to "English")
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun LanguagePicker() {
+    val current = remember { AppCompatDelegate.getApplicationLocales().get(0)?.language.orEmpty() }
+    Column(Modifier.fillMaxWidth().background(Panel, RoundedCornerShape(12.dp)).padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(stringResource(R.string.settings_language), color = Muted, fontSize = 11.sp)
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            appLanguages.forEach { (tag, name) ->
+                FilterChip(
+                    selected = current == tag,
+                    onClick = {
+                        // Recreates the activity in the new language and remembers the choice across restarts.
+                        AppCompatDelegate.setApplicationLocales(
+                            if (tag.isEmpty()) LocaleListCompat.getEmptyLocaleList() else LocaleListCompat.forLanguageTags(tag)
+                        )
+                    },
+                    label = { Text(name ?: stringResource(R.string.language_system), fontSize = 13.sp) },
+                    colors = FilterChipDefaults.filterChipColors(selectedContainerColor = Accent, selectedLabelColor = Bg, labelColor = White)
+                )
+            }
+        }
     }
 }
 
@@ -275,5 +311,5 @@ private fun SettingRow(title: String, value: String) {
 }
 
 private object BuildInfo {
-    const val VERSION_NAME = "0.2.0"
+    const val VERSION_NAME = "0.3.0"
 }

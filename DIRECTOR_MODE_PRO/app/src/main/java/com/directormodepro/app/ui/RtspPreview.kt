@@ -16,6 +16,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.directormodepro.app.R
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -109,13 +111,15 @@ fun RtspPreview(uri: String, modifier: Modifier = Modifier) {
                 }
             }
         )
-        val (label, fg, bg) = when (state) {
-            PreviewState.CONNECTING -> Triple("CONNECTING", Accent, AccentBg)
-            PreviewState.BUFFERING -> Triple("BUFFERING", Accent, AccentBg)
-            PreviewState.LIVE -> Triple("● LIVE", White, Live)
-            PreviewState.ENDED -> Triple("STREAM ENDED", Danger, DangerBg)
-            PreviewState.ERROR -> Triple("PLAYBACK ERROR${error?.let { ": $it" } ?: ""}", Danger, DangerBg)
+        val (labelRes, fg, bg) = when (state) {
+            PreviewState.CONNECTING -> Triple(R.string.preview_connecting, Accent, AccentBg)
+            PreviewState.BUFFERING -> Triple(R.string.preview_buffering, Accent, AccentBg)
+            PreviewState.LIVE -> Triple(R.string.preview_live, White, Live)
+            PreviewState.ENDED -> Triple(R.string.preview_ended, Danger, DangerBg)
+            PreviewState.ERROR -> Triple(R.string.preview_error, Danger, DangerBg)
         }
+        // Media3 error code names (e.g. ERROR_CODE_IO_NETWORK_CONNECTION_FAILED) are technical identifiers, shown as-is.
+        val label = stringResource(labelRes) + if (state == PreviewState.ERROR && error != null) ": $error" else ""
         Surface(color = bg, shape = CircleShape, modifier = Modifier.align(Alignment.BottomStart).padding(8.dp)) {
             Text(label, color = fg, fontSize = 8.sp, modifier = Modifier.padding(vertical = 4.dp, horizontal = 7.dp))
         }
