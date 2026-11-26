@@ -1,4 +1,6 @@
-# UI / UX Guidelines — Dark Navy & Gold
+# UI / UX Guidelines
+
+> **Visual sections superseded (2026-11-26)** by the Modern Luxury / Editorial Minimalism design system in `docs/design/`. Interaction rules (§5), screen list (§3) and RTL rules (§4) remain valid; colours, glow and typography below are historical.
 
 The relationship graph **is** the visual identity. Everything else frames it.
 

@@ -38,22 +38,24 @@ interface Props {
 }
 
 const C = {
-  bg: '#071426',
-  card: '#13243D',
-  gold: '#E8B94F',
-  goldHi: '#FFD978',
-  text: '#F5F7FC',
-  muted: '#AAB7CA',
+  bg: '#FAF9F5', // Soft Cream canvas
+  card: '#FAF9F5',
+  ring: '#DDD8CE', // Warm Gray
+  ringStrong: '#858078', // Stone Gray
+  focus: '#30302D', // Deep Graphite
+  accent: '#826658', // Muted Terracotta (ink)
+  text: '#30302D',
+  muted: '#716C65',
 };
 
-/** Elegant initials avatar (SVG data URI) — no photos needed, nothing leaked. */
-export function avatarFor(name: string, accent = C.gold): string {
+/** Calm initials avatar (SVG data URI) — no photos needed, nothing leaked. */
+export function avatarFor(name: string, emphasis = false): string {
   const initial = [...name.trim()][0]?.toUpperCase() ?? '?';
+  const fill = emphasis ? '#30302D' : '#E9E5DC';
+  const ink = emphasis ? '#FAF9F5' : '#30302D';
   const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'>
-<defs><radialGradient id='g' cx='35%' cy='28%' r='80%'><stop offset='0' stop-color='#24466F'/><stop offset='0.55' stop-color='#13243D'/><stop offset='1' stop-color='#0A1729'/></radialGradient></defs>
-<circle cx='60' cy='60' r='60' fill='url(#g)'/>
-<circle cx='60' cy='60' r='56' fill='none' stroke='${accent}' stroke-opacity='0.35' stroke-width='2'/>
-<text x='60' y='61' dominant-baseline='middle' text-anchor='middle' font-family='Georgia, "Times New Roman", serif' font-size='50' fill='${accent}'>${initial
+<circle cx='60' cy='60' r='60' fill='${fill}'/>
+<text x='60' y='62' dominant-baseline='middle' text-anchor='middle' font-family='Inter, "IBM Plex Sans Arabic", system-ui, sans-serif' font-weight='500' font-size='46' fill='${ink}'>${initial
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')}</text></svg>`;
   return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
@@ -75,7 +77,7 @@ function toElements(nodes: GraphNode[], edges: GraphEdge[], focusId: string, you
       data: {
         id: n.id,
         label: sub ? `${n.displayName}\n${sub}` : n.displayName,
-        avatar: avatarFor(n.displayName, n.id === focusId ? C.goldHi : C.gold),
+        avatar: avatarFor(n.displayName, n.id === focusId),
         generation: n.generation,
       },
       classes,
@@ -91,23 +93,23 @@ function toElements(nodes: GraphNode[], edges: GraphEdge[], focusId: string, you
   return els;
 }
 
-// `underlay-*` (glow) is supported by Cytoscape ≥ 3.18 but missing from @types/cytoscape.
+// Editorial minimalism: thin lines, no glow, contrast-safe line colours (≥ 3:1 on the canvas).
 const STYLE = [
   {
     selector: 'node',
     style: {
-      width: 50,
-      height: 50,
+      width: 48,
+      height: 48,
       shape: 'ellipse',
-      'background-color': C.card,
+      'background-color': '#E9E5DC',
       'background-image': 'data(avatar)',
       'background-fit': 'cover',
-      'border-width': 2,
-      'border-color': '#2C4A73',
+      'border-width': 1.5,
+      'border-color': C.ring,
       label: 'data(label)',
       color: C.text,
       'font-size': 11,
-      'font-family': 'Inter, "Segoe UI", "Noto Sans Arabic", Tahoma, sans-serif',
+      'font-family': 'Inter, "IBM Plex Sans Arabic", "Noto Sans Arabic", system-ui, sans-serif',
       'text-wrap': 'wrap',
       'text-max-width': '120px',
       'text-valign': 'bottom',
@@ -115,73 +117,56 @@ const STYLE = [
       'text-outline-color': C.bg,
       'text-outline-width': 3,
       'min-zoomed-font-size': 7,
-      'transition-property': 'opacity, border-color, width, height',
+      'transition-property': 'opacity, border-color, border-width',
       'transition-duration': 250,
     },
   },
-  { selector: 'node.claimed', style: { 'border-color': '#3D6597' } },
-  { selector: 'node.managed', style: { 'border-style': 'dashed', 'border-color': '#5B7AA3' } },
-  { selector: 'node.deceased', style: { 'background-opacity': 0.75, 'border-color': '#7D8CA3' } },
-  {
-    selector: 'node.expandable',
-    style: { 'border-width': 3, 'border-style': 'double', 'border-color': '#4C79B3' },
-  },
+  { selector: 'node.claimed', style: { 'border-color': C.ringStrong } },
+  { selector: 'node.managed', style: { 'border-style': 'dashed', 'border-color': C.ringStrong } },
+  { selector: 'node.deceased', style: { 'background-opacity': 0.7 } },
+  { selector: 'node.expandable', style: { 'border-width': 3, 'border-style': 'double', 'border-color': C.ringStrong } },
   {
     selector: 'node.focus',
     style: {
-      width: 78,
-      height: 78,
-      'border-width': 3,
+      width: 74,
+      height: 74,
+      'border-width': 2,
       'border-style': 'solid',
-      'border-color': C.goldHi,
+      'border-color': C.focus,
       'font-size': 13,
-      'font-weight': 'bold',
-      color: C.goldHi,
-      'underlay-color': C.gold,
-      'underlay-opacity': 0.22,
-      'underlay-padding': 14,
-      'underlay-shape': 'ellipse',
+      'font-weight': 600,
     },
   },
-  { selector: 'node.viewer', style: { 'border-color': C.gold } },
-  {
-    selector: 'node:selected',
-    style: { 'border-color': C.goldHi, 'border-width': 4, 'underlay-color': C.goldHi, 'underlay-opacity': 0.3, 'underlay-padding': 10, 'underlay-shape': 'ellipse' },
-  },
+  { selector: 'node.viewer', style: { 'border-color': C.focus } },
+  { selector: 'node:selected', style: { 'border-color': C.accent, 'border-width': 3 } },
   {
     selector: 'edge',
     style: {
-      width: 2.4,
+      width: 1.8,
       'curve-style': 'bezier',
       'line-color': 'data(color)',
-      opacity: 0.92,
-      'underlay-color': 'data(color)',
-      'underlay-opacity': 0.16,
-      'underlay-padding': 4,
+      opacity: 1,
       'target-arrow-shape': 'none',
       'font-size': 9,
       color: C.muted,
       'text-background-color': C.bg,
-      'text-background-opacity': 0.85,
+      'text-background-opacity': 0.92,
       'text-background-padding': '2px',
       'text-background-shape': 'roundrectangle',
       'min-zoomed-font-size': 8,
-      'transition-property': 'opacity, width, underlay-opacity',
+      'transition-property': 'opacity, width',
       'transition-duration': 250,
     },
   },
-  { selector: 'edge.union', style: { width: 3.4, 'underlay-opacity': 0.24 } },
-  { selector: 'edge.directed', style: { 'target-arrow-shape': 'triangle', 'target-arrow-color': 'data(color)', 'arrow-scale': 0.8 } },
-  { selector: 'edge.pending', style: { 'line-style': 'dashed', 'line-dash-pattern': [7, 5], opacity: 0.6, 'underlay-opacity': 0 } },
-  { selector: 'edge.disputed', style: { 'line-style': 'dotted', opacity: 0.55, 'underlay-opacity': 0 } },
-  { selector: '.faded', style: { opacity: 0.13 } },
-  { selector: 'edge.hl', style: { width: 4, opacity: 1, 'underlay-opacity': 0.42, 'underlay-padding': 7, 'z-index': 10 } },
-  { selector: 'node.hl', style: { 'border-color': C.goldHi } },
-  {
-    selector: 'edge.path',
-    style: { width: 5, opacity: 1, 'line-color': C.goldHi, 'target-arrow-color': C.goldHi, 'underlay-color': C.goldHi, 'underlay-opacity': 0.5, 'underlay-padding': 8, 'z-index': 20 },
-  },
-  { selector: 'node.path', style: { 'border-color': C.goldHi, 'border-width': 4, 'underlay-color': C.goldHi, 'underlay-opacity': 0.35, 'underlay-padding': 10, 'underlay-shape': 'ellipse' } },
+  { selector: 'edge.union', style: { width: 2.8 } },
+  { selector: 'edge.directed', style: { 'target-arrow-shape': 'triangle', 'target-arrow-color': 'data(color)', 'arrow-scale': 0.75 } },
+  { selector: 'edge.pending', style: { 'line-style': 'dashed', 'line-dash-pattern': [6, 5] } },
+  { selector: 'edge.disputed', style: { 'line-style': 'dotted' } },
+  { selector: '.faded', style: { opacity: 0.18 } },
+  { selector: 'edge.hl', style: { width: 3, 'z-index': 10 } },
+  { selector: 'node.hl', style: { 'border-color': C.focus } },
+  { selector: 'edge.path', style: { width: 4, 'line-color': C.focus, 'target-arrow-color': C.focus, 'z-index': 20 } },
+  { selector: 'node.path', style: { 'border-color': C.focus, 'border-width': 3 } },
 ] as unknown as StylesheetStyle[];
 
 const GraphCanvas = forwardRef<GraphCanvasHandle, Props>(function GraphCanvas(props, ref) {
@@ -276,8 +261,12 @@ const GraphCanvas = forwardRef<GraphCanvasHandle, Props>(function GraphCanvas(pr
       }
     });
     if (props.highlight) {
-      const els = cy.elements('.path');
-      if (els.nonempty()) cy.animate({ fit: { eles: els, padding: 80 }, duration: 500 });
+      // wait for a running layout animation to settle, then frame the whole path
+      const t = setTimeout(() => {
+        const els = cy.elements('.path');
+        if (els.nonempty()) cy.animate({ fit: { eles: els, padding: 80 }, duration: 500 });
+      }, 700);
+      return () => clearTimeout(t);
     }
   }, [props.highlight, props.nodes, props.edges]);
 

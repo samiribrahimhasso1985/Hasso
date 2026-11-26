@@ -10,7 +10,7 @@ export const LOCALES: { code: Locale; name: string }[] = [
 ];
 
 const en = {
-  appName: 'Family Tree Network',
+  appName: 'FAMILY NETWORK',
   tagline: 'One person. One identity. Every relationship.',
   welcomeBody: 'Family, friends, colleagues and communities — connected in one living, verified network.',
   email: 'Email',
@@ -121,7 +121,7 @@ const en = {
 export type Dict = typeof en;
 
 const de: Dict = {
-  appName: 'Family Tree Network',
+  appName: 'FAMILY NETWORK',
   tagline: 'Ein Mensch. Eine Identität. Alle Beziehungen.',
   welcomeBody: 'Familie, Freunde, Kollegen und Gemeinschaften – verbunden in einem lebendigen, bestätigten Netzwerk.',
   email: 'E-Mail',
@@ -230,7 +230,7 @@ const de: Dict = {
 };
 
 const ar: Dict = {
-  appName: 'شبكة شجرة العائلة',
+  appName: 'FAMILY NETWORK',
   tagline: 'شخص واحد. هوية واحدة. كل العلاقات.',
   welcomeBody: 'العائلة والأصدقاء والزملاء والمجتمعات — في شبكة واحدة حيّة وموثّقة.',
   email: 'البريد الإلكتروني',

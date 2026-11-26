@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Api, type Category, type GraphEdge, type GraphNode, type PathResult, type PersonSummary, type Session } from '../lib/api';
 import { useI18n } from '../lib/i18n';
+import { CATEGORY } from '../lib/tokens';
 import AddRelationshipDialog from './AddRelationshipDialog';
 import ConnectPanel from './ConnectPanel';
 import GraphCanvas, { type GraphCanvasHandle, type LayoutMode } from './GraphCanvas';
@@ -21,7 +22,13 @@ const FILTER_CATEGORIES: Record<Filter, Category[] | undefined> = {
   PROFESSIONAL: ['PROFESSIONAL'],
   SOCIAL: ['SOCIAL', 'CUSTOM'],
 };
-const FILTER_COLORS: Record<Filter, string> = { ALL: '#E8B94F', FAMILY: '#25A9FF', FRIENDSHIP: '#E8B94F', PROFESSIONAL: '#A56BFF', SOCIAL: '#43D99A' };
+const FILTER_COLORS: Record<Filter, string> = {
+  ALL: '#30302D',
+  FAMILY: CATEGORY.FAMILY,
+  FRIENDSHIP: CATEGORY.FRIENDSHIP,
+  PROFESSIONAL: CATEGORY.PROFESSIONAL,
+  SOCIAL: CATEGORY.SOCIAL,
+};
 
 export default function Dashboard({ session, onLogout }: { session: Session; onLogout: () => void }) {
   const { t, locale, dir } = useI18n();
@@ -142,7 +149,7 @@ export default function Dashboard({ session, onLogout }: { session: Session; onL
       <header className="topbar">
         <div className="brand">
           <Logo size={34} />
-          <span>{t.appName}</span>
+          <span>FAMILY NETWORK</span>
         </div>
         <div className="top-search">
           <PersonPicker

@@ -41,9 +41,9 @@ export default function AuthScreen({ onSession }: { onSession: (s: Session) => v
       <section className="auth-hero" aria-hidden="true">
         <Constellation />
         <div className="auth-hero-text">
-          <Logo size={56} />
-          <h1>{t.appName}</h1>
-          <p className="tagline">{t.tagline}</p>
+          <Logo size={48} />
+          <div className="brand-word">FAMILY NETWORK</div>
+          <h1>{t.tagline}</h1>
           <p className="muted">{t.welcomeBody}</p>
         </div>
       </section>
@@ -110,31 +110,22 @@ export default function AuthScreen({ onSession }: { onSession: (s: Session) => v
   );
 }
 
-/** Decorative animated network for the welcome screen. */
+/** Decorative line drawing of a network for the welcome screen — thin lines, palette colours, no glow. */
 function Constellation() {
   const pts = [
-    [50, 46], [30, 26], [70, 24], [18, 52], [82, 50], [36, 74], [64, 76], [50, 12], [12, 30], [88, 28], [24, 88], [78, 90],
+    [56, 40], [38, 22], [74, 20], [26, 46], [86, 44], [42, 64], [70, 66], [56, 8], [18, 24], [92, 18], [30, 84], [82, 86],
   ];
   const lines: [number, number, string][] = [
-    [0, 1, '#25A9FF'], [0, 2, '#25A9FF'], [0, 3, '#FF4D91'], [0, 4, '#E8B94F'], [0, 5, '#25A9FF'], [0, 6, '#A56BFF'],
-    [1, 7, '#25A9FF'], [2, 7, '#25A9FF'], [1, 8, '#43D99A'], [2, 9, '#E8B94F'], [5, 10, '#25A9FF'], [6, 11, '#A56BFF'], [3, 5, '#43D99A'],
+    [0, 1, '#8B8C7A'], [0, 2, '#8B8C7A'], [0, 3, '#A68371'], [0, 4, '#808B92'], [0, 5, '#8B8C7A'], [0, 6, '#9A877A'],
+    [1, 7, '#8B8C7A'], [2, 7, '#8B8C7A'], [1, 8, '#858078'], [2, 9, '#808B92'], [5, 10, '#8B8C7A'], [6, 11, '#9A877A'], [3, 5, '#858078'],
   ];
   return (
-    <svg className="constellation" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice">
-      <defs>
-        <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
-          <feGaussianBlur stdDeviation="0.8" result="b" />
-          <feMerge>
-            <feMergeNode in="b" />
-            <feMergeNode in="SourceGraphic" />
-          </feMerge>
-        </filter>
-      </defs>
+    <svg className="constellation" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">
       {lines.map(([a, b, c], i) => (
-        <line key={i} x1={pts[a][0]} y1={pts[a][1]} x2={pts[b][0]} y2={pts[b][1]} stroke={c} strokeWidth={0.35} opacity={0.75} filter="url(#glow)" className="c-line" style={{ animationDelay: `${i * 0.25}s` }} />
+        <line key={i} x1={pts[a][0]} y1={pts[a][1]} x2={pts[b][0]} y2={pts[b][1]} stroke={c} strokeWidth={0.25} className="c-line" style={{ animationDelay: `${i * 0.2}s` }} />
       ))}
       {pts.map(([x, y], i) => (
-        <circle key={i} cx={x} cy={y} r={i === 0 ? 3.2 : 1.8} fill={i === 0 ? '#FFD978' : '#13243D'} stroke="#E8B94F" strokeWidth={0.4} filter="url(#glow)" className="c-dot" style={{ animationDelay: `${i * 0.18}s` }} />
+        <circle key={i} cx={x} cy={y} r={i === 0 ? 2.6 : 1.5} fill={i === 0 ? '#30302D' : '#FAF9F5'} stroke="#858078" strokeWidth={0.25} className="c-dot" style={{ animationDelay: `${i * 0.15}s` }} />
       ))}
     </svg>
   );

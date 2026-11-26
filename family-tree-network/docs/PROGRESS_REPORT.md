@@ -1,113 +1,92 @@
-# Progress Report — FAMILY TREE NETWORK
+# Progress Report — FAMILY NETWORK
 
 Kept up to date after every phase or significant change (CLAUDE.md §26).
 Last update: **2026-11-26** · Branch: `ccr-47c5f9b6-alewtl`
+Authoritative plan: `FAMILY_NETWORK_MASTER_IMPLEMENTATION_PLAN.md`
 
 ## 1. Summary
 
 | Area | Status |
 |---|---|
-| Specification (CLAUDE.md §1–23) | ✅ saved in repository |
-| Spec §24 Identity & QR | 📝 added to CLAUDE.md, gap analysis done, **not implemented yet** |
-| Spec §25 new design direction (Soft Minimalism) | ⏸ recorded as *proposal*; conflicts with §3 → **decision needed** (§29 already assumes it) |
-| Spec §27 complete app sitemap (22 modules, releases R1–R5) | 📝 stored (`docs/specs/APP_SITEMAP.md`), mapped to code in `IMPLEMENTATION_PLAN.md` |
-| Spec §28 smart identity registration | 📝 stored, planned as R1.2–R1.8 |
-| Spec §29 profile photo | 📝 stored, planned as R1.4 |
-| Spec §30 verified accounts, interviews, live streaming | 📝 stored, planned for R4 (verification, interviews) and R5 (live) |
-| Phase 1 — Foundation | 🟡 partial (auth, profiles, permissions basics done) |
-| Phase 2 — Relationship engine | ✅ prototype complete end-to-end |
-| Phases 3–7 | ⬜ not started (designed in docs) |
+| Specifications (CLAUDE.md §1–33 + `docs/specs/`) | ✅ stored; v2.0 master expansion is authoritative |
+| Master implementation plan (inventory, conflicts, app map, DB, screens, phases, acceptance tests, approval gates) | ✅ written |
+| **R1.0 Design system — Modern Luxury / Editorial Minimalism** | ✅ implemented and tested |
+| R1.1–R1.10 (registration, identity, phone, photo, QR, requests, privacy, admin) | ⏸ waiting for approval gates G1–G8 |
+| Relationship engine, graph, verification, How Are We Connected? (built earlier) | ✅ working, unchanged in behaviour |
+| Releases R2–R8 | ⬜ not started |
 
-## 2. Completed work
+## 2. Work completed
 
-### 2.1 Repository assessment
-* The repository contained two unrelated projects (`IKTISHAFAT_AI_STUDIO/`, `quote-images/`) — left untouched.
-* No Family Tree Network code existed; everything lives in `family-tree-network/`.
+### 2.1 Earlier iterations
+Relationship engine (catalog, normalisation, validation, two-sided verification, kinship derivation incl. Arabic
+paternal/maternal terms, path finding, visibility, ego network, notification tiers) · PostgreSQL schema with integrity
+constraints · NestJS API (auth, profiles, field privacy, stewards, relationships lifecycle, graph, blocks, audit) ·
+Next.js interactive graph (network & generations layouts, filters, search, expand/collapse, path highlight, inbox,
+add-relationship dialog, ar/de/en, phone layout) · architecture docs · CI workflow.
 
-### 2.2 Relationship engine (`packages/relationship-engine`)
-* Catalog of 20+ types in 6 categories with ar/de/en labels (male/female/neutral).
-* Canonical storage ("father" stored once as PARENT; words come from gender) and an alias/mapping layer
-  (FATHER ↔ SON/DAUGHTER, MANAGER ↔ EMPLOYEE, symmetric FRIEND …) — this is the "relationship mapping engine" §24.4 asks for.
-* Structural validation (ancestry cycles, max two biological parents, gender contradictions, duplicates, minors, dates).
-* Two-sided verification; sensitive family facts need two *different* people.
-* Kinship derivation from confirmed facts only (grandparents, uncles/aunts, cousins, in-laws, step & half relations;
-  Arabic عم/خال distinctions).
-* "How Are We Connected?" (verified-only by default), viewer-based visibility, ego network, notification tiers.
+### 2.2 This iteration (2026-11-26)
+1. **Specs stored:** `MASTER_EXPANSION_V2.md`, `PROFESSIONAL_IDENTITY.md` (§32), `MY_IDENTITY.md` (§33);
+   CLAUDE.md §31–33 summaries; §3 and §25 marked superseded.
+2. **Master plan:** inventory of existing features, new features by domain, 18 reconciled conflicts/duplicates
+   (e.g. video sections, Family ID prefix, visibility vocabularies, Digital ID vs Family Passport vs My Identity,
+   two kinds of "identity verified"), updated app map, target database by domain, screen map, R1 increments,
+   acceptance tests for R1–R8, 8 approval gates.
+3. **R1.0 Design system implemented:**
+   - Tokens in `apps/web/lib/tokens.ts` + CSS variables; relationship colours moved to the engine (single source).
+   - Self-hosted Inter + IBM Plex Sans Arabic (no Google requests from users' browsers).
+   - All screens restyled (welcome, dashboard, graph, panels, dialog, inbox, path finder); glow, neon and gradients removed;
+     brand shown as **FAMILY NETWORK**.
+   - Fixed while testing: welcome illustration clipped by text block; path view framed before layout finished.
+   - Six design docs in `docs/design/` (DESIGN_SYSTEM, COLOR_TOKENS, TYPOGRAPHY, COMPONENT_LIBRARY, RESPONSIVE_LAYOUT,
+     ACCESSIBILITY).
+   - **No features removed, no data or API behaviour changed** (only the colour values returned with edges).
 
-### 2.3 API + database (`apps/api`)
-* PostgreSQL schema + migration with DB-level constraints (no self-links, canonical ordering trigger, partial unique
-  index, append-only verification log), advisory locks against race conditions.
-* Register/login (bcrypt + JWT), rate limiting, profiles with field privacy, managed profiles (children/ancestors) with
-  stewards, relationship lifecycle (create / confirm / reject / dispute / update / delete), blocks, audit log.
-* Development-only fictional demo network (22 people, 32 relationships, 4 communities).
-
-### 2.4 Web app (`apps/web`)
-* Dark Navy & Gold interactive Cytoscape graph: network + generations layouts, filters, search, expand/collapse,
-  path highlighting, person panel, add-relationship dialog, confirmation inbox; ar (RTL) / de / en; phone layout.
-
-### 2.5 Documentation
-`PROJECT_ARCHITECTURE.md`, `DATABASE_SCHEMA.md`, `RELATIONSHIP_ENGINE.md`, `UI_UX_GUIDELINES.md`,
-`DEVELOPMENT_ROADMAP.md`, `SECURITY_AND_PRIVACY.md`, README, docker-compose, CI workflow.
-
-## 3. Test evidence (last run 2026-11-26)
+## 3. Test evidence (2026-11-26, after R1.0)
 
 | Suite | Result |
 |---|---|
 | Engine unit tests | 53 / 53 ✅ |
-| API integration tests (real PostgreSQL) | 26 / 26 ✅ |
-| Web unit tests (layout, i18n/RTL) | 7 / 7 ✅ |
-| End-to-end browser tests (browser → Next.js → API → DB) | 5 / 5 ✅ (twice in a row) |
-| Typecheck (engine, API, web) | ✅ |
-| CI workflow on GitHub | ⚠ added but not yet observed running on GitHub |
+| API integration tests (PostgreSQL) | 26 / 26 ✅ |
+| Web unit tests (layout, i18n/RTL, **design tokens & WCAG contrast**) | 12 / 12 ✅ |
+| End-to-end browser tests (real stack) | 5 / 5 ✅ |
+| Typecheck engine / API / web, production build | ✅ |
+| Visual check (desktop ar/en, phone 390 px) | ✅ screenshots reviewed; no horizontal scroll |
+| CI on GitHub | ⚠ workflow present, not yet observed running |
 
-Problems found and fixed during testing: strict query validation rejected `?locale=` (fixed); phone layout overflowed
-horizontally and kept the login page's scroll position (fixed, now covered by e2e); several test expectations were
-corrected where the engine was right (e.g. shortest path through a friendship rather than through family).
+## 4. Findings to note
+- **Palette contrast:** Stone Gray (3.4:1) and Muted Terracotta (2.6:1) are below WCAG AA for small text; the four
+  accent hues are below 3:1 for graph lines. Solution: same hues, slightly deeper "ink"/"line" variants
+  (documented in `docs/design/COLOR_TOKENS.md`, enforced by tests). Original palette unchanged for large areas.
+- **Low-saturation categories look similar.** Edges keep text labels (on by default) and the legend names each
+  category; optional extra line patterns per category possible if wanted.
 
-## 4. Gap analysis — spec §24 (Identity & QR) vs. current code
+## 5. Open decisions (approval gates — see master plan §11)
 
-| §24 requirement | Today | Needed |
-|---|---|---|
-| Unique stable Family ID (FT-…) | ❌ | `user_identifiers` table; random (non-sequential) ID generated at registration, unique constraint, retry on collision |
-| Personal QR with opaque token | ❌ | `qr_tokens` (store only a hash of a 256-bit random token), expiry/revocation, temporary tokens; QR encodes an app URL only |
-| Scan → profile → choose type → request | 🟡 requests exist as PENDING relationships with a decision log | QR resolve endpoint (rate-limited, anti-enumeration), scanner screen (camera), request screen with message |
-| Request states incl. **Cancelled**, Report button | 🟡 Pending/Confirmed/Rejected/Disputed exist | `relationship_requests` linked 1:1 to the pending relationship (same graph, no separate database); add CANCELLED + reports |
-| Reciprocity mapping | ✅ in engine | expose as `relationship_type_mappings` table/endpoint |
-| Notification to recipient | 🟡 "awaiting me" inbox only | in-app notification record (Phase 3 notification centre later) |
-| Phone verification (SMS OTP) | ❌ | `phone_verifications`, E.164 validation, hashed OTP, expiry, resend limits; **requires an SMS provider account** — until then only a clearly-labelled development provider |
-| Identity verification | ❌ | `identity_verifications` state machine, per-country document types, provider interface; **requires a verification provider contract** (e.g. IDnow, Veriff, Onfido); no document images stored |
-| Extended registration (legal name, DOB, country, phone, document type) | ❌ (email/password/display name only) | registration v2 + minors' parental-authorization flow |
-| QR privacy settings (disable QR requests) | ❌ | profile setting + enforcement |
-| `qr_scan_events`, audit, abuse detection | 🟡 audit log exists | scan event log, per-user/IP limits, suspicious-QR reports |
+| Gate | Topic |
+|---|---|
+| G1 | Cookie-based sessions + refresh rotation instead of tokens in sessionStorage |
+| G2 | Phone numbers: mandatory, storage (encrypted + hash), duplicate-phone policy, SMS provider |
+| G3 | Identity check policy (mandatory vs by policy), provider, who may apply for the public badge, retention |
+| G4 | Object storage, mandatory profile photo, default photo audience |
+| G5 | Family ID length (FN- + 6 or 8 digits), backfill of existing accounts, real domain |
+| G6 | Relationship removal → REMOVED status with history and retention period |
+| G7 | Separate admin app with 7 roles, MFA for admins |
+| G8 | Unified audience model (adds Selected People, Community) |
 
-## 5. Open decisions (owner input needed)
+## 6. Risks & limitations
+Web token in `sessionStorage` (G1) · no email verification / password reset / MFA yet · path search ≤ 8 hops,
+family visibility horizon 4 hops (by design) · camera features need HTTPS · real SMS / identity verification require
+provider contracts · graph canvas not screen-reader navigable (list view planned).
 
-Full list with recommendations: `IMPLEMENTATION_PLAN.md` §2 (D1–D9). Most important:
-
-1. **D1 Visual direction** — Dark Navy & Gold (built) vs Soft Minimalism (§25, assumed by §29).
-2. **D2–D4 Name, Family-ID prefix, domain** — "Family Tree Network" vs "FAMILY NETWORK"; `FT-` vs `FN-`;
-   the real owned domain for emails/profile URLs.
-3. **D5 Is identity verification mandatory for every account?**
-4. **Providers** for SMS, identity verification, email, object storage (nothing will be shown as "verified" without them).
-
-## 6. Risks & known limitations
-
-* Web token stored in `sessionStorage` — must move to httpOnly cookies before production.
-* No email verification / password reset / MFA yet.
-* Path search ≤ 8 hops; family-visibility horizon 4 hops (by design).
-* Camera-based QR scanning in browsers requires HTTPS (fine in production, needs local HTTPS or localhost for testing).
-
-## 7. Next steps (proposed order)
-
-Release 1 increments R1.0–R1.10 as defined in `IMPLEMENTATION_PLAN.md` §4:
-R1.0 design tokens & app shell (needs D1) → R1.1 auth hardening → R1.2 identifiers (Family ID, username, email
-reservation) → R1.3 phone OTP → R1.4 profile photo → R1.5 identity-verification framework → R1.6 QR → R1.7 connection
-requests → R1.8 registration wizard → R1.9 Digital ID & Privacy Center → R1.10 admin v1.
+## 7. Next steps
+After approval of the gates: R1.1 → R1.10 in the order of the master plan §9, each with tests and a report update.
 
 ## 8. Change log
 
 | Date | Change |
 |---|---|
 | 2026-11-26 | Engine, API, database, web prototype, docs, CI (commits c5dfbd5 → 735cd7a) |
-| 2026-11-26 | Spec §24 (Identity & QR), §25 (design proposal, pending decision), §26 (reporting rule) added to CLAUDE.md; this report created |
-| 2026-11-26 | Specs stored in `docs/specs/` (sitemap, smart registration, profile photo, verified accounts & live) with summaries §27–30 in CLAUDE.md; `IMPLEMENTATION_PLAN.md` created (module mapping, 9 decisions, providers, R1 build order). No code changed. |
+| 2026-11-26 | Spec §24–26 added; progress report created (c4625fd) |
+| 2026-11-26 | Sitemap & specs §27–30 stored; first implementation plan (a2cf63b) |
+| 2026-11-26 | v2.0 master expansion, §32 professional identity, §33 My Identity stored; master implementation plan (547c8d5) |
+| 2026-11-26 | **R1.0 design system implemented** (Modern Luxury / Editorial Minimalism), 6 design docs, token & contrast tests |

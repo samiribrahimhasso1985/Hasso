@@ -327,14 +327,18 @@ export const ALIASES: Readonly<Record<string, AliasDef>> = {
   ),
 };
 
-/** Colour tokens per category (Dark Navy & Gold identity). */
+/**
+ * Line colour per category — Modern Luxury / Editorial Minimalism palette (CLAUDE.md §31).
+ * Hues are the approved palette colours, deepened just enough to reach WCAG 1.4.11
+ * non-text contrast (≥ 3:1) on the light canvas (#FAF9F5 / #F3F0E9). See docs/design/COLOR_TOKENS.md.
+ */
 export const CATEGORY_COLORS: Readonly<Record<RelationshipCategory, string>> = {
-  FAMILY: '#25A9FF', // blue
-  UNION: '#FF4D91', // pink
-  FRIENDSHIP: '#E8B94F', // gold
-  PROFESSIONAL: '#A56BFF', // purple
-  SOCIAL: '#43D99A', // green
-  CUSTOM: '#AAB7CA',
+  FAMILY: '#8B8C7A', // Dusty Olive (#989985) — line variant
+  UNION: '#A68371', // Muted Terracotta (#B58F7B) — line variant
+  FRIENDSHIP: '#808B92', // Slate Blue Gray (#87939A) — line variant
+  PROFESSIONAL: '#9A877A', // Soft Cocoa (#A18D80) — line variant
+  SOCIAL: '#858078', // Stone Gray
+  CUSTOM: '#716C65', // Stone Gray — ink variant
 };
 
 export class EngineError extends Error {

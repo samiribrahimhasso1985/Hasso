@@ -1,8 +1,8 @@
-# FAMILY TREE NETWORK
+# FAMILY NETWORK
 
 A multidimensional relationship network: **one person, one identity, every relationship** — family, marriage,
-friends, colleagues and acquaintances in one verified graph. Design identity: Dark Navy & Gold. Languages: Arabic (RTL),
-German, English.
+friends, colleagues and acquaintances in one verified graph. Design: Modern Luxury / Editorial Minimalism
+(`docs/design/`). Languages: Arabic (RTL), German, English.
 
 > This is **not** a genealogy tree app. The family tree is one view of the relationship graph.
 
@@ -12,10 +12,10 @@ German, English.
   verification, derived kinship (grandparents, uncles/aunts, cousins, in-laws, step/half relations, Arabic عم/خال terms).
 * REST API (NestJS + PostgreSQL): auth, profiles with field privacy, managed profiles for children/ancestors,
   relationship lifecycle, visibility-filtered graph, “How Are We Connected?”, blocking, audit log.
-* Web app (Next.js + Cytoscape.js): interactive glowing graph, network & generations layouts, filters, search,
+* Web app (Next.js + Cytoscape.js): interactive relationship graph, network & generations layouts, filters, search,
   expand/collapse, path highlighting, verification inbox, add-relationship dialog, ar/de/en with full RTL.
 
-Documentation: [`docs/`](docs) — architecture, database schema, relationship engine, UI/UX, security & privacy, roadmap.
+Documentation: [`docs/`](docs) — **master implementation plan** (`docs/FAMILY_NETWORK_MASTER_IMPLEMENTATION_PLAN.md`), progress report, architecture, database schema, relationship engine, UI/UX, security & privacy, roadmap.
 Specification: [`CLAUDE.md`](CLAUDE.md).
 
 ## Run locally
@@ -42,7 +42,7 @@ password `demo-password-2026`.
 ## Tests
 
 ```bash
-npm test                             # engine (53) + API integration on ftn_test (26) + web unit (7)
+npm test                             # engine (53) + API integration on ftn_test (26) + web unit (12)
 npm run e2e -w @ftn/web              # 5 real-browser tests; needs API + web running; reseeds the dev DB
 ```
 

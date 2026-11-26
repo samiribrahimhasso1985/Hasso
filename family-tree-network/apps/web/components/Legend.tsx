@@ -2,15 +2,9 @@
 
 import type { Category } from '../lib/api';
 import { useI18n } from '../lib/i18n';
+import { CATEGORY } from '../lib/tokens';
 
-export const CATEGORY_COLORS: Record<Category, string> = {
-  FAMILY: '#25A9FF',
-  UNION: '#FF4D91',
-  FRIENDSHIP: '#E8B94F',
-  PROFESSIONAL: '#A56BFF',
-  SOCIAL: '#43D99A',
-  CUSTOM: '#AAB7CA',
-};
+export const CATEGORY_COLORS: Record<Category, string> = CATEGORY;
 
 /** Colour + text + line pattern: never colour alone (accessibility). */
 export default function Legend() {
@@ -22,7 +16,7 @@ export default function Legend() {
       <ul>
         {cats.map((c) => (
           <li key={c}>
-            <span className="swatch" style={{ background: CATEGORY_COLORS[c], boxShadow: `0 0 8px ${CATEGORY_COLORS[c]}` }} />
+            <span className="swatch" style={{ background: CATEGORY_COLORS[c] }} />
             {t[c]}
           </li>
         ))}

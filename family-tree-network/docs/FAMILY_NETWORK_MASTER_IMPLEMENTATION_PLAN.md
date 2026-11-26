@@ -233,5 +233,5 @@ exist and legal review is done.
 | **G8** | Unified audience model (adds SELECTED, COMMUNITY; NETWORK shown as "Connections", PRIVATE as "Only me / only us") | Approve (backward compatible) |
 
 ## 12. Status of execution
-- R1.0 Design system — **in progress / see PROGRESS_REPORT.md**.
-- R1.1–R1.10 — waiting for approval gates G1–G8.
+- **R1.0 Design system — done (2026-11-26).** Tokens, fonts, restyle of all existing screens, 6 design docs; tests: engine 53, API 26, web 12, e2e 5 — all green.
+- R1.1–R1.10 — **waiting for approval gates G1–G8** (§11).

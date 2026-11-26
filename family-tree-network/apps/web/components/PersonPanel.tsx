@@ -36,7 +36,7 @@ export default function PersonPanel(p: Props) {
   return (
     <div className="panel person" data-testid="person-panel">
       <header className="person-head">
-        <img src={avatarFor(p.node.displayName)} alt="" width={64} height={64} />
+        <img src={avatarFor(p.node.displayName, true)} alt="" width={64} height={64} />
         <div>
           <h3>{profile?.fullName ?? p.node.displayName}</h3>
           {p.node.kinship && <div className="kinship">{p.node.kinship.label}</div>}
@@ -88,7 +88,7 @@ export default function PersonPanel(p: Props) {
           return (
             <li key={e.id} className={p.selectedEdgeId === e.id ? 'active' : ''}>
               <button className="rel-row" onClick={() => p.onSelectEdge(p.selectedEdgeId === e.id ? null : e.id)} data-testid={`rel-${e.id}`}>
-                <span className="dot" style={{ background: e.color, boxShadow: `0 0 6px ${e.color}` }} />
+                <span className="dot" style={{ background: e.color }} />
                 <span className="rel-name">{other?.displayName}</span>
                 <span className="rel-label">{e.typeKey === 'CUSTOM' ? e.label : relLabel(e)}</span>
                 <StatusBadge status={e.status} />
