@@ -16,6 +16,7 @@ EZ-1 these files move to `docs/` top level.
 | [ROADMAP.md](ROADMAP.md) | 10 phases mapped to existing work |
 | [TEST_PLAN.md](TEST_PLAN.md) | layers, MVP and Kids safety tests |
 | [DEPLOYMENT.md](DEPLOYMENT.md) | Windows setup, environments, no deploy without approval |
+| [TARGET_MARKETS.md](TARGET_MARKETS.md) | target countries, legal frameworks to verify, launch sequence |
 | [DECISIONS.md](DECISIONS.md) | carried decisions, EZ-1…EZ-13 for approval, exclusions |
 | [EZID_KIDS_SPECIFICATION.md](EZID_KIDS_SPECIFICATION.md) | complete Kids specification and build plan |
 | [EZID_KIDS_SAFETY.md](EZID_KIDS_SAFETY.md) | child safety and data protection |

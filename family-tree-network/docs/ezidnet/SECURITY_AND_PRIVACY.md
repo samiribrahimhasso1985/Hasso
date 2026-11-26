@@ -47,6 +47,13 @@ never confirms a relationship.
 | Data breach | encryption, minimisation, backups, breach-response plan, 72-hour notification process |
 | Harm to children | see `EZID_KIDS_SAFETY.md` |
 
-## 6. Legal work required before public launch (cannot be done by code)
+## 6. Users in high-risk countries
+Target countries include Iraq, Syria and Turkey (see `TARGET_MARKETS.md`). Additional protections planned before active
+outreach there (EZ-17): discreet mode (neutral PWA name/icon option, no content in lock-screen notifications, quick
+logout), login alerts, session list with remote logout, no offline caching of sensitive data, no servers or staff in
+high-risk states, transparency about government requests.
+
+## 7. Legal work required before public launch (cannot be done by code)
 DPIA · privacy policy and consent texts in four languages · legal basis for Art. 9 data · children's consent model ·
-processor agreements (Supabase, hosting, email) · records of processing · cookie/consent assessment.
+processor agreements (Supabase, hosting, email) · records of processing · cookie/consent assessment ·
+**per-country checks for every target country** (`TARGET_MARKETS.md` §1), in the order of the launch sequence (EZ-16).

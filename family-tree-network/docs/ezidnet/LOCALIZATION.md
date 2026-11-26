@@ -13,6 +13,11 @@ also written in Arabic script. **Proposal:** Latin script first (one script to r
 an Arabic-script variant (`ku-Arab`, RTL) can be added later if the community asks for it. The default language is
 chosen by the user; no language is assumed from name or location.
 
+### Languages implied by the target countries (2026-11-26)
+Kurmanji in **Arabic script** (`ku-Arab`, RTL) gets higher priority for readers in Iraq/Syria (EZ-15). Russian, Armenian,
+Georgian and Turkish are planned for Phase 10 (`TARGET_MARKETS.md` §3). The i18n and engine label structure already
+supports adding locales; RTL handling exists for Arabic and will be reused for `ku-Arab`.
+
 ## 2. Technical approach
 * Existing typed dictionaries (`apps/web/lib/i18n.tsx`) get a `ku` entry; the completeness test already fails if any
   key is missing in any language.
