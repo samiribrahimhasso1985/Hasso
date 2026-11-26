@@ -606,7 +606,7 @@ Add: `identity_verifications`, `phone_verifications`, `user_identifiers`, `qr_to
 
 ## 25. DESIGN DIRECTION UNDER REVIEW — "Soft Minimalism & Elegant Neutral Colors"
 
-> **Status: PROPOSED, NOT YET DECIDED.** This proposal contradicts §3 (Dark Navy & Gold, glowing connections). Until the product owner confirms the final direction, §3 stays in force and no visual redesign is applied.
+> **Status: PROPOSED, NOT YET DECIDED** (note: §29 profile-photo UX already refers to this palette — owner leaning towards it; awaiting explicit confirmation). This proposal contradicts §3 (Dark Navy & Gold, glowing connections). Until the product owner confirms the final direction, §3 stays in force and no visual redesign is applied.
 
 **Philosophy:** a premium international relationship platform (family, friends, professional, digital identity & QR, private communities, posts & memories) that must not look like a traditional family-tree app; calm, elegant, sophisticated, timeless.
 
@@ -632,6 +632,34 @@ Add: `identity_verifications`, `phone_verifications`, `user_identifiers`, `qr_to
 
 Whenever the product owner asks for a report ("تقرير"), deliver a complete report covering: what was done (with evidence: tests run and results), what is in progress, what changed since the last report, open decisions, known problems and risks, and next steps. Keep `docs/PROGRESS_REPORT.md` updated at the end of every phase or significant change, with a dated change log, so a report can always be produced from it.
 
+## 27. COMPLETE APP SITEMAP (v1.0)
+
+Full text: [`docs/specs/APP_SITEMAP.md`](docs/specs/APP_SITEMAP.md). 22 sections: onboarding, home, my network, digital identity, discover, feed, communities, messages, memories, events, global map, Family AI, people directory, family history, family vault, life timeline, notifications, profile & settings, administration platform, navigation, core product rules, release priorities.
+
+**Releases (authoritative order):** R1 Core Platform (auth, profiles, Digital ID, QR scanner, relationship engine, graph, connection requests, privacy center) → R2 Social (feed, posts/comments, discover, communities, messages, notifications) → R3 Personal Archive (memories, events, life timeline, people directory, family history) → R4 Advanced (Family AI, global map, vault, analytics, subscription) → R5 Production & global expansion.
+
+**Navigation:** mobile bottom bar Home · My Network · Discover · Messages · Profile (+ central contextual Create action). Desktop: left sidebar, central content, right panel (events, requests, suggestions, activity).
+
+**Core product rules:** one identity per user · multiple relationship types per person · relationships need confirmation · QR never auto-creates a relationship · backend-enforced privacy for every sensitive field and all content · enhanced child protection · export & deletion · auditable changes · AI suggestions distinguishable from facts. Never replace working functionality without approval; build modules incrementally and test each.
+
+## 28. SMART IDENTITY REGISTRATION & AUTOMATIC ACCOUNT CREATION
+
+Full text: [`docs/specs/SMART_IDENTITY_REGISTRATION.md`](docs/specs/SMART_IDENTITY_REGISTRATION.md). Extends §24.
+
+Flow: country & document type → camera document capture → provider OCR + user review → identity verification via configurable provider (statuses Not Started/Pending/Processing/Verified/Rejected/Requires Review/Expired) → mandatory phone + SMS OTP (E.164) → suggested platform email → username & profile URL (`/@username`) → permanent Family ID → digital identity card + QR.
+
+Non-negotiable: OCR is not verification; a captured document is not verification · no permanent document images or full document numbers by default (provider result + reference) · OTPs never stored in plain text · identity verification ≠ relationship verification · platform email requires an owned, configured domain (initial release: email identity + verified contact email, not a mailbox).
+
+## 29. PROFILE PHOTO CAPTURE & UPLOAD
+
+Full text: [`docs/specs/PROFILE_PHOTO.md`](docs/specs/PROFILE_PHOTO.md). Mandatory profile photo at registration: camera capture (mobile front/rear, desktop webcam) or upload (JPG/PNG/WEBP, validated by content not extension) with crop/zoom/rotate editor. Stored in access-controlled object storage (`profile_photos`), never in PostgreSQL. Profile photo, document portrait and live selfie are three distinct images and must never be confused.
+
+## 30. VERIFIED ACCOUNTS, CELEBRITY INTERVIEWS & LIVE STREAMING
+
+Full text: [`docs/specs/VERIFIED_ACCOUNTS_AND_LIVE.md`](docs/specs/VERIFIED_ACCOUNTS_AND_LIVE.md) (§27, §27.17 interview requests, §27.18 admin-controlled verification).
+
+Badges are approved **manually by administrators only**, never automatically, never for payment or popularity; backend-controlled; immutable audit log; appeals. Interview requests with scheduling (UTC storage, local display), private rooms, recording consent. Live streaming gated by eligibility levels 1–4, built on a replaceable provider (WebRTC/RTMPS/HLS evaluated). **Public live streaming must not launch before moderation, reporting, emergency termination, privacy and legal compliance are operational.** A badge does not mean endorsement.
+
 ---
 
 ## Working notes for this repository
@@ -640,3 +668,5 @@ Whenever the product owner asks for a report ("تقرير"), deliver a complete 
 - Architecture & decisions: `family-tree-network/docs/`.
 - Run all tests: `cd family-tree-network && npm test` (requires the local PostgreSQL described in `README.md`).
 - Progress report (kept up to date, see §26): `family-tree-network/docs/PROGRESS_REPORT.md`.
+- Implementation plan mapped to the sitemap: `family-tree-network/docs/IMPLEMENTATION_PLAN.md`.
+- Full specification texts: `family-tree-network/docs/specs/`.

@@ -9,7 +9,11 @@ Last update: **2026-11-26** · Branch: `ccr-47c5f9b6-alewtl`
 |---|---|
 | Specification (CLAUDE.md §1–23) | ✅ saved in repository |
 | Spec §24 Identity & QR | 📝 added to CLAUDE.md, gap analysis done, **not implemented yet** |
-| Spec §25 new design direction (Soft Minimalism) | ⏸ recorded as *proposal*; conflicts with §3 → **decision needed** |
+| Spec §25 new design direction (Soft Minimalism) | ⏸ recorded as *proposal*; conflicts with §3 → **decision needed** (§29 already assumes it) |
+| Spec §27 complete app sitemap (22 modules, releases R1–R5) | 📝 stored (`docs/specs/APP_SITEMAP.md`), mapped to code in `IMPLEMENTATION_PLAN.md` |
+| Spec §28 smart identity registration | 📝 stored, planned as R1.2–R1.8 |
+| Spec §29 profile photo | 📝 stored, planned as R1.4 |
+| Spec §30 verified accounts, interviews, live streaming | 📝 stored, planned for R4 (verification, interviews) and R5 (live) |
 | Phase 1 — Foundation | 🟡 partial (auth, profiles, permissions basics done) |
 | Phase 2 — Relationship engine | ✅ prototype complete end-to-end |
 | Phases 3–7 | ⬜ not started (designed in docs) |
@@ -78,11 +82,13 @@ corrected where the engine was right (e.g. shortest path through a friendship ra
 
 ## 5. Open decisions (owner input needed)
 
-1. **Visual direction** — keep Dark Navy & Gold (§3, already built) or switch to Soft Minimalism (§25), or combine
-   (e.g. Soft Minimalism light as default + low-saturation dark mode). The owner mentioned *three* strategic options;
-   only one was described.
-2. **SMS provider** and **identity verification provider** (needed for real phone/ID verification; nothing will be
-   presented as "verified" without them).
+Full list with recommendations: `IMPLEMENTATION_PLAN.md` §2 (D1–D9). Most important:
+
+1. **D1 Visual direction** — Dark Navy & Gold (built) vs Soft Minimalism (§25, assumed by §29).
+2. **D2–D4 Name, Family-ID prefix, domain** — "Family Tree Network" vs "FAMILY NETWORK"; `FT-` vs `FN-`;
+   the real owned domain for emails/profile URLs.
+3. **D5 Is identity verification mandatory for every account?**
+4. **Providers** for SMS, identity verification, email, object storage (nothing will be shown as "verified" without them).
 
 ## 6. Risks & known limitations
 
@@ -93,13 +99,10 @@ corrected where the engine was right (e.g. shortest path through a friendship ra
 
 ## 7. Next steps (proposed order)
 
-1. Decide the visual direction (§25).
-2. Implement §24 backend: Family ID, QR tokens, QR resolve, relationship requests with Cancelled/Report, QR privacy
-   setting, scan events — with all §24.12 acceptance tests.
-3. §24 screens (identity, my QR, scanner, scanned profile, request, incoming requests, history, QR settings) in the
-   chosen design system.
-4. Phone verification with a pluggable SMS provider; identity verification state machine with a provider interface.
-5. Finish Phase 1 security (cookies, email verification, password reset).
+Release 1 increments R1.0–R1.10 as defined in `IMPLEMENTATION_PLAN.md` §4:
+R1.0 design tokens & app shell (needs D1) → R1.1 auth hardening → R1.2 identifiers (Family ID, username, email
+reservation) → R1.3 phone OTP → R1.4 profile photo → R1.5 identity-verification framework → R1.6 QR → R1.7 connection
+requests → R1.8 registration wizard → R1.9 Digital ID & Privacy Center → R1.10 admin v1.
 
 ## 8. Change log
 
@@ -107,3 +110,4 @@ corrected where the engine was right (e.g. shortest path through a friendship ra
 |---|---|
 | 2026-11-26 | Engine, API, database, web prototype, docs, CI (commits c5dfbd5 → 735cd7a) |
 | 2026-11-26 | Spec §24 (Identity & QR), §25 (design proposal, pending decision), §26 (reporting rule) added to CLAUDE.md; this report created |
+| 2026-11-26 | Specs stored in `docs/specs/` (sitemap, smart registration, profile photo, verified accounts & live) with summaries §27–30 in CLAUDE.md; `IMPLEMENTATION_PLAN.md` created (module mapping, 9 decisions, providers, R1 build order). No code changed. |

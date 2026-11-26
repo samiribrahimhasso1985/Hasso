@@ -1,5 +1,7 @@
 # Development Roadmap
 
+> **Superseded for ordering by the release plan (CLAUDE.md §27 / `IMPLEMENTATION_PLAN.md`).** Phase status below remains accurate for work done so far.
+
 Legend: ✅ done & tested · 🟡 partial · ⬜ not started
 
 ## Current state (this iteration)
