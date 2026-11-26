@@ -108,6 +108,18 @@ describe('prototype network: one central person, many circles, no duplicates', (
   });
 });
 
+describe('progressive loading', () => {
+  it('expanding a branch keeps kinship relative to the focus person', async () => {
+    const res = await ctx.api('omar').get(`/api/graph/ego?center=${id('mahmoud')}&depth=1&relativeTo=${id('omar')}`);
+    const karim = res.body.nodes.find((n: { displayName: string }) => n.displayName === 'Karim');
+    expect(karim.kinship.label).toBe('First cousin');
+    expect(karim.generation).toBe(0);
+    const mahmoud = res.body.nodes.find((n: { displayName: string }) => n.displayName === 'Mahmoud');
+    expect(mahmoud.kinship.label).toBe('Uncle');
+    expect(mahmoud.generation).toBe(-1);
+  });
+});
+
 describe('relationship lifecycle and verification', () => {
   it('a request stays pending, the other side can reject it, and the rejected claim disappears', async () => {
     const created = await ctx.api('julia').post('/api/relationships', {

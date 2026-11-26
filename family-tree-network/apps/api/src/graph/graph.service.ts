@@ -6,6 +6,7 @@ import {
   edgeLabel,
   egoNetwork,
   findConnection,
+  generations,
   kinshipLabel,
   type Locale,
   type RelationshipCategory,
@@ -39,12 +40,19 @@ export class GraphService {
   }
 
   /** Ego network around `centerId` as visible to the viewer (unit of progressive loading). */
-  async ego(user: AuthUser, centerId: string, opts: { depth: number; categories?: RelationshipCategory[]; includePending: boolean; locale: Locale }) {
+  async ego(
+    user: AuthUser,
+    centerId: string,
+    opts: { depth: number; categories?: RelationshipCategory[]; includePending: boolean; locale: Locale; relativeTo?: string },
+  ) {
     const loaded = this.fresh();
     const ctx = await this.loader.viewer(user, loaded);
+    const focus = opts.relativeTo ?? centerId;
     await this.loader.neighbourhood([centerId], opts.depth + 1, { into: loaded, maxNodes: 1500 });
-    await this.loader.ancestry([centerId], loaded);
+    if (focus !== centerId) await this.loader.neighbourhood([focus], 4, { into: loaded, familyOnly: true, maxNodes: 1500 });
+    await this.loader.ancestry([...new Set([centerId, focus])], loaded);
     this.assertVisible(loaded, ctx, centerId);
+    this.assertVisible(loaded, ctx, focus);
     const visible = this.loader.visibleIndex(loaded, ctx);
     const ego = egoNetwork(visible, centerId, {
       depth: opts.depth,
@@ -52,17 +60,21 @@ export class GraphService {
       includePending: opts.includePending,
       maxNodes: 400,
     });
+    // Kinship and generation are expressed relative to the focus person (default: the centre),
+    // so branches expanded around other people stay consistent with the main view.
+    const gen = generations(visible, focus, 12, (e) => e.status !== 'REJECTED' && (opts.includePending || e.status === 'CONFIRMED'));
     return {
       centerId,
+      focusId: focus,
       truncated: ego.truncated,
       nodes: ego.nodes.map((n) => {
         const p = loaded.profiles.get(n.id)!;
         return {
           ...personSummary(p),
           depth: n.depth,
-          generation: n.generation,
+          generation: gen.has(n.id) ? gen.get(n.id)! : null,
           hiddenNeighbours: n.hiddenNeighbours,
-          kinship: this.kinshipFor(visible, centerId, n.id, opts.locale),
+          kinship: this.kinshipFor(visible, focus, n.id, opts.locale),
           isViewer: n.id === user.profileId,
         };
       }),

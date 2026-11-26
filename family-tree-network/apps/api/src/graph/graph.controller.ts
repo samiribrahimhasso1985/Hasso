@@ -16,6 +16,11 @@ class EgoQuery {
   @IsUUID()
   center?: string;
 
+  /** Express kinship/generations relative to this person (e.g. the focus of the current view). */
+  @IsOptional()
+  @IsUUID()
+  relativeTo?: string;
+
   @IsOptional()
   @Transform(({ value }) => Number(value))
   @IsInt()
@@ -66,7 +71,13 @@ export class GraphController {
 
   @Get('ego')
   ego(@AuthUserParam() user: AuthUser, @Query() q: EgoQuery, @ReqLocale() locale: Locale) {
-    return this.graph.ego(user, q.center ?? user.profileId, { depth: q.depth, categories: q.categories, includePending: q.includePending, locale });
+    return this.graph.ego(user, q.center ?? user.profileId, {
+      depth: q.depth,
+      categories: q.categories,
+      includePending: q.includePending,
+      locale,
+      relativeTo: q.relativeTo,
+    });
   }
 
   @Get('path')
