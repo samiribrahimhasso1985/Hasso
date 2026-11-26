@@ -1,6 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-feature android:name="android.hardware.camera.any" android:required="false" />
     <uses-feature android:name="android.hardware.microphone" android:required="false" />
+    <!-- Tablets without a back camera must still be able to install the app. -->
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
     <!-- Phone camera preview/recording (asked at runtime, only when the user starts a phone-camera preview). -->
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
