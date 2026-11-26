@@ -10,7 +10,7 @@
 
 Kurmanji is the heritage language of most Yazidis. It is written mainly in the Latin (Hawar) alphabet; in Iraq it is
 also written in Arabic script. **Proposal:** Latin script first (one script to review and maintain on a €5k budget);
-an Arabic-script variant (`ku-Arab`, RTL) can be added later if the community asks for it. The default language is
+an Arabic-script variant (`ku-Arab`, RTL) follows **before public launch** because of readers in Iraq/Syria (EZ-15). The default language is
 chosen by the user; no language is assumed from name or location.
 
 ### Languages implied by the target countries (2026-11-26)
