@@ -65,3 +65,7 @@ Do not stop at writing a plan. Implement the next safe, testable increment in co
 - Before claiming an APK is ready, run `gradle :app:assembleDebug` (or the Android Studio equivalent) and verify that `app/build/outputs/apk/debug/app-debug.apk` exists.
 - Do not claim real camera streaming or remote control unless a hardware-backed adapter has been implemented and tested.
 - Preserve the GitHub Actions APK workflow at `.github/workflows/android-apk.yml` and update `docs/APK_BUILD_GUIDE_AR.md` if build steps change.
+
+## YouTube Director Edition — Approved Scope
+
+The approved primary use case is YouTube and social-media production, with all three priorities: AI Director Assistant, camera control, and production/team management. Read `docs/YOUTUBE_DIRECTOR_SYSTEM_AR.md` for the complete product scope and `docs/CLAUDE_YOUTUBE_IMPLEMENTATION_PROMPT_AR.md` for the execution order and acceptance criteria. These documents extend the existing project; do not replace the camera architecture or claim untested hardware integrations.

@@ -16,6 +16,10 @@ class CameraAdapterRegistry(adapters: List<CameraAdapter> = emptyList()) {
         registered[adapter.descriptor.id] = adapter
     }
 
+    /** Removes and returns the adapter so the caller can disconnect it. */
+    @Synchronized
+    fun unregister(id: CameraId): CameraAdapter? = registered.remove(id)
+
     @Synchronized
     fun find(id: CameraId): CameraAdapter? = registered[id]
 

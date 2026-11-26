@@ -1,40 +1,77 @@
-# DIRECTOR MODE PRO — Android Foundation
+# DIRECTOR MODE PRO — Android
 
-Version: 0.1.0  
-Package: `com.directormodepro.app`  
-Minimum Android: 8.0 (API 26)  
-Language: Kotlin + Jetpack Compose
+Version: 0.2.0 (versionCode 2)
+Package: `com.directormodepro.app`
+Minimum Android: 8.0 (API 26) • Target/compile SDK 36
+Language: Kotlin + Jetpack Compose (Material 3)
 
-## What is included
+## What works in 0.2.0
 
-- Dark director-studio home screen
-- Production name field
-- Camera source list with starter Sony FX3 and DJI Osmo Action 5 Pro entries
-- Add-camera dialog with generic manufacturer and transport choices
-- Camera, tools, and settings sections
-- Pluggable camera-adapter architecture reserved for manufacturer-specific integrations
+| Area | Status |
+|---|---|
+| Camera source management (add / edit / remove, brand, model, transport, endpoint) | ✅ Implemented |
+| Local persistence (Room database `director_mode_pro.db`) | ✅ Implemented, survives restarts |
+| Generic **RTSP receive-only** adapter: real `DESCRIBE` connection test, SDP video-track check | ✅ Implemented, unit-tested against a local RTSP responder |
+| RTSP live preview in the Studio multiview (Media3 ExoPlayer) | ✅ Implemented — **not yet tested on a device with a real stream** |
+| Connection status + verified capabilities per source | ✅ Only `livePreview` can become true, and only after a successful test |
+| Sony FX3 | ⛔ Integration target — not connectable |
+| DJI Osmo Action 5 Pro | ⛔ Integration target — not connectable |
+| SRT, USB/UVC, HDMI capture | ⛔ Shown as UNSUPPORTED |
+| Camera control (record, ISO, shutter, WB, focus, zoom) | ⛔ Not implemented for any camera |
+| Waveform, false color, peaking, zebra, LUT, audio meters | ⛔ Planned (Tools tab shows PLANNED) |
 
-## Important implementation status
+### Honest status rules in the UI
+- **REACHABLE** = the RTSP server answered `DESCRIBE` with a video track. It does not mean frames were decoded.
+- **● LIVE** on a preview appears only while the Media3 player is actually playing.
+- Sony/DJI cards show **INTEGRATION TARGET** and "CHECK SUPPORT" returns *not available*.
+- Stream URLs containing usernames/passwords are **rejected**: no secret is ever written to disk.
 
-This is a **UI and application-foundation prototype**, not a finished camera-control product. The preview panels intentionally show `NO SIGNAL`; camera discovery, live video, recording control, camera settings, waveform, false color, peaking, and LUT processing are not implemented yet.
+## Architecture
 
-Each camera adapter must be validated against its actual hardware, firmware, protocol, Android version, and any manufacturer licensing requirements. Sony's Camera Remote SDK currently lists desktop/Linux operating systems rather than Android; an Android implementation therefore needs a separately validated route such as a supported network command protocol or a compatible external bridge. DJI Mimo documents Action 5 Pro livestreaming, but that does not itself establish a public SDK for third-party remote control.
+```
+camera/core/       contracts (CameraAdapter, registry, repository), models, validator, CameraConnectionManager
+camera/adapters/   DefaultCameraAdapterFactory (only place with vendor knowledge), UnsupportedCameraAdapter
+camera/adapters/rtsp/  RtspCameraAdapter, SocketRtspProbe (RFC 2326 DESCRIBE), response/SDP parsers
+data/              CameraSourceRepository + CameraSourceStore interface; data/db = Room entity, DAO, database
+ui/                DirectorViewModel, CameraSourcesScreen, SourceEditorDialog, RtspPreview, theme/Palette
+```
+Adding a camera = one new adapter + one branch in `DefaultCameraAdapterFactory`. Compose screens never reference a vendor.
 
-## Build with Android Studio
+### Dependencies added in 0.2.0 (and why)
+| Dependency | Why |
+|---|---|
+| `androidx.room` 2.8.4 + KSP 2.3.4 | Relational local DB; the YouTube Director scope (projects, scenes, shots, team) needs relations and migrations, so Room was chosen over DataStore. Schemas exported to `app/schemas/`. |
+| `androidx.media3` 1.8.0 (exoplayer, exoplayer-rtsp, ui) | Google-maintained player with a built-in RTSP client; avoids bundling native decoders. |
+| `lifecycle-viewmodel-compose` / `lifecycle-runtime-compose` 2.9.4 | ViewModel + lifecycle-aware Flow collection; same version as the existing lifecycle dependency. |
+| `junit` 4.13.2, `kotlinx-coroutines-test` 1.10.2 | Unit tests. |
 
-1. Install Android Studio with Android SDK Platform 36 and JDK 17.
-2. Open this folder as an existing Gradle project.
-3. Allow Gradle sync to finish.
-4. Connect an Android phone with USB debugging enabled, or create an emulator.
-5. Select **Build > Build Bundle(s) / APK(s) > Build APK(s)**.
-6. Android Studio will show the generated APK location.
+## Build
 
-The project uses Android Gradle Plugin 8.13.2, Kotlin 2.2.21, and Compose BOM 2025.10.01.
+Requirements: JDK 17+ (CI uses 17), Android SDK Platform 36, Build-Tools 36. Gradle 8.13 is pinned by the wrapper.
 
-## APK build automation
+```bash
+cd DIRECTOR_MODE_PRO
+echo "sdk.dir=/path/to/Android/sdk" > local.properties   # Android Studio creates this automatically
+./gradlew :app:testDebugUnitTest      # 47 JVM unit tests
+./gradlew :app:assembleDebug          # -> app/build/outputs/apk/debug/app-debug.apk
+./gradlew :app:connectedDebugAndroidTest   # Room DAO test, needs a device/emulator
+```
 
-A GitHub Actions workflow is provided at `.github/workflows/android-apk.yml`. It builds an installable debug APK and uploads it as the `director-mode-pro-debug-apk` artifact. See `docs/APK_BUILD_GUIDE_AR.md` for Arabic build and installation instructions.
+Android Studio: open the `DIRECTOR_MODE_PRO` folder → Gradle sync → **Build > Build APK(s)**.
 
-Expected output: `app/build/outputs/apk/debug/app-debug.apk`.
+GitHub Actions: `.github/workflows/android-apk.yml` (repository root) runs the unit tests and uploads the APK as the `director-mode-pro-debug-apk` artifact. Arabic guide: `docs/APK_BUILD_GUIDE_AR.md`.
 
-This APK is a UI/foundation test build. It does not yet provide real camera discovery, live streaming, or manufacturer remote-control integration.
+## Trying the RTSP preview
+1. Get an RTSP URL on the same network as the phone/tablet, without a password: an IP camera, an HDMI→RTSP encoder in front of the FX3, or a test server such as MediaMTX publishing an H.264 stream.
+2. Cameras → **Add camera source** → *RTSP stream* → paste the URL → Save.
+3. **TEST CONNECTION** → the card should show REACHABLE and `✓ Preview`.
+4. Studio → **START PREVIEW** on that card.
+
+## Known limitations
+- No emulator/device was available in the build environment: the UI and the RTSP preview have **not been run on hardware** yet. See `docs/HARDWARE_TESTS.md`.
+- RTSP with authentication (401/403), `rtsps://` and SRT are not supported.
+- Production name on the Studio tab is not persisted yet.
+- English UI only; Arabic/RTL is planned.
+- Debug APK only; release signing is not configured.
+
+Progress log: `docs/PROGRESS_AR.md`.

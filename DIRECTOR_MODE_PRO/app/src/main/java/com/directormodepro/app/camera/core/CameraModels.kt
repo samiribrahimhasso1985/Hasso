@@ -43,6 +43,8 @@ sealed interface CameraConnectionConfig {
     data class Usb(val deviceId: Int? = null) : CameraConnectionConfig
     data class Rtsp(val uri: String) : CameraConnectionConfig
     data class Srt(val uri: String) : CameraConnectionConfig
+    /** The user has not configured an endpoint for this transport. */
+    data object None : CameraConnectionConfig
 }
 
 sealed interface CameraCommand {
@@ -60,3 +62,57 @@ sealed interface CameraResult {
     data class Unsupported(val reason: String) : CameraResult
     data class Failure(val reason: String, val cause: Throwable? = null) : CameraResult
 }
+
+/** A camera source the user created and that is persisted on the device. */
+data class CameraSource(
+    val id: CameraId,
+    val name: String,
+    val brand: CameraBrand,
+    val model: String,
+    val transport: CameraTransport,
+    /** RTSP/SRT URL, or `host[:port]` for Wi-Fi/Ethernet. Empty when the transport has no endpoint. */
+    val endpoint: String,
+    val createdAtMillis: Long
+)
+
+/** User input from the add/edit form, before validation. */
+data class CameraSourceDraft(
+    val name: String = "",
+    val brand: CameraBrand = CameraBrand.GENERIC,
+    val model: String = "",
+    val transport: CameraTransport = CameraTransport.RTSP,
+    val endpoint: String = ""
+)
+
+fun CameraSource.toDraft() = CameraSourceDraft(name, brand, model, transport, endpoint)
+
+fun CameraSource.toDescriptor() = CameraDescriptor(
+    id = id,
+    displayName = name,
+    brand = brand,
+    model = model,
+    supportedTransports = setOf(transport)
+)
+
+fun CameraSource.toConnectionConfig(): CameraConnectionConfig = when (transport) {
+    CameraTransport.RTSP -> if (endpoint.isBlank()) CameraConnectionConfig.None else CameraConnectionConfig.Rtsp(endpoint)
+    CameraTransport.SRT -> if (endpoint.isBlank()) CameraConnectionConfig.None else CameraConnectionConfig.Srt(endpoint)
+    CameraTransport.WIFI, CameraTransport.ETHERNET ->
+        CameraSourceValidator.parseHostPort(endpoint)
+            ?.let { (host, port) -> CameraConnectionConfig.Network(host, port) }
+            ?: CameraConnectionConfig.None
+    CameraTransport.USB, CameraTransport.HDMI_CAPTURE -> CameraConnectionConfig.Usb()
+    CameraTransport.UNKNOWN -> CameraConnectionConfig.None
+}
+
+/** How far an integration has actually been validated. Never upgrade without hardware proof. */
+enum class IntegrationLevel {
+    /** A working, protocol-validated receiver (video in, no camera control). */
+    RECEIVE_ONLY,
+    /** A planned manufacturer integration that is not connectable yet. */
+    INTEGRATION_TARGET,
+    /** No adapter exists for this combination. */
+    UNSUPPORTED
+}
+
+data class IntegrationInfo(val level: IntegrationLevel, val summary: String)

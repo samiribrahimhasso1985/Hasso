@@ -5,12 +5,15 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CameraAlt
@@ -19,6 +22,7 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -26,13 +30,27 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-
-private val Bg = Color(0xFF090D12)
-private val Panel = Color(0xFF121A23)
-private val Panel2 = Color(0xFF192431)
-private val Accent = Color(0xFF20C6B7)
-private val Muted = Color(0xFF91A0AE)
-private val White = Color(0xFFF3F6F8)
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.directormodepro.app.camera.core.CameraSourceDraft
+import com.directormodepro.app.camera.core.toDraft
+import com.directormodepro.app.ui.BadgePill
+import com.directormodepro.app.ui.CameraSourcesScreen
+import com.directormodepro.app.ui.DirectorViewModel
+import com.directormodepro.app.ui.RtspPreview
+import com.directormodepro.app.ui.SourceEditorDialog
+import com.directormodepro.app.ui.SourceUiState
+import com.directormodepro.app.ui.label
+import com.directormodepro.app.ui.statusBadge
+import com.directormodepro.app.ui.theme.Accent
+import com.directormodepro.app.ui.theme.AccentBg
+import com.directormodepro.app.ui.theme.Bg
+import com.directormodepro.app.ui.theme.Muted
+import com.directormodepro.app.ui.theme.Outline
+import com.directormodepro.app.ui.theme.Panel
+import com.directormodepro.app.ui.theme.Panel2
+import com.directormodepro.app.ui.theme.Screen
+import com.directormodepro.app.ui.theme.White
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -41,20 +59,16 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-data class CameraDevice(val name: String, val brand: String, val transport: String, val status: String)
+/** null = closed, editingId null = add mode. */
+private data class EditorRequest(val editing: SourceUiState?)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DirectorModeApp() {
-    var selectedTab by remember { mutableStateOf(0) }
-    var showAddDialog by remember { mutableStateOf(false) }
-    var cameras by remember {
-        mutableStateOf(listOf(
-            CameraDevice("Camera 01", "Sony FX3", "Wi-Fi / Network", "Not connected"),
-            CameraDevice("Camera 02", "DJI Osmo Action 5 Pro", "Wi-Fi", "Not connected")
-        ))
-    }
-    var projectName by remember { mutableStateOf("Untitled Production") }
+fun DirectorModeApp(viewModel: DirectorViewModel = viewModel(factory = DirectorViewModel.Factory)) {
+    var selectedTab by rememberSaveable { mutableIntStateOf(0) }
+    var editor by remember { mutableStateOf<EditorRequest?>(null) }
+    var projectName by rememberSaveable { mutableStateOf("Untitled Production") }
+    val sources by viewModel.sources.collectAsStateWithLifecycle()
 
     MaterialTheme(colorScheme = darkColorScheme(
         background = Bg, surface = Panel, primary = Accent, onPrimary = Bg,
@@ -94,21 +108,35 @@ fun DirectorModeApp() {
             }
         ) { padding ->
             when (selectedTab) {
-                0 -> StudioScreen(Modifier.padding(padding), projectName, cameras, onProjectChange = { projectName = it }, onAdd = { showAddDialog = true }, onCameras = { selectedTab = 1 })
-                1 -> CamerasScreen(Modifier.padding(padding), cameras, onAdd = { showAddDialog = true })
+                0 -> StudioScreen(Modifier.padding(padding), projectName, sources,
+                    onProjectChange = { projectName = it }, onAdd = { editor = EditorRequest(null) })
+                1 -> CameraSourcesScreen(
+                    modifier = Modifier.padding(padding),
+                    sources = sources,
+                    onAdd = { editor = EditorRequest(null) },
+                    onEdit = { editor = EditorRequest(it) },
+                    onDelete = viewModel::delete,
+                    onTest = viewModel::testConnection,
+                    onDisconnect = viewModel::disconnect
+                )
                 2 -> ToolsScreen(Modifier.padding(padding))
                 else -> SettingsScreen(Modifier.padding(padding))
             }
         }
 
-        if (showAddDialog) {
-            AddCameraDialog(
-                onDismiss = { showAddDialog = false },
-                onAdd = { brand, transport ->
-                    cameras = cameras + CameraDevice("Camera %02d".format(cameras.size + 1), brand, transport, "Not connected")
-                    showAddDialog = false
-                    selectedTab = 1
-                }
+        editor?.let { request ->
+            val editing = request.editing
+            SourceEditorDialog(
+                title = if (editing == null) "Add camera source" else "Edit ${editing.source.name}",
+                initial = editing?.source?.toDraft() ?: CameraSourceDraft(),
+                integrationFor = viewModel::integrationFor,
+                onSave = { draft, done ->
+                    viewModel.save(editing?.source?.id, draft) { errors ->
+                        done(errors)
+                        if (errors.isEmpty()) selectedTab = 1
+                    }
+                },
+                onDismiss = { editor = null }
             )
         }
     }
@@ -116,49 +144,55 @@ fun DirectorModeApp() {
 
 @Composable
 private fun StudioScreen(
-    modifier: Modifier, projectName: String, cameras: List<CameraDevice>,
-    onProjectChange: (String) -> Unit, onAdd: () -> Unit, onCameras: () -> Unit
+    modifier: Modifier, projectName: String, sources: List<SourceUiState>,
+    onProjectChange: (String) -> Unit, onAdd: () -> Unit
 ) {
-    LazyColumn(modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        item {
+    LazyVerticalGrid(
+        columns = GridCells.Adaptive(minSize = 300.dp),
+        modifier = modifier.fillMaxSize(),
+        contentPadding = PaddingValues(16.dp),
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        item(span = { GridItemSpan(maxLineSpan) }) {
             Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
                 Text("DIRECTOR'S WORKSPACE", color = Accent, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
                 Text("Good take starts here.", color = White, fontSize = 25.sp, fontWeight = FontWeight.Bold)
                 Text("Your portable multi-camera production desk", color = Muted, fontSize = 13.sp)
             }
         }
-        item {
+        item(span = { GridItemSpan(maxLineSpan) }) {
             Card(colors = CardDefaults.cardColors(containerColor = Panel), shape = RoundedCornerShape(18.dp)) {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text("CURRENT PRODUCTION", color = Muted, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.4.sp)
                         Spacer(Modifier.weight(1f))
-                        Surface(color = Color(0xFF263B38), shape = CircleShape) { Text(" PRE-PRODUCTION ", color = Accent, fontSize = 9.sp, modifier = Modifier.padding(horizontal = 8.dp, vertical = 5.dp)) }
+                        Surface(color = AccentBg, shape = CircleShape) { Text(" PRE-PRODUCTION ", color = Accent, fontSize = 9.sp, modifier = Modifier.padding(horizontal = 8.dp, vertical = 5.dp)) }
                     }
                     Text(projectName, fontSize = 20.sp, fontWeight = FontWeight.SemiBold)
                     OutlinedTextField(value = projectName, onValueChange = onProjectChange, label = { Text("Production name") }, singleLine = true, modifier = Modifier.fillMaxWidth(), colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Accent, focusedLabelColor = Accent))
                 }
             }
         }
-        item {
+        item(span = { GridItemSpan(maxLineSpan) }) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text("CAMERA MULTIVIEW", fontWeight = FontWeight.Bold, fontSize = 12.sp, letterSpacing = 1.2.sp)
                 Spacer(Modifier.weight(1f))
-                Text("${cameras.size} SOURCES", color = Muted, fontSize = 10.sp)
+                Text("${sources.size} SOURCES", color = Muted, fontSize = 10.sp)
             }
         }
-        items(cameras) { camera -> CameraPreviewCard(camera) }
-        item {
+        items(sources, key = { it.source.id.value }) { ui -> CameraPreviewCard(ui) }
+        item(span = { GridItemSpan(maxLineSpan) }) {
             OutlinedButton(onClick = onAdd, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp), colors = ButtonDefaults.outlinedButtonColors(contentColor = Accent)) {
                 Icon(Icons.Default.Add, null); Spacer(Modifier.width(8.dp)); Text("ADD CAMERA SOURCE")
             }
         }
-        item {
+        item(span = { GridItemSpan(maxLineSpan) }) {
             Card(colors = CardDefaults.cardColors(containerColor = Panel2), shape = RoundedCornerShape(16.dp)) {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     Text("SYSTEM STATUS", color = Accent, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.4.sp)
-                    Text("Camera adapters ready for integration", fontWeight = FontWeight.SemiBold)
-                    Text("Live video and remote controls activate when a supported camera adapter is implemented and tested.", color = Muted, fontSize = 12.sp)
+                    Text("Generic RTSP receive-only adapter available", fontWeight = FontWeight.SemiBold)
+                    Text("Sony and DJI remain integration targets: no remote control until a validated protocol is tested on real hardware.", color = Muted, fontSize = 12.sp)
                 }
             }
         }
@@ -166,57 +200,47 @@ private fun StudioScreen(
 }
 
 @Composable
-private fun CameraPreviewCard(camera: CameraDevice) {
+private fun CameraPreviewCard(ui: SourceUiState) {
+    val camera = ui.source
+    var previewOn by rememberSaveable(camera.id.value) { mutableStateOf(false) }
+    val uri = ui.previewUri
     Card(colors = CardDefaults.cardColors(containerColor = Panel), shape = RoundedCornerShape(16.dp)) {
         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            Box(Modifier.fillMaxWidth().height(150.dp).background(Color(0xFF070A0E), RoundedCornerShape(10.dp)).border(1.dp, Color(0xFF263442), RoundedCornerShape(10.dp)), contentAlignment = Alignment.Center) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Icon(Icons.Default.CameraAlt, null, tint = Color(0xFF536473), modifier = Modifier.size(34.dp))
-                    Text("NO SIGNAL", color = Color(0xFF71808D), fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
-                    Text("Preview appears after connection", color = Color(0xFF536473), fontSize = 10.sp)
+            Box(Modifier.fillMaxWidth().aspectRatio(16f / 9f).background(Screen, RoundedCornerShape(10.dp)).border(1.dp, Outline, RoundedCornerShape(10.dp)), contentAlignment = Alignment.Center) {
+                if (uri != null && previewOn) {
+                    RtspPreview(uri, Modifier.fillMaxSize())
+                } else {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Icon(Icons.Default.CameraAlt, null, tint = Color(0xFF536473), modifier = Modifier.size(34.dp))
+                        Text("NO SIGNAL", color = Color(0xFF71808D), fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
+                        Text(
+                            if (uri != null) "Stream reachable — start preview" else "Test the connection in Cameras",
+                            color = Color(0xFF536473), fontSize = 10.sp
+                        )
+                    }
                 }
-                Text(camera.name.uppercase(), color = White, fontSize = 9.sp, modifier = Modifier.align(Alignment.TopStart).padding(10.dp))
-                Surface(color = Color(0xFF3A2C22), shape = CircleShape, modifier = Modifier.align(Alignment.TopEnd).padding(8.dp)) {
-                    Text(" OFFLINE ", color = Color(0xFFFFB77A), fontSize = 8.sp, modifier = Modifier.padding(vertical = 4.dp, horizontal = 5.dp))
-                }
+                Text(camera.name.uppercase(), color = White, fontSize = 9.sp, maxLines = 1, overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.align(Alignment.TopStart).padding(10.dp))
+                BadgePill(statusBadge(ui.status.connection, ui.integration.level), Modifier.align(Alignment.TopEnd).padding(8.dp))
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {
-                    Text(camera.brand, fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
-                    Text(camera.transport, color = Muted, fontSize = 11.sp)
+                    Text(listOf(camera.brand.label(), camera.model).filter { it.isNotBlank() }.joinToString(" "), fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
+                    Text(camera.transport.label(), color = Muted, fontSize = 11.sp)
                 }
-                Text("CONFIGURE", color = Accent, fontSize = 10.sp, fontWeight = FontWeight.Bold)
-            }
-        }
-    }
-}
-
-@Composable
-private fun CamerasScreen(modifier: Modifier, cameras: List<CameraDevice>, onAdd: () -> Unit) {
-    Column(modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-        Text("CAMERA SOURCES", fontSize = 22.sp, fontWeight = FontWeight.Bold)
-        Text("Manage camera connections and adapter types.", color = Muted, fontSize = 13.sp)
-        cameras.forEach { camera ->
-            Card(colors = CardDefaults.cardColors(containerColor = Panel), shape = RoundedCornerShape(14.dp)) {
-                Row(Modifier.fillMaxWidth().padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.CameraAlt, null, tint = Accent, modifier = Modifier.size(28.dp))
-                    Spacer(Modifier.width(12.dp))
-                    Column(Modifier.weight(1f)) {
-                        Text(camera.brand, fontWeight = FontWeight.SemiBold)
-                        Text("${camera.name} • ${camera.transport}", color = Muted, fontSize = 11.sp, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                if (uri != null) {
+                    TextButton(onClick = { previewOn = !previewOn }) {
+                        Text(if (previewOn) "STOP PREVIEW" else "START PREVIEW", color = Accent, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                     }
-                    Text("OFFLINE", color = Color(0xFFFFB77A), fontSize = 9.sp, fontWeight = FontWeight.Bold)
                 }
             }
         }
-        Button(onClick = onAdd, modifier = Modifier.fillMaxWidth(), colors = ButtonDefaults.buttonColors(containerColor = Accent, contentColor = Bg)) { Icon(Icons.Default.Add, null); Spacer(Modifier.width(8.dp)); Text("Add camera") }
-        Text("Supported connection methods depend on each camera model and manufacturer protocol.", color = Muted, fontSize = 11.sp)
     }
 }
 
 @Composable
 private fun ToolsScreen(modifier: Modifier) {
-    Column(modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    Column(modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text("CINEMA TOOLS", fontSize = 22.sp, fontWeight = FontWeight.Bold)
         Text("Monitoring tools planned for the production pipeline.", color = Muted, fontSize = 13.sp)
         listOf("Waveform Monitor", "False Color", "Focus Peaking", "Zebra", "Custom LUT Viewer", "Safe Frame Guides", "Audio Level Meter").forEach { tool ->
@@ -231,14 +255,15 @@ private fun ToolsScreen(modifier: Modifier) {
 
 @Composable
 private fun SettingsScreen(modifier: Modifier) {
-    Column(modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+    Column(modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
         Text("SETTINGS", fontSize = 22.sp, fontWeight = FontWeight.Bold)
-        SettingRow("App version", "0.1.0 • Foundation")
+        SettingRow("App version", "${BuildInfo.VERSION_NAME} • Camera engine foundation")
         SettingRow("Platform", "Android 8.0 and newer")
-        SettingRow("Camera architecture", "Pluggable adapters")
-        SettingRow("Privacy", "Local-first design")
+        SettingRow("Camera architecture", "Pluggable adapters • RTSP receive-only")
+        SettingRow("Storage", "On-device Room database (no cloud sync)")
+        SettingRow("Privacy", "Local-first design • no credentials stored")
         SettingRow("Language", "English / Arabic (planned)")
-        Text("This foundation build does not transmit camera data. Camera discovery and streaming will be added through tested adapters.", color = Muted, fontSize = 12.sp)
+        Text("Camera data stays on this device. Stream URLs are only contacted when you press Test connection or Start preview.", color = Muted, fontSize = 12.sp)
     }
 }
 
@@ -249,38 +274,6 @@ private fun SettingRow(title: String, value: String) {
     }
 }
 
-@Composable
-private fun AddCameraDialog(onDismiss: () -> Unit, onAdd: (String, String) -> Unit) {
-    var brand by remember { mutableStateOf("Generic IP Camera") }
-    var transport by remember { mutableStateOf("Wi-Fi / IP stream") }
-    val brands = listOf("Generic IP Camera", "Sony", "DJI", "Canon", "Panasonic", "Blackmagic Design", "USB UVC Camera", "Other")
-    val transports = listOf("Wi-Fi / IP stream", "USB-C / UVC", "HDMI capture device", "Network / LAN", "Manufacturer app bridge")
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("Add camera source") },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                Text("Camera brand or type", color = Muted, fontSize = 12.sp)
-                brands.forEach { item ->
-                    Row(Modifier.fillMaxWidth().clickable { brand = item }.padding(vertical = 3.dp), verticalAlignment = Alignment.CenterVertically) {
-                        RadioButton(selected = brand == item, onClick = { brand = item }, colors = RadioButtonDefaults.colors(selectedColor = Accent))
-                        Text(item, fontSize = 13.sp)
-                    }
-                }
-                Divider(color = Color(0xFF33404B))
-                Text("Connection method", color = Muted, fontSize = 12.sp)
-                transports.forEach { item ->
-                    Row(Modifier.fillMaxWidth().clickable { transport = item }.padding(vertical = 3.dp), verticalAlignment = Alignment.CenterVertically) {
-                        RadioButton(selected = transport == item, onClick = { transport = item }, colors = RadioButtonDefaults.colors(selectedColor = Accent))
-                        Text(item, fontSize = 13.sp)
-                    }
-                }
-            }
-        },
-        confirmButton = { TextButton(onClick = { onAdd(brand, transport) }) { Text("Add", color = Accent) } },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel", color = Muted) } },
-        containerColor = Panel,
-        titleContentColor = White,
-        textContentColor = White
-    )
+private object BuildInfo {
+    const val VERSION_NAME = "0.2.0"
 }

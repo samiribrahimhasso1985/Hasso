@@ -1,14 +1,16 @@
-DIRECTOR MODE PRO — APK BUILD STATUS
+DIRECTOR MODE PRO — APK BUILD STATUS (updated 2026-11-26, version 0.2.0)
 
 Project source: present
-Android Gradle project: present
-Automated APK build workflow: added (.github/workflows/android-apk.yml)
-Arabic APK build guide: added (docs/APK_BUILD_GUIDE_AR.md)
+Android Gradle project: present (AGP 8.13.2, Gradle wrapper 8.13, Kotlin 2.2.21, SDK 36)
+Automated APK build workflow: .github/workflows/android-apk.yml (repository root)
+Arabic APK build guide: docs/APK_BUILD_GUIDE_AR.md
 
-APK binary status in this environment: NOT BUILT.
-Reason: Android SDK and Gradle are not installed in this execution environment, and external downloads are unavailable. A real APK cannot be truthfully supplied until the Gradle build runs in Android Studio or GitHub Actions.
+APK binary status: BUILT in the Claude Code cloud environment with ./gradlew :app:assembleDebug
+Output: app/build/outputs/apk/debug/app-debug.apk (not committed; build it locally or download the CI artifact)
+Verified: aapt2 badging (package com.directormodepro.app, versionName 0.2.0, targetSdk 36), apksigner (debug cert)
+Unit tests: 47 passed, 0 failed (./gradlew :app:testDebugUnitTest)
+Instrumented tests: compiled, NOT run (no emulator/KVM available)
 
-Expected debug output:
-app/build/outputs/apk/debug/app-debug.apk
-
-Functional status: initial UI/foundation prototype only. Live camera streaming and remote camera controls are not yet implemented.
+Functional status: camera-source management + Room storage + generic RTSP receive-only adapter.
+RTSP preview is implemented but has not yet been run on a real device/stream.
+Sony FX3 and DJI Osmo Action 5 Pro are integration targets only. No camera remote control exists.
