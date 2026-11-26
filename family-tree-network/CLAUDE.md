@@ -506,6 +506,132 @@ The prototype must demonstrate how one person can connect to multiple family bra
 
 **Final mission:** Build FAMILY TREE NETWORK as a real, scalable global relationship platform. It should connect people, families, generations, friends and communities in one intelligent network. Do not build just a family tree. Build a complete relationship ecosystem.
 
+## 24. FAMILY IDENTITY & SMART QR CONNECTION SYSTEM
+
+**Objective:** Implement a unique digital identity and QR-based relationship connection system for every registered person. This feature is a core component of FAMILY TREE NETWORK. Every user must have a unique identity, a personal QR code, and a secure process for connecting with other people.
+
+### 24.1 Unique Family ID
+Upon successful registration, generate: unique Family ID · unique QR code · user profile · verified phone number status · identity verification status · account status. Example: `FT-829471`.
+
+Requirements: IDs must be unique. IDs must not contain national identification numbers. IDs must not expose phone numbers. IDs must not reveal private personal information. IDs must remain stable throughout the account lifetime.
+
+### 24.2 Personal QR Code
+Generate a unique QR code for every account. The QR code must contain an opaque, secure, non-guessable connection token or a secure application URL.
+
+Never encode into a QR code: national ID number · passport number · phone number · date of birth · private profile information.
+
+QR functionality: display personal QR code · scan another person's QR code · share QR code · download QR code · regenerate or revoke QR tokens · report suspicious QR codes · expire temporary connection tokens.
+
+The QR code identifies an account, not an already-established relationship.
+
+### 24.3 QR Scanning Workflow (exact)
+1. User opens the QR scanner.
+2. User scans another person's QR code.
+3. Backend validates the QR token.
+4. Application retrieves the permitted public profile information.
+5. Application displays the person's profile.
+6. User selects the relationship type.
+7. User submits a relationship request.
+8. Recipient receives a notification.
+9. Recipient accepts, rejects, or reports the request.
+10. If accepted, create the relationship record.
+11. Update the relationship graph.
+12. Update both users' connection lists according to permissions.
+
+Do not create a verified relationship immediately after scanning.
+
+### 24.4 Relationship Selection
+After scanning, display these categories:
+- **FAMILY:** Father, Mother, Son, Daughter, Brother, Sister, Grandfather, Grandmother, Uncle, Aunt, Cousin, Nephew, Niece.
+- **MARRIAGE:** Husband, Wife, Spouse, Partner, Former spouse.
+- **SOCIAL:** Friend, Close friend, Childhood friend, Neighbor, Acquaintance.
+- **PROFESSIONAL:** Colleague, Manager, Employee, Business partner, Professional contact.
+- **OTHER:** Custom relationship.
+
+The application must validate relationship direction and reciprocity. Example: if Person A requests "Father" for Person B, Person B's corresponding relationship to Person A is "Child". Do not assume all relationships have a simple reciprocal label — use a relationship mapping engine. Friendship: both users may be described as friends. Family: support directional and shared relationships.
+
+### 24.5 Relationship Request Screen
+Display: requesting person's name · profile picture · Family ID · selected relationship · optional message · Accept · Reject · Report.
+
+States: Pending · Accepted · Rejected · Cancelled · Disputed. Only accepted and properly verified relationships are treated as confirmed.
+
+### 24.6 Identity-Based Registration
+Required: full legal name · display name · country · date of birth · identity document type · identity verification status · mobile phone number · email address · password or supported secure authentication method.
+
+Identity document types configurable by country: national identity card · passport · residence permit · other supported official identity documents.
+
+### 24.7 Identity Verification
+Use a suitable identity verification provider where legally available. States: Not started · Pending · Verified · Rejected · Requires manual review.
+
+Privacy: never expose national ID numbers to other members · never store identity document images unnecessarily · use secure third-party verification where appropriate · store only the minimum verification result and reference needed · encrypt sensitive information · strict retention and deletion policies · comply with GDPR and national laws · support account recovery without exposing identity documents · do not assume one document format works worldwide · minors: separate age-appropriate registration and parental authorization workflow.
+
+### 24.8 Mobile Phone Verification
+International country code selection · phone number validation · SMS OTP verification · OTP expiration · resend limits · rate limiting · abuse protection · phone number change verification. Phone numbers remain private. One verified phone number must not silently create multiple accounts. Safe account recovery and phone number replacement procedure.
+
+### 24.9 QR Security
+Cryptographically secure random tokens · token expiration or revocation · server-side validation · rate limiting · anti-enumeration protection · abuse detection · audit logging. Never use sequential IDs as QR security tokens. Users can temporarily disable QR-based connection requests.
+
+### 24.10 User Interface
+Screens: My Digital Identity · My Personal QR Code · QR Scanner · Scanned Person Profile · Select Relationship · Send Connection Request · Incoming Relationship Requests · Request History · Identity Verification · Mobile Phone Verification · QR Privacy Settings. Keep the approved visual identity (see §25 — direction under review). Arabic RTL must work correctly.
+
+### 24.11 Database Entities
+Add: `identity_verifications`, `phone_verifications`, `user_identifiers`, `qr_tokens`, `relationship_requests`, `relationship_type_mappings`, `qr_scan_events`. Use secure references; avoid duplicating sensitive identity information.
+
+### 24.12 Acceptance Tests
+- Every registered account receives a unique Family ID.
+- Every eligible account can generate a personal QR code.
+- QR scanning retrieves the correct account.
+- Expired QR tokens are rejected.
+- Revoked QR tokens cannot be used.
+- Scanning does not automatically establish a relationship.
+- Relationship selection works correctly.
+- Reciprocal relationship labels are handled correctly.
+- The recipient can accept or reject a request.
+- Accepted relationships appear in the graph.
+- Rejected requests do not create confirmed connections.
+- Phone verification works with international country codes.
+- Private identity information is never exposed.
+- Users can control QR connection permissions.
+- Duplicate account risks are handled safely.
+
+**Implementation priority:** after the initial authentication foundation and alongside the relationship engine. Must integrate with the existing relationship graph — no separate, disconnected social-connection database.
+
+**Final requirement:** Every person has one unique digital identity. Every relationship begins with a connection request. QR scanning makes it easy to find and connect with people, while identity verification, consent and privacy keep the network trustworthy.
+
+### Phase summary (as restated by the product owner)
+- Phase 2 — Relationship Engine: adding people, relationship requests, relationship map, approval and verification.
+- Phase 3 — Social Network: posts, comments, photos, videos, reactions.
+- Phase 4 — Communities & Messenger: groups, messages, private communities.
+- Phase 5 — Memories & AI: memories archive, events, smart assistant, advanced search.
+
+## 25. DESIGN DIRECTION UNDER REVIEW — "Soft Minimalism & Elegant Neutral Colors"
+
+> **Status: PROPOSED, NOT YET DECIDED.** This proposal contradicts §3 (Dark Navy & Gold, glowing connections). Until the product owner confirms the final direction, §3 stays in force and no visual redesign is applied.
+
+**Philosophy:** a premium international relationship platform (family, friends, professional, digital identity & QR, private communities, posts & memories) that must not look like a traditional family-tree app; calm, elegant, sophisticated, timeless.
+
+**Light palette (low saturation):** background Warm Ivory `#F7F6F2` · secondary Soft Stone `#EFEEE9` · cards `#FFFFFF` · primary text Charcoal `#292D2B` · secondary text Warm Gray `#777A75` · borders Light Stone `#E4E2DC` · family Muted Sage `#91A497` · friendship Dusty Blue `#8799A7` · professional Soft Taupe `#AD9B88` · marriage Dusty Rose `#B99A9A` · social Muted Olive `#A6A58A`.
+
+**Strict rules:** no neon, no saturated blue, no bright gold, no strong purple, no glowing effects, no aggressive gradients, no excessive shadows, nothing visually overwhelming.
+
+**Style:** Scandinavian minimalism, premium editorial design, generous whitespace, rounded cards 16–20 px, thin borders, very subtle shadows, elegant line icons, consistent typography, clear hierarchy. Typography: Arabic IBM Plex Sans Arabic or Noto Sans Arabic; English/German Inter. Full RTL/LTR.
+
+**Screens:** Home Dashboard (welcome, profile picture, search, network overview, recent activity, suggested connections, upcoming events, community posts) · Relationship Network (one node per person even with several relationship types; muted colours; zoom, drag, search, filters, expand/collapse, open profiles) · Digital Identity (photo, Family ID, QR, share, download, phone & identity status, regenerate/revoke; scanning creates a request, never a relationship) · Social Feed · Communities · Profile · Messages · Memories & Events.
+
+**Navigation:** mobile bottom bar with five items — Home, My Network, Create, Messages, Profile. Web: left sidebar, central content, optional right panel; same design language on mobile, tablet and desktop.
+
+**Optional dark mode:** background `#202522` · cards `#292F2B` · primary text `#F1F0EA` · secondary text `#B5B7B0` · borders `#3A403B` · muted relationship colours with sufficient contrast.
+
+**Instructions:** inspect structure first; centralised design tokens; reusable components; apply consistently; responsive; test RTL/LTR; check accessibility and contrast; do not remove existing functionality; do not fake backend functionality or claim non-functional QR codes are real.
+
+**Design documentation to create when adopted:** `DESIGN_SYSTEM.md`, `COLOR_TOKENS.md`, `TYPOGRAPHY.md`, `COMPONENT_LIBRARY.md`, `RESPONSIVE_LAYOUT.md`, `ACCESSIBILITY.md`.
+
+**Goal:** elegant not flashy · modern not futuristic · minimal not empty · professional not corporate-heavy · warm not childish · calm not boring.
+
+## 26. REPORTING RULE
+
+Whenever the product owner asks for a report ("تقرير"), deliver a complete report covering: what was done (with evidence: tests run and results), what is in progress, what changed since the last report, open decisions, known problems and risks, and next steps. Keep `docs/PROGRESS_REPORT.md` updated at the end of every phase or significant change, with a dated change log, so a report can always be produced from it.
+
 ---
 
 ## Working notes for this repository
@@ -513,3 +639,4 @@ The prototype must demonstrate how one person can connect to multiple family bra
 - Code lives under `family-tree-network/`. The sibling folders `IKTISHAFAT_AI_STUDIO/` and `quote-images/` belong to other work and must not be modified.
 - Architecture & decisions: `family-tree-network/docs/`.
 - Run all tests: `cd family-tree-network && npm test` (requires the local PostgreSQL described in `README.md`).
+- Progress report (kept up to date, see §26): `family-tree-network/docs/PROGRESS_REPORT.md`.
