@@ -1,0 +1,348 @@
+// FAMILY TREE NETWORK — database schema (Phase 1–2 subset).
+// Full target model: docs/DATABASE_SCHEMA.md. Every change goes through a migration.
+//
+// Core rule: relationships are stored independently of community membership.
+// A profile (person) exists once; it may be claimed by one user account or managed by stewards.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  UNSPECIFIED
+}
+
+enum Visibility {
+  PUBLIC
+  NETWORK
+  FAMILY
+  PRIVATE
+}
+
+enum RelationshipCategory {
+  FAMILY
+  UNION
+  FRIENDSHIP
+  PROFESSIONAL
+  SOCIAL
+  CUSTOM
+}
+
+enum Directionality {
+  SYMMETRIC
+  DIRECTED
+}
+
+enum VerificationStatus {
+  PENDING
+  CONFIRMED
+  REJECTED
+  DISPUTED
+}
+
+enum Decision {
+  CONFIRM
+  REJECT
+  DISPUTE
+}
+
+enum Side {
+  A
+  B
+}
+
+enum ParentSubtype {
+  BIOLOGICAL
+  ADOPTIVE
+  STEP
+  FOSTER
+  GUARDIAN
+}
+
+enum SiblingSubtype {
+  FULL
+  HALF
+  STEP
+  ADOPTIVE
+  UNSPECIFIED
+}
+
+enum LineageSide {
+  PATERNAL
+  MATERNAL
+  UNSPECIFIED
+}
+
+enum UnionEndReason {
+  DIVORCE
+  DEATH
+  SEPARATION
+  ANNULMENT
+}
+
+enum StewardRole {
+  GUARDIAN // parent/guardian of a minor
+  CURATOR // relative curating a deceased or offline person's profile
+}
+
+enum ProfileField {
+  BIRTH_DATE
+  COUNTRY
+  CITY
+  BIO
+  LANGUAGES
+}
+
+enum CommunityKind {
+  FAMILY
+  FAMILY_BRANCH
+  FRIEND_GROUP
+  WORK
+  OTHER
+}
+
+enum CommunityVisibility {
+  PUBLIC
+  PRIVATE
+}
+
+enum JoinPolicy {
+  OPEN
+  APPROVAL
+  INVITE_ONLY
+}
+
+enum MembershipRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+enum MembershipStatus {
+  ACTIVE
+  PENDING
+}
+
+/// Login identity. One account per person.
+model User {
+  id           String    @id @default(uuid()) @db.Uuid
+  email        String    @unique // stored lower-cased
+  passwordHash String    @map("password_hash")
+  locale       String    @default("en") @db.VarChar(5)
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  deletedAt    DateTime? @map("deleted_at")
+
+  profile        Profile?          @relation("ProfileOwner")
+  stewardships   ProfileSteward[]
+  createdRels    Relationship[]    @relation("RelationshipCreator")
+  decisions      RelationshipVerification[]
+  blocks         Block[]
+  auditLogs      AuditLog[]
+  createdProfiles Profile[]        @relation("ProfileCreator")
+
+  @@map("users")
+}
+
+/// A person node of the graph. Exactly one per human being.
+model Profile {
+  id          String    @id @default(uuid()) @db.Uuid
+  userId      String?   @unique @map("user_id") @db.Uuid
+  displayName String    @map("display_name") @db.VarChar(80)
+  fullName    String?   @map("full_name") @db.VarChar(160)
+  gender      Gender    @default(UNSPECIFIED)
+  birthDate   DateTime? @map("birth_date") @db.Date
+  deathDate   DateTime? @map("death_date") @db.Date
+  isMinor     Boolean   @default(false) @map("is_minor")
+  country     String?   @db.VarChar(2) // ISO 3166-1 alpha-2
+  city        String?   @db.VarChar(80)
+  bio         String?   @db.VarChar(1000)
+  languages   String[]  @default([])
+  avatarUrl   String?   @map("avatar_url")
+  /// Minors are never searchable regardless of this flag.
+  searchable  Boolean   @default(true)
+  createdById String?   @map("created_by_id") @db.Uuid
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  user        User?             @relation("ProfileOwner", fields: [userId], references: [id], onDelete: SetNull)
+  createdBy   User?             @relation("ProfileCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  stewards    ProfileSteward[]
+  privacy     PrivacySetting[]
+  outgoing    Relationship[]    @relation("RelFrom")
+  incoming    Relationship[]    @relation("RelTo")
+  memberships CommunityMembership[]
+  blockedBy   Block[]
+
+  @@index([displayName])
+  @@map("profiles")
+}
+
+/// Users who manage an unclaimed profile (child, deceased ancestor).
+model ProfileSteward {
+  profileId String      @map("profile_id") @db.Uuid
+  userId    String      @map("user_id") @db.Uuid
+  role      StewardRole
+  createdAt DateTime    @default(now()) @map("created_at")
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([profileId, userId])
+  @@index([userId])
+  @@map("profile_stewards")
+}
+
+/// Per-field visibility of profile data. Missing row = field default (see docs).
+model PrivacySetting {
+  profileId  String       @map("profile_id") @db.Uuid
+  field      ProfileField
+  visibility Visibility
+  updatedAt  DateTime     @updatedAt @map("updated_at")
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@id([profileId, field])
+  @@map("privacy_settings")
+}
+
+/// Runtime catalog of relationship types (seeded from the engine catalog).
+model RelationshipType {
+  key               String               @id @db.VarChar(40)
+  category          RelationshipCategory
+  directionality    Directionality
+  sensitive         Boolean
+  isUnion           Boolean              @default(false) @map("is_union")
+  kinshipUp         Int?                 @map("kinship_up")
+  kinshipDown       Int?                 @map("kinship_down")
+  defaultVisibility Visibility           @map("default_visibility")
+  labels            Json
+  inverseLabels     Json                 @map("inverse_labels")
+  enabled           Boolean              @default(true)
+  sortOrder         Int                  @map("sort_order")
+
+  relationships Relationship[]
+
+  @@map("relationship_types")
+}
+
+/// An edge between two profiles, in canonical direction (see RELATIONSHIP_ENGINE.md).
+model Relationship {
+  id             String               @id @default(uuid()) @db.Uuid
+  typeKey        String               @map("type_key") @db.VarChar(40)
+  fromProfileId  String               @map("from_profile_id") @db.Uuid
+  toProfileId    String               @map("to_profile_id") @db.Uuid
+  status         VerificationStatus   @default(PENDING)
+  visibility     Visibility
+  createdById    String               @map("created_by_id") @db.Uuid
+  parentSubtype  ParentSubtype?       @map("parent_subtype")
+  siblingSubtype SiblingSubtype?      @map("sibling_subtype")
+  lineageSide    LineageSide?         @map("lineage_side")
+  startDate      DateTime?            @map("start_date") @db.Date
+  endDate        DateTime?            @map("end_date") @db.Date
+  endReason      UnionEndReason?      @map("end_reason")
+  customLabel    String?              @map("custom_label") @db.VarChar(60)
+  customCategory RelationshipCategory? @map("custom_category")
+  note           String?              @db.VarChar(500)
+  createdAt      DateTime             @default(now()) @map("created_at")
+  updatedAt      DateTime             @updatedAt @map("updated_at")
+
+  type          RelationshipType           @relation(fields: [typeKey], references: [key])
+  fromProfile   Profile                    @relation("RelFrom", fields: [fromProfileId], references: [id], onDelete: Cascade)
+  toProfile     Profile                    @relation("RelTo", fields: [toProfileId], references: [id], onDelete: Cascade)
+  createdBy     User                       @relation("RelationshipCreator", fields: [createdById], references: [id])
+  verifications RelationshipVerification[]
+
+  @@index([fromProfileId, status])
+  @@index([toProfileId, status])
+  @@index([typeKey])
+  @@map("relationships")
+}
+
+/// Append-only decision log. The relationship status is computed from it by the engine.
+model RelationshipVerification {
+  id             String   @id @default(uuid()) @db.Uuid
+  relationshipId String   @map("relationship_id") @db.Uuid
+  side           Side
+  userId         String   @map("user_id") @db.Uuid
+  decision       Decision
+  comment        String?  @db.VarChar(500)
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  relationship Relationship @relation(fields: [relationshipId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([relationshipId, createdAt])
+  @@index([userId])
+  @@map("relationship_verifications")
+}
+
+/// Communities (families, branches, friend groups, workplaces).
+/// Membership never creates or implies a relationship.
+model Community {
+  id          String              @id @default(uuid()) @db.Uuid
+  kind        CommunityKind
+  name        String              @db.VarChar(120)
+  description String?             @db.VarChar(2000)
+  coverUrl    String?             @map("cover_url")
+  visibility  CommunityVisibility @default(PRIVATE)
+  joinPolicy  JoinPolicy          @default(APPROVAL) @map("join_policy")
+  createdById String              @map("created_by_id") @db.Uuid
+  createdAt   DateTime            @default(now()) @map("created_at")
+
+  memberships CommunityMembership[]
+
+  @@map("communities")
+}
+
+model CommunityMembership {
+  communityId String           @map("community_id") @db.Uuid
+  profileId   String           @map("profile_id") @db.Uuid
+  role        MembershipRole   @default(MEMBER)
+  status      MembershipStatus @default(ACTIVE)
+  joinedAt    DateTime         @default(now()) @map("joined_at")
+
+  community Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  profile   Profile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@id([communityId, profileId])
+  @@index([profileId])
+  @@map("community_memberships")
+}
+
+/// A user blocks a person. Visibility rules hide content in both directions.
+model Block {
+  blockerUserId    String   @map("blocker_user_id") @db.Uuid
+  blockedProfileId String   @map("blocked_profile_id") @db.Uuid
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  blocker User    @relation(fields: [blockerUserId], references: [id], onDelete: Cascade)
+  blocked Profile @relation(fields: [blockedProfileId], references: [id], onDelete: Cascade)
+
+  @@id([blockerUserId, blockedProfileId])
+  @@index([blockedProfileId])
+  @@map("blocks")
+}
+
+model AuditLog {
+  id         BigInt   @id @default(autoincrement())
+  actorId    String?  @map("actor_id") @db.Uuid
+  action     String   @db.VarChar(60)
+  entityType String   @map("entity_type") @db.VarChar(40)
+  entityId   String   @map("entity_id") @db.VarChar(64)
+  data       Json?
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  actor User? @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([entityType, entityId])
+  @@index([actorId, createdAt])
+  @@map("audit_logs")
+}

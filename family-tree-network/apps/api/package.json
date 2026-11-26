@@ -1,0 +1,70 @@
+{
+  "name": "@ftn/api",
+  "version": "0.1.0",
+  "private": true,
+  "description": "FAMILY TREE NETWORK \u2014 NestJS API (relationship engine adapter)",
+  "scripts": {
+    "build": "prisma generate && tsc -p tsconfig.build.json",
+    "start": "node --env-file-if-exists=.env dist/main.js",
+    "start:dev": "node --env-file-if-exists=.env -r ts-node/register/transpile-only src/main.ts",
+    "db:migrate": "prisma migrate deploy",
+    "db:migrate:dev": "prisma migrate dev",
+    "db:seed": "ts-node --transpile-only prisma/seed.ts",
+    "test": "jest --runInBand",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "prisma": {
+    "seed": "ts-node --transpile-only prisma/seed.ts"
+  },
+  "dependencies": {
+    "@ftn/relationship-engine": "0.1.0",
+    "@nestjs/common": "10.4.15",
+    "@nestjs/core": "10.4.15",
+    "@nestjs/jwt": "10.2.0",
+    "@nestjs/platform-express": "10.4.15",
+    "@nestjs/throttler": "6.3.0",
+    "@prisma/client": "5.22.0",
+    "bcryptjs": "2.4.3",
+    "class-transformer": "0.5.1",
+    "class-validator": "0.14.1",
+    "helmet": "8.0.0",
+    "reflect-metadata": "0.2.2",
+    "rxjs": "7.8.1"
+  },
+  "devDependencies": {
+    "@nestjs/testing": "10.4.15",
+    "@types/bcryptjs": "2.4.6",
+    "@types/express": "4.17.21",
+    "@types/jest": "29.5.14",
+    "@types/node": "22.10.2",
+    "@types/supertest": "6.0.2",
+    "jest": "29.7.0",
+    "prisma": "5.22.0",
+    "supertest": "7.0.0",
+    "ts-jest": "29.2.5",
+    "ts-node": "10.9.2",
+    "typescript": "5.6.3"
+  },
+  "jest": {
+    "moduleFileExtensions": [
+      "js",
+      "json",
+      "ts"
+    ],
+    "rootDir": ".",
+    "testRegex": "test/.*\\.spec\\.ts$",
+    "transform": {
+      "^.+\\.ts$": [
+        "ts-jest",
+        {
+          "tsconfig": "tsconfig.json"
+        }
+      ]
+    },
+    "testEnvironment": "node",
+    "globalSetup": "<rootDir>/test/global-setup.ts",
+    "setupFiles": [
+      "<rootDir>/test/env.ts"
+    ]
+  }
+}
