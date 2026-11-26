@@ -98,6 +98,7 @@ After approval of the gates: R1.1 → R1.10 in the order of the master plan §9,
 | 2026-11-26 | Sitemap & specs §27–30 stored; first implementation plan (a2cf63b) |
 | 2026-11-26 | v2.0 master expansion, §32 professional identity, §33 My Identity stored; master implementation plan (547c8d5) |
 | 2026-11-26 | **R1.0 design system implemented** (Modern Luxury / Editorial Minimalism), 6 design docs, token & contrast tests (eb8358f) |
+| 2026-11-26 | **EZIDNET implementation (after owner's 'continue'):** rebrand, Kurmanji 4th language (draft), Soft Gold, EZID ID, secure QR codes + scan page, not-discoverable default, Next.js 15.5.29 / React 19 security upgrade. Tests: engine 54, API 34, web 12, e2e 6 — all green. Supabase migration pending (environment blocks Docker Hub). |
 | 2026-11-26 | Project book (Arabic PDF) explaining every step and why (`docs/book/`) |
 | 2026-11-26 | **EZIDNET v1.1** plan received; 16 documents in `docs/ezidnet/` (vision, architecture, screens, database incl. EZID Kids model, security, localization, roadmap, tests, deployment, decisions EZ-1…EZ-13, 4 Kids documents). Waiting for approval; no code changed. |
 | 2026-11-26 | Module 34 (monetization & commerce) and approved additions 3.0 stored; **Master Specification 3.0** created as single reference; 7-phase order adopted; gates G9–G12 and questions Q1–Q6 added. No code changed. |

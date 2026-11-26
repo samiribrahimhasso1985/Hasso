@@ -98,6 +98,20 @@ export interface RelationshipTypeInfo {
   inverseLabel: { neutral: string; male?: string; female?: string } | null;
 }
 
+export interface IdentityMe {
+  ezidId: string;
+  displayName: string;
+  qrEnabled: boolean;
+  discoverable: boolean;
+  qr: { token: string; createdAt: string; expiresAt: string | null } | null;
+}
+
+export interface QrResolution {
+  person: PersonSummary;
+  ezidId: string | null;
+  isSelf: boolean;
+}
+
 export class ApiError extends Error {
   constructor(
     public status: number,
@@ -179,5 +193,20 @@ export class Api {
   }
   awaiting() {
     return this.req<RelationshipDetail[]>('GET', '/relationships/awaiting-me');
+  }
+  identityMe() {
+    return this.req<IdentityMe>('GET', '/identity/me');
+  }
+  createQr(kind: 'PERSONAL' | 'TEMPORARY' = 'PERSONAL') {
+    return this.req<{ token: string }>('POST', '/identity/qr', { kind });
+  }
+  revokeQr() {
+    return this.req<{ revoked: number }>('DELETE', '/identity/qr');
+  }
+  identitySettings(body: { qrEnabled?: boolean; discoverable?: boolean }) {
+    return this.req<IdentityMe>('PATCH', '/identity/settings', body);
+  }
+  resolveQr(token: string) {
+    return this.req<QrResolution>('GET', `/qr/${encodeURIComponent(token)}`);
   }
 }

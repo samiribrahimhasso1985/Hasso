@@ -15,7 +15,14 @@ Status values: ✅ carried over (already approved/implemented) · ❓ needs owne
 | D-8 | Verified badges only by human administrators; AI never decides identity/relationships | ✅ |
 | D-9 | Modern Luxury / Editorial Minimalism design system with contrast-safe tokens | ✅ |
 
-## 2. Decisions needed for EZIDNET v1.1
+## 2. Decisions for EZIDNET v1.1
+
+> **2026-11-26:** the owner answered "اكمل" (continue) to the recommendations. Implemented so far under that approval,
+> all reversible and without deleting anything: EZ-1 (rebrand on the existing core), EZ-4 (EZID ID), EZ-5 (not
+> discoverable by default), EZ-6 (Kurmanji Latin, draft), EZ-11 (Soft Gold accent). **Not yet implemented:** EZ-2/EZ-3
+> (Supabase + Next.js backend) — Supabase cannot be run in this environment (Docker Hub blocked), so it needs either the
+> owner's Supabase dev project or local setup on the Windows PC before it can be tested.
+
 | # | Question | Recommendation |
 |---|---|---|
 | **EZ-1** | Is EZIDNET the product built on the existing FAMILY NETWORK core (rebrand + new scope), or a separate project next to it? | Build EZIDNET on the existing core; keep FAMILY NETWORK docs as history; after approval, move EZIDNET docs to `docs/` top level |

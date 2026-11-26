@@ -7,6 +7,7 @@ import { CATEGORY } from '../lib/tokens';
 import AddRelationshipDialog from './AddRelationshipDialog';
 import ConnectPanel from './ConnectPanel';
 import GraphCanvas, { type GraphCanvasHandle, type LayoutMode } from './GraphCanvas';
+import IdentityPanel from './IdentityPanel';
 import InboxPanel from './InboxPanel';
 import LanguageSwitch from './LanguageSwitch';
 import Legend from './Legend';
@@ -45,7 +46,7 @@ export default function Dashboard({ session, onLogout }: { session: Session; onL
   const [expansions, setExpansions] = useState<Map<string, string[]>>(new Map());
   const [selected, setSelected] = useState<string | null>(null);
   const [selectedEdge, setSelectedEdge] = useState<string | null>(null);
-  const [tab, setTab] = useState<'person' | 'connect' | 'inbox'>('person');
+  const [tab, setTab] = useState<'person' | 'connect' | 'inbox' | 'identity'>('person');
   const [pathFrom, setPathFrom] = useState<PersonSummary | null>(null);
   const [pathTo, setPathTo] = useState<PersonSummary | null>(null);
   const [path, setPath] = useState<PathResult | null>(null);
@@ -303,6 +304,9 @@ export default function Dashboard({ session, onLogout }: { session: Session; onL
           <button role="tab" aria-selected={tab === 'inbox'} className={tab === 'inbox' ? 'active' : ''} onClick={() => setTab('inbox')} data-testid="tab-inbox">
             {t.inbox} {inboxCount > 0 && <span className="count">{inboxCount}</span>}
           </button>
+          <button role="tab" aria-selected={tab === 'identity'} className={tab === 'identity' ? 'active' : ''} onClick={() => setTab('identity')} data-testid="tab-identity">
+            {t.myIdentity}
+          </button>
         </nav>
         {tab === 'person' &&
           (selectedNode ? (
@@ -332,6 +336,7 @@ export default function Dashboard({ session, onLogout }: { session: Session; onL
           <ConnectPanel api={api} from={pathFrom} to={pathTo} setFrom={setPathFrom} setTo={setPathTo} known={nodeList} onResult={setPath} />
         )}
         {tab === 'inbox' && <InboxPanel api={api} onChanged={() => setRefreshKey((k) => k + 1)} onCount={setInboxCount} />}
+        {tab === 'identity' && <IdentityPanel api={api} />}
       </aside>
 
       {adding && (

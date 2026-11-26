@@ -4,6 +4,7 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { AuditModule } from './audit/audit.module';
 import { AuthModule } from './auth/auth.module';
 import { HealthController } from './health.controller';
+import { IdentityModule } from './identity/identity.module';
 import { GraphModule } from './graph/graph.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ProfilesModule } from './profiles/profiles.module';
@@ -18,6 +19,7 @@ import { RelationshipsModule } from './relationships/relationships.module';
     ProfilesModule,
     RelationshipsModule,
     GraphModule,
+    IdentityModule,
   ],
   controllers: [HealthController],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],

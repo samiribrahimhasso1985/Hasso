@@ -16,6 +16,16 @@ approval before the next starts.
 | **9 Android & iOS** | apps on the same API and types; Kids standalone app option | — | technology choice (Flutter vs React Native/Expo) at that time |
 | **10 Global expansion** | more languages (e.g. Kurmanji Arabic script), scaling, partnerships | — | — |
 
+## Status (2026-11-26)
+| Done | Tests |
+|---|---|
+| EZIDNET branding; Kurmanji (`ku`) in engine, API and UI (draft for native review); Soft Gold token | engine 54, web 12 |
+| EZID ID for every account holder (`EZ-` + 8 random digits, migration + backfill) | API 34 |
+| Personal/temporary QR tokens (hash lookup, AES-GCM at rest, regenerate, revoke, expire, on/off, scan log, uniform errors, rate limit) + My digital identity panel + `/c/<token>` scan page → connection request only | API + e2e 6 |
+| Not discoverable by default; opt-in toggle | API |
+| Security: Next.js 14 → 15.5.29, React 19.3.1 (critical advisories resolved) | all suites green |
+| **Open:** Supabase/Next.js backend (EZ-2/3), camera scanner, request message/cancel/report, Family Circles, privacy center, admin, PWA | — |
+
 ## MVP = Phases 1–5
 Registration/login · profiles · digital identity · EZID ID · QR · relationship engine · requests & confirmation ·
 people search · privacy & permissions · basic admin · 4 languages · responsive website + PWA.

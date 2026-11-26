@@ -10,6 +10,7 @@ import {
   type VerificationDecision,
 } from '@ftn/relationship-engine';
 import { DEMO_COMMUNITIES, DEMO_EMAIL_DOMAIN, DEMO_PASSWORD, DEMO_PEOPLE, DEMO_RELATIONS } from './demo-data';
+import { assignEzidId } from '../src/identity/ezid';
 
 /** Seeds the relationship type catalog from the engine (idempotent; safe in every environment). */
 export async function seedRelationshipTypes(prisma: PrismaClient) {
@@ -64,6 +65,7 @@ export async function seedDemo(prisma: PrismaClient, opts: { bcryptRounds?: numb
       },
     });
     profileIds.set(p.key, prof.id);
+    if (!p.managedBy) await assignEzidId(prisma, prof.id); // account holders get an EZID ID
   }
 
   const node = (key: string): PersonNode => {
@@ -132,6 +134,6 @@ export async function seedDemo(prisma: PrismaClient, opts: { bcryptRounds?: numb
 
 export async function wipe(prisma: PrismaClient) {
   await prisma.$executeRawUnsafe(
-    'TRUNCATE "audit_logs", "blocks", "community_memberships", "communities", "relationship_verifications", "relationships", "privacy_settings", "profile_stewards", "profiles", "users" RESTART IDENTITY CASCADE',
+    'TRUNCATE "qr_scan_events", "qr_tokens", "user_identifiers", "audit_logs", "blocks", "community_memberships", "communities", "relationship_verifications", "relationships", "privacy_settings", "profile_stewards", "profiles", "users" RESTART IDENTITY CASCADE',
   );
 }

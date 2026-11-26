@@ -846,6 +846,51 @@ label.check {
   font-size: 12px;
 }
 
+/* digital identity */
+.id-card {
+  padding: 18px 20px;
+  margin-bottom: 18px;
+  border-top: 3px solid var(--soft-gold);
+}
+.ezid {
+  font-family: 'Inter', monospace;
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  margin: 2px 0;
+}
+.id-name {
+  color: var(--text-2);
+}
+.qr-box {
+  width: 220px;
+  max-width: 100%;
+  margin: 10px 0;
+  padding: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+.qr-box svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.scan-page {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+.scan-card {
+  width: min(440px, 100%);
+  padding: 28px;
+  text-align: center;
+}
+.scan-card img {
+  border-radius: 50%;
+}
+
 /* inbox */
 .inbox-list {
   list-style: none;

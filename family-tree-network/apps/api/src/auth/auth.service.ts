@@ -5,6 +5,7 @@ import { AuditService } from '../audit/audit.service';
 import { AppError } from '../common/errors.filter';
 import { PrismaService } from '../prisma/prisma.service';
 import type { LoginDto, RegisterDto } from './dto';
+import { assignEzidId } from '../identity/ezid';
 
 const BCRYPT_ROUNDS = 12;
 // Constant-time-ish failure path: compare against a real hash even when the user does not exist.
@@ -25,9 +26,10 @@ export class AuthService {
     const passwordHash = await bcrypt.hash(dto.password, BCRYPT_ROUNDS);
     const user = await this.prisma.$transaction(async (tx) => {
       const u = await tx.user.create({ data: { email, passwordHash, locale: dto.locale ?? 'en' } });
-      await tx.profile.create({
+      const profile = await tx.profile.create({
         data: { userId: u.id, displayName: dto.displayName.trim(), gender: dto.gender ?? 'UNSPECIFIED', createdById: u.id },
       });
+      await assignEzidId(tx, profile.id);
       await this.audit.log(u.id, 'user.register', 'user', u.id, undefined, tx);
       return u;
     });

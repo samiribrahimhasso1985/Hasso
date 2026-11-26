@@ -42,8 +42,8 @@ password `demo-password-2026`.
 ## Tests
 
 ```bash
-npm test                             # engine (53) + API integration on ftn_test (26) + web unit (12)
-npm run e2e -w @ftn/web              # 5 real-browser tests; needs API + web running; reseeds the dev DB
+npm test                             # engine (54) + API integration on ftn_test (34) + web unit (12)
+npm run e2e -w @ftn/web              # 6 real-browser tests; needs API + web running; reseeds the dev DB
 ```
 
 For repeated e2e runs start the API with `AUTH_RATE_LIMIT_PER_MINUTE=100` (the default login limit is 10/minute).

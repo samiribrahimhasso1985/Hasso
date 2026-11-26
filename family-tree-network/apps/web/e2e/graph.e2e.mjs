@@ -119,3 +119,31 @@ test('phone width: no horizontal scrolling', async () => {
   assert.equal(overflow, 0);
   await page.close();
 });
+
+test('QR: owner shows EZID ID and code; a scanner sees the person and can only send a request', async () => {
+  const omar = await loginAs('omar');
+  await omar.page.click('[data-testid=tab-identity]');
+  await omar.page.waitForSelector('[data-testid=ezid-id]');
+  assert.match(await omar.page.textContent('[data-testid=ezid-id]'), /^EZ-\d{8}$/);
+  if (await omar.page.$('[data-testid=btn-qr-create]')) await omar.page.click('[data-testid=btn-qr-create]');
+  await omar.page.waitForSelector('[data-testid=qr-image] svg');
+  const token = await omar.page.evaluate(async () => {
+    const s = JSON.parse(sessionStorage.getItem('ftn.session'));
+    const r = await fetch('http://localhost:4000/api/identity/me', { headers: { authorization: `Bearer ${s.accessToken}` } });
+    return (await r.json()).qr.token;
+  });
+  await omar.page.close();
+
+  const julia = await loginAs('julia');
+  await julia.page.goto(`${WEB}/c/${token}`);
+  await julia.page.waitForSelector('[data-testid=scanned-name]');
+  assert.equal(await julia.page.textContent('[data-testid=scanned-name]'), 'Omar');
+  await julia.page.click('[data-testid=btn-send-request]');
+  await julia.page.selectOption('[data-testid=type-select]', 'TRAVEL_FRIEND');
+  await julia.page.click('[data-testid=btn-add-submit]');
+  await julia.page.waitForSelector('[data-testid=add-result]');
+  assert.match(await julia.page.textContent('[data-testid=add-result]'), /Proposed/);
+  await julia.page.goto(`${WEB}/c/${'x'.repeat(43)}`);
+  await julia.page.waitForSelector('[data-testid=qr-invalid]');
+  await julia.page.close();
+});
