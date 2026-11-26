@@ -28,7 +28,7 @@ Status values: ✅ carried over (already approved/implemented) · ❓ needs owne
 | **EZ-8** | Children's access model | Kids mode on guardian device (PIN), no child credentials; standalone app later with guardian-paired child tokens |
 | **EZ-9** | Kids AI | Off by default per child; approved knowledge base only; built last within Phase 7 |
 | **EZ-10** | Legal review budget | Reserve part of the €5,000 for DPIA, privacy policy and kids consent review before public launch |
-| **EZ-11** | Soft Gold (`#C9A34F`) use | Accent for highlights/badges only (contrast ~2.2:1 on Warm Sand — never for text) |
+| **EZ-11** | Soft Gold (`#C9A34F`) use | Accent for highlights/badges only (contrast 2.09:1 on Warm Sand — never for text or thin lines) |
 | **EZ-12** | Kids visual identity | Separate playful-but-calm theme (rounded, larger targets, warm palette), no neon, no dark patterns |
 | **EZ-13** | Mobile technology (Phase 9) | Decide later (Flutter vs React Native/Expo); API and types stay shared |
 

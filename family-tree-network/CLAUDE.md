@@ -702,6 +702,10 @@ Full text: [`docs/specs/MONETIZATION_COMMERCE.md`](docs/specs/MONETIZATION_COMME
 
 Full text: [`docs/specs/APPROVED_ADDITIONS_3_0.md`](docs/specs/APPROVED_ADDITIONS_3_0.md). **Phase order (authoritative, replaces v2 releases):** 1 identity, registration, relationships, QR, privacy · 2 communication, communities, messages, translation · 3 professional identity, jobs, companies, mentoring · 4 stores, bookings, academy, tickets · 5 broadcasting, creators, earnings, collaboration · 6 Family AI, reputation, protection, smart services · 7 global expansion, travel, analytics, integrations. Additions: My Life Map, My Legacy Story, Family Organizer, Family Documents (part of Family Vault), Family Reunion, Family Knowledge, Business Partner Finder, Startup Hub, FN Interview Studio, FN Webinars. Videos remain in Public Videos and Family Videos only.
 
+## 36. EZIDNET v1.1 (PENDING OWNER APPROVAL)
+
+The owner sent the EZIDNET.COM Master Development Plan v1.1 (platform for the Yazidi community worldwide, incl. EZID Kids). Full text and the complete documentation set: [`docs/ezidnet/`](docs/ezidnet/README.md). **Until decision EZ-1 is approved, no code changes for EZIDNET**; the plan itself says to stop after documentation. Key rules already binding: never overwrite/delete files or purchase/deploy without permission; excluded features (My Digital Passport, My Proof, Project Hub, Company Directory, FN Magazine, My Video Archive, Friends Videos) are never built or renamed; never infer religious or ethnic identity; children's data protected per `docs/ezidnet/EZID_KIDS_SAFETY.md`.
+
 ---
 
 ## Working notes for this repository
