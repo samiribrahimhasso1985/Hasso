@@ -1,6 +1,8 @@
 # FAMILY NETWORK — Master Implementation Plan
 
 Version 1.0 · 2026-11-26 · Supersedes `IMPLEMENTATION_PLAN.md` (kept for history).
+
+> **Phase order updated:** the owner's 7-phase plan in `FAMILY_NETWORK_MASTER_SPECIFICATION_3.0.md` §7 replaces the R1–R8 releases below. Phase 1 = R1 (detail in §9 stays valid); placement of later modules follows Specification 3.0.
 Inputs: CLAUDE.md §1–33, `docs/specs/*` (Master Expansion v2.0, sitemap v1.0, smart registration, profile photo,
 verified accounts & live, professional identity, My Identity), all existing docs and code.
 

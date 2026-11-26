@@ -1,6 +1,8 @@
 # FAMILY NETWORK (formerly "Family Tree Network")
 ## Master Project Instructions — Product, Design & Engineering
 
+> **PRIMARY REFERENCE:** [`docs/FAMILY_NETWORK_MASTER_SPECIFICATION_3.0.md`](docs/FAMILY_NETWORK_MASTER_SPECIFICATION_3.0.md) consolidates every section below, the specs in `docs/specs/`, all decisions, the 7-phase plan and open questions. Read it first; where sections below conflict, Specification 3.0 records which decision wins.
+
 - **Project:** Family Tree Network
 - **Product Type:** Global Social Relationship Network
 - **Design Identity:** Premium Dark Navy & Gold
@@ -692,6 +694,14 @@ Full text: [`docs/specs/PROFESSIONAL_IDENTITY.md`](docs/specs/PROFESSIONAL_IDENT
 
 Full text: [`docs/specs/MY_IDENTITY.md`](docs/specs/MY_IDENTITY.md). Profile hub with six dimensions — personal, family, professional (§32), social, public, education & skills — each with independent audiences (Public, Connections, Family, Selected People, Only Me) and field-level controls enforced by the backend; "view my profile as others see it" using the real permission rules; optional completion indicator that never forces disclosure; reuses existing records (no duplication); verification kinds stay independent.
 
+## 34. MONETIZATION, CREATOR ECONOMY & COMMERCE (MODULE 34)
+
+Full text: [`docs/specs/MONETIZATION_COMMERCE.md`](docs/specs/MONETIZATION_COMMERCE.md). One unified account and payment architecture for: live monetization (gifts, paid live, memberships, live shopping, sponsored live), creator & celebrity earnings, FN Market (official, creator, celebrity, business, service stores, digital products), FN Coins, FN Ads & Partnerships, FN Bookings, FN Premium, FN Originals, financial dashboards. Rules: licensed payment provider, never store card data, idempotent webhooks, every transaction in a ledger, configurable commissions with full fee breakdown (test defaults 70/30 gifts, 85/15 tickets/memberships/courses, 90/10 marketplace, 80/20 sponsorship — not final), coins ≠ cash and not investments, no unrestricted P2P cash, minors protected, never fabricate revenue or metrics, legal and tax review per market before enabling transactions.
+
+## 35. APPROVED ADDITIONS 3.0 & NEW PHASE ORDER
+
+Full text: [`docs/specs/APPROVED_ADDITIONS_3_0.md`](docs/specs/APPROVED_ADDITIONS_3_0.md). **Phase order (authoritative, replaces v2 releases):** 1 identity, registration, relationships, QR, privacy · 2 communication, communities, messages, translation · 3 professional identity, jobs, companies, mentoring · 4 stores, bookings, academy, tickets · 5 broadcasting, creators, earnings, collaboration · 6 Family AI, reputation, protection, smart services · 7 global expansion, travel, analytics, integrations. Additions: My Life Map, My Legacy Story, Family Organizer, Family Documents (part of Family Vault), Family Reunion, Family Knowledge, Business Partner Finder, Startup Hub, FN Interview Studio, FN Webinars. Videos remain in Public Videos and Family Videos only.
+
 ---
 
 ## Working notes for this repository
@@ -700,6 +710,7 @@ Full text: [`docs/specs/MY_IDENTITY.md`](docs/specs/MY_IDENTITY.md). Profile hub
 - Architecture & decisions: `family-tree-network/docs/`.
 - Run all tests: `cd family-tree-network && npm test` (requires the local PostgreSQL described in `README.md`).
 - Progress report (kept up to date, see §26): `family-tree-network/docs/PROGRESS_REPORT.md`.
-- **Master implementation plan (authoritative):** `family-tree-network/docs/FAMILY_NETWORK_MASTER_IMPLEMENTATION_PLAN.md` (the older `IMPLEMENTATION_PLAN.md` is kept for history).
+- **Master Specification 3.0 (primary reference):** `family-tree-network/docs/FAMILY_NETWORK_MASTER_SPECIFICATION_3.0.md`.
+- **Master implementation plan (Phase 1 detail):** `family-tree-network/docs/FAMILY_NETWORK_MASTER_IMPLEMENTATION_PLAN.md` (the older `IMPLEMENTATION_PLAN.md` is kept for history).
 - Design system docs: `family-tree-network/docs/design/`.
 - Full specification texts: `family-tree-network/docs/specs/`.

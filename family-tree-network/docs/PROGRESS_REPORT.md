@@ -2,7 +2,7 @@
 
 Kept up to date after every phase or significant change (CLAUDE.md §26).
 Last update: **2026-11-26** · Branch: `ccr-47c5f9b6-alewtl`
-Authoritative plan: `FAMILY_NETWORK_MASTER_IMPLEMENTATION_PLAN.md`
+Primary reference: `FAMILY_NETWORK_MASTER_SPECIFICATION_3.0.md` · Phase 1 detail: `FAMILY_NETWORK_MASTER_IMPLEMENTATION_PLAN.md`
 
 ## 1. Summary
 
@@ -13,7 +13,9 @@ Authoritative plan: `FAMILY_NETWORK_MASTER_IMPLEMENTATION_PLAN.md`
 | **R1.0 Design system — Modern Luxury / Editorial Minimalism** | ✅ implemented and tested |
 | R1.1–R1.10 (registration, identity, phone, photo, QR, requests, privacy, admin) | ⏸ waiting for approval gates G1–G8 |
 | Relationship engine, graph, verification, How Are We Connected? (built earlier) | ✅ working, unchanged in behaviour |
-| Releases R2–R8 | ⬜ not started |
+| Phases 2–7 (owner's 7-phase order, Spec 3.0 §7) | ⬜ not started |
+| Module 34 monetization & commerce, additions 3.0 | 📝 stored and placed in the phase plan (Spec 3.0) |
+| Master Specification 3.0 (single reference) | ✅ written |
 
 ## 2. Work completed
 
@@ -72,6 +74,12 @@ add-relationship dialog, ar/de/en, phone layout) · architecture docs · CI work
 | G6 | Relationship removal → REMOVED status with history and retention period |
 | G7 | Separate admin app with 7 roles, MFA for admins |
 | G8 | Unified audience model (adds Selected People, Community) |
+| G9 | Payment model: licensed marketplace payment provider |
+| G10 | FN Coins legal classification, minors |
+| G11 | Translation provider for private content |
+| G12 | Reputation system scope |
+
+Open questions Q1–Q6 (placement of family-life modules and videos, missing suggestion list, definitions of jobs/mentoring/academy/reputation/travel/integrations, Interview vs Celebrity Studio, mobile timing): Spec 3.0 §10.
 
 ## 6. Risks & limitations
 Web token in `sessionStorage` (G1) · no email verification / password reset / MFA yet · path search ≤ 8 hops,
@@ -89,4 +97,5 @@ After approval of the gates: R1.1 → R1.10 in the order of the master plan §9,
 | 2026-11-26 | Spec §24–26 added; progress report created (c4625fd) |
 | 2026-11-26 | Sitemap & specs §27–30 stored; first implementation plan (a2cf63b) |
 | 2026-11-26 | v2.0 master expansion, §32 professional identity, §33 My Identity stored; master implementation plan (547c8d5) |
-| 2026-11-26 | **R1.0 design system implemented** (Modern Luxury / Editorial Minimalism), 6 design docs, token & contrast tests |
+| 2026-11-26 | **R1.0 design system implemented** (Modern Luxury / Editorial Minimalism), 6 design docs, token & contrast tests (eb8358f) |
+| 2026-11-26 | Module 34 (monetization & commerce) and approved additions 3.0 stored; **Master Specification 3.0** created as single reference; 7-phase order adopted; gates G9–G12 and questions Q1–Q6 added. No code changed. |
