@@ -1,4 +1,6 @@
-# Technical Implementation Plan
+# Technical Implementation Plan (superseded)
+
+> Superseded by `FAMILY_NETWORK_MASTER_IMPLEMENTATION_PLAN.md` (2026-11-26). Kept for history.
 
 Maps the complete sitemap (CLAUDE.md §27) and the new specifications (§24, §28–30) to the existing code, identifies
 missing modules, and defines the build order. Date: 2026-11-26.

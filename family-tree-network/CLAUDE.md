@@ -1,4 +1,4 @@
-# FAMILY TREE NETWORK
+# FAMILY NETWORK (formerly "Family Tree Network")
 ## Master Project Instructions — Product, Design & Engineering
 
 - **Project:** Family Tree Network
@@ -60,6 +60,8 @@ A person must not need a separate account for every family or social group.
 **One person = one identity = multiple relationships.**
 
 ## 3. VISUAL IDENTITY AND DESIGN SYSTEM
+
+> **SUPERSEDED (2026-11-26):** the approved design system is now **Modern Luxury / Editorial Minimalism** (§31 → `docs/specs/MASTER_EXPANSION_V2.md` §26, tokens in `docs/design/COLOR_TOKENS.md`). The rule "the relationship graph is the main visual identity" still applies; dark navy, gold and glow no longer do.
 
 Use the approved visual concept as the primary design reference.
 
@@ -606,7 +608,7 @@ Add: `identity_verifications`, `phone_verifications`, `user_identifiers`, `qr_to
 
 ## 25. DESIGN DIRECTION UNDER REVIEW — "Soft Minimalism & Elegant Neutral Colors"
 
-> **Status: PROPOSED, NOT YET DECIDED** (note: §29 profile-photo UX already refers to this palette — owner leaning towards it; awaiting explicit confirmation). This proposal contradicts §3 (Dark Navy & Gold, glowing connections). Until the product owner confirms the final direction, §3 stays in force and no visual redesign is applied.
+> **Status: SUPERSEDED** by the approved Modern Luxury / Editorial Minimalism system (§31, v2 §26). Kept for history; its rules (low saturation, no glow, no neon) carry over.
 
 **Philosophy:** a premium international relationship platform (family, friends, professional, digital identity & QR, private communities, posts & memories) that must not look like a traditional family-tree app; calm, elegant, sophisticated, timeless.
 
@@ -660,6 +662,36 @@ Full text: [`docs/specs/VERIFIED_ACCOUNTS_AND_LIVE.md`](docs/specs/VERIFIED_ACCO
 
 Badges are approved **manually by administrators only**, never automatically, never for payment or popularity; backend-controlled; immutable audit log; appeals. Interview requests with scheduling (UTC storage, local display), private rooms, recording consent. Live streaming gated by eligibility levels 1–4, built on a replaceable provider (WebRTC/RTMPS/HLS evaluated). **Public live streaming must not launch before moderation, reporting, emergency termination, privacy and legal compliance are operational.** A badge does not mean endorsement.
 
+## 31. MASTER EXPANSION v2.0 — GLOBAL PLATFORM SPECIFICATION (AUTHORITATIVE)
+
+Full text: [`docs/specs/MASTER_EXPANSION_V2.md`](docs/specs/MASTER_EXPANSION_V2.md). Implementation plan: [`docs/FAMILY_NETWORK_MASTER_IMPLEMENTATION_PLAN.md`](docs/FAMILY_NETWORK_MASTER_IMPLEMENTATION_PLAN.md). Where older sections conflict, v2.0 wins (reconciliation table in the plan, §4).
+
+**One integrated platform:** one account, one internal identity, one profile; every module integrates with the central identity, relationship, permission and notification systems. 59 modules in 7 groups (core identity & relationships, social, family services, video & media, celebrity & broadcasting, AI, security & business).
+
+**Mandatory rules:**
+1. No traditional hierarchical family tree as primary architecture — relationship graph (people = nodes, relationships = edges).
+2. One unique internal identity per person; multiple relationship types.
+3. Government identity verification ≠ relationship confirmation.
+4. Only human administrators approve the official FAMILY NETWORK VERIFIED BADGE (no automatic, self-uploaded or paid badges).
+5. **Only two video sections: Public Videos and Family Videos.** Never create My Video Archive, Friends Videos, or any alternative personal video storage section. Separate access policies; private family content never becomes public automatically.
+6. AI never confirms relationships, publishes, or changes permissions without human approval.
+7. Arabic RTL + German/English LTR.
+8. Design: **Modern Luxury / Editorial Minimalism** — Warm Sand `#F3F0E9`, Pale Beige `#E9E5DC`, Soft Cream `#FAF9F5`, Deep Graphite `#30302D`, Stone Gray `#858078`, Warm Gray `#DDD8CE`, Muted Terracotta `#B58F7B`, Dusty Olive `#989985`, Slate Blue Gray `#87939A`, Soft Cocoa `#A18D80`; no neon, no glow, no heavy gradients; Inter + IBM Plex Sans Arabic/Noto Sans Arabic; verified badge may use its official blue.
+9. Relationship statuses: Pending, Confirmed, Rejected, Disputed, Removed (with history).
+10. Bottom navigation: Home · My Network · Discover · Messages · Profile + a "More Services" screen; no placeholder buttons that do nothing.
+
+**Releases (authoritative):** R1 Core Platform (registration, digital identity, profile photo, phone & identity verification, Family ID, QR, relationship engine & graph, connection requests, privacy, admin Verification Center) → R2 Social → R3 Family Services → R4 Video Platform → R5 Celebrity Platform → R6 Live Broadcasting → R7 Family AI → R8 Business & Global Expansion.
+
+**Process rules (owner):** inspect first, keep an implementation matrix, define requirements/journeys/screens/services/DB/API/authorization/security/acceptance tests per module, migrations with backward compatibility, never claim an untested integration works. **Do not delete any existing feature without the owner's approval. Stop and ask for approval before major architectural decisions or changes affecting data and privacy** (approval gates G1–G8 in the master plan).
+
+## 32. PROFESSIONAL IDENTITY & PERSONAL ROLES
+
+Full text: [`docs/specs/PROFESSIONAL_IDENTITY.md`](docs/specs/PROFESSIONAL_IDENTITY.md). One account, many simultaneous roles (employee with department, content creator, activist, freelancer, doctor, student …), current and previous, with skills, links, optional documents, per-role and per-field visibility, primary role as display preference only. Configurable category directory (admin-managed) plus custom roles. Roles may link to organizations; affiliation statuses SELF_DECLARED → PENDING_CONFIRMATION → ORGANIZATION_CONFIRMED / REJECTED / EXPIRED / DISPUTED, confirmed only by an authorized organization representative. Four separate verification kinds: personal identity (admin), organization affiliation (organization), professional qualification (authoritative source), self-declared (never shown as verified). Never fabricate audience statistics; never require political/religious affiliations; employer disclosure optional.
+
+## 33. MY IDENTITY — هويتي
+
+Full text: [`docs/specs/MY_IDENTITY.md`](docs/specs/MY_IDENTITY.md). Profile hub with six dimensions — personal, family, professional (§32), social, public, education & skills — each with independent audiences (Public, Connections, Family, Selected People, Only Me) and field-level controls enforced by the backend; "view my profile as others see it" using the real permission rules; optional completion indicator that never forces disclosure; reuses existing records (no duplication); verification kinds stay independent.
+
 ---
 
 ## Working notes for this repository
@@ -668,5 +700,6 @@ Badges are approved **manually by administrators only**, never automatically, ne
 - Architecture & decisions: `family-tree-network/docs/`.
 - Run all tests: `cd family-tree-network && npm test` (requires the local PostgreSQL described in `README.md`).
 - Progress report (kept up to date, see §26): `family-tree-network/docs/PROGRESS_REPORT.md`.
-- Implementation plan mapped to the sitemap: `family-tree-network/docs/IMPLEMENTATION_PLAN.md`.
+- **Master implementation plan (authoritative):** `family-tree-network/docs/FAMILY_NETWORK_MASTER_IMPLEMENTATION_PLAN.md` (the older `IMPLEMENTATION_PLAN.md` is kept for history).
+- Design system docs: `family-tree-network/docs/design/`.
 - Full specification texts: `family-tree-network/docs/specs/`.
