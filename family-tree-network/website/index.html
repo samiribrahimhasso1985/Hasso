@@ -1,0 +1,524 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<title>EZIDINET</title>
+<meta name="description" content="EZIDINET — a private digital home for Yazidi families, generations and communities around the world.">
+<style>
+/* Self-hosted fonts (no Google Fonts requests). */
+@font-face{font-family:'Inter';font-style:normal;font-weight:400;font-display:swap;src:url(fonts/inter-latin-400-normal.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'Inter';font-style:normal;font-weight:400;font-display:swap;src:url(fonts/inter-latin-ext-400-normal.woff2) format('woff2');unicode-range:U+0100-02AF,U+0304,U+0308,U+0329,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:'IBM Plex Sans Arabic';font-style:normal;font-weight:400;font-display:swap;src:url(fonts/ibm-plex-sans-arabic-arabic-400-normal.woff2) format('woff2');unicode-range:U+0600-06FF,U+0750-077F,U+0870-088E,U+0890-0891,U+0898-08E1,U+08E3-08FF,U+200C-200E,U+2010-2011,U+204F,U+2E41,U+FB50-FDFF,U+FE70-FE74,U+FE76-FEFC}
+@font-face{font-family:'Inter';font-style:normal;font-weight:500;font-display:swap;src:url(fonts/inter-latin-500-normal.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'Inter';font-style:normal;font-weight:500;font-display:swap;src:url(fonts/inter-latin-ext-500-normal.woff2) format('woff2');unicode-range:U+0100-02AF,U+0304,U+0308,U+0329,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:'IBM Plex Sans Arabic';font-style:normal;font-weight:500;font-display:swap;src:url(fonts/ibm-plex-sans-arabic-arabic-500-normal.woff2) format('woff2');unicode-range:U+0600-06FF,U+0750-077F,U+0870-088E,U+0890-0891,U+0898-08E1,U+08E3-08FF,U+200C-200E,U+2010-2011,U+204F,U+2E41,U+FB50-FDFF,U+FE70-FE74,U+FE76-FEFC}
+@font-face{font-family:'Inter';font-style:normal;font-weight:600;font-display:swap;src:url(fonts/inter-latin-600-normal.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'Inter';font-style:normal;font-weight:600;font-display:swap;src:url(fonts/inter-latin-ext-600-normal.woff2) format('woff2');unicode-range:U+0100-02AF,U+0304,U+0308,U+0329,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:'IBM Plex Sans Arabic';font-style:normal;font-weight:600;font-display:swap;src:url(fonts/ibm-plex-sans-arabic-arabic-600-normal.woff2) format('woff2');unicode-range:U+0600-06FF,U+0750-077F,U+0870-088E,U+0890-0891,U+0898-08E1,U+08E3-08FF,U+200C-200E,U+2010-2011,U+204F,U+2E41,U+FB50-FDFF,U+FE70-FE74,U+FE76-FEFC}
+/* Layout: one calm editorial column; the relationship network is the only graphic. Tokens follow the EZIDINET
+   design system (Modern Luxury / Editorial Minimalism, docs/design/COLOR_TOKENS.md). */
+:root {
+  --sand: #F3F0E9;        /* page */
+  --cream: #FAF9F5;       /* raised surfaces */
+  --beige: #E9E5DC;       /* bands */
+  --ink: #30302D;         /* text */
+  --muted: #6B675F;       /* secondary text (contrast-safe on sand) */
+  --line: #DDD8CE;        /* hairlines */
+  --accent: #8C6A57;      /* links, focus — darker terracotta for contrast */
+  --gold: #C9A34F;        /* highlight dots only, never text */
+  --family: #8B8C7A; --union: #A68371; --friend: #808B92; --work: #9A877A; --social: #858078;
+  --font-latin: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-arabic: "IBM Plex Sans Arabic", "Noto Sans Arabic", "Segoe UI", Tahoma, sans-serif;
+  --radius: 18px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --sand: #202522; --cream: #292F2B; --beige: #262B28; --ink: #F1F0EA; --muted: #B5B7B0; --line: #3A403B;
+    --accent: #D2AE97; --gold: #D4B266;
+    --family: #A9AA97; --union: #C29E8C; --friend: #9DA8AE; --work: #B6A393; --social: #A39E95;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --sand: #202522; --cream: #292F2B; --beige: #262B28; --ink: #F1F0EA; --muted: #B5B7B0; --line: #3A403B;
+  --accent: #D2AE97; --gold: #D4B266;
+  --family: #A9AA97; --union: #C29E8C; --friend: #9DA8AE; --work: #B6A393; --social: #A39E95;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body {
+  margin: 0; background: var(--sand); color: var(--ink);
+  font-family: var(--font-latin); font-size: 17px; line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+html[lang="ar"] body { font-family: var(--font-arabic); }
+a { color: var(--accent); text-underline-offset: 3px; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 6px; }
+
+.wrap {
+  max-width: 1080px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+
+/* Header */
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--sand); }
+header.top {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
+  background: color-mix(in srgb, var(--sand) 92%, transparent);
+  backdrop-filter: saturate(1.1) blur(8px);
+  border-bottom: 1px solid var(--line);
+}
+.bar { display: flex; align-items: center; gap: 20px; padding-block: 14px; flex-wrap: wrap; }
+.brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ink); }
+.brand .word { font-family: var(--font-latin); font-weight: 600; letter-spacing: .26em; font-size: 15px; }
+nav.links { display: flex; gap: 18px; margin-inline-start: auto; flex-wrap: wrap; }
+nav.links a { color: var(--muted); text-decoration: none; font-size: 15px; }
+nav.links a:hover { color: var(--ink); }
+.langs { display: flex; gap: 2px; background: var(--beige); border-radius: 999px; padding: 3px; }
+.langs button {
+  font: inherit; font-size: 13px; border: 0; background: transparent; color: var(--muted);
+  padding: 5px 11px; border-radius: 999px; cursor: pointer;
+}
+.langs button[aria-pressed="true"] { background: var(--cream); color: var(--ink); box-shadow: 0 1px 2px rgb(0 0 0 / .06); }
+.langs button[lang="ar"] { font-family: var(--font-arabic); }
+
+/* Hero */
+.hero { padding-block: 64px 56px; display: grid; grid-template-columns: 1.05fr .95fr; gap: 40px; align-items: center; }
+.status {
+  display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted);
+  border: 1px solid var(--line); border-radius: 999px; padding: 4px 12px; background: var(--cream);
+}
+.status i { width: 7px; height: 7px; border-radius: 50%; background: var(--gold); display: inline-block; }
+h1 {
+  font-size: clamp(2.2rem, 5vw, 3.6rem); line-height: 1.12; font-weight: 600; letter-spacing: -.02em;
+  margin: 18px 0 16px; text-wrap: balance;
+}
+html[lang="ar"] h1 { letter-spacing: 0; line-height: 1.3; }
+.lead { font-size: 1.15rem; color: var(--muted); max-width: 34em; margin: 0 0 28px; }
+.actions { display: flex; gap: 12px; flex-wrap: wrap; }
+.btn {
+  display: inline-block; text-decoration: none; font-size: 15px; font-weight: 500;
+  padding: 12px 20px; border-radius: 999px; border: 1px solid var(--ink);
+}
+.btn.primary { background: var(--ink); color: var(--sand); }
+.btn.ghost { color: var(--ink); background: transparent; border-color: var(--line); }
+.graph { width: 100%; max-width: 100%; height: auto; }
+.graph .edge { stroke-width: 1.6; fill: none; }
+.graph .node { fill: var(--cream); stroke: var(--line); stroke-width: 1.2; }
+.graph .me { fill: var(--ink); }
+.graph text { font-size: 13px; fill: var(--muted); text-anchor: middle; font-family: inherit; }
+.graph .me-label { fill: var(--sand); font-weight: 600; font-size: 12px; }
+.graph .initial { fill: var(--ink); font-size: 12px; font-weight: 600; }
+@media (prefers-reduced-motion: no-preference) {
+  .graph .edge { stroke-dasharray: 220; stroke-dashoffset: 0; animation: draw 1.4s ease-out both; }
+  .graph .edge:nth-of-type(2n) { animation-delay: .15s; }
+  .graph .edge:nth-of-type(3n) { animation-delay: .3s; }
+  @keyframes draw { from { stroke-dashoffset: 220; } to { stroke-dashoffset: 0; } }
+}
+
+/* Sections */
+section { padding-block: 56px; border-top: 1px solid var(--line); }
+.eyebrow { font-size: 12px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); margin: 0 0 10px; }
+html[lang="ar"] .eyebrow { letter-spacing: 0; font-size: 14px; }
+h2 { font-size: clamp(1.6rem, 3vw, 2.2rem); line-height: 1.2; font-weight: 600; margin: 0 0 14px; text-wrap: balance; letter-spacing: -.01em; }
+h3 { font-size: 1.1rem; font-weight: 600; margin: 0 0 6px; }
+.intro { color: var(--muted); max-width: 40em; margin: 0 0 32px; }
+
+.legend { display: flex; flex-wrap: wrap; gap: 10px 22px; padding: 0; margin: 0 0 8px; list-style: none; }
+.legend li { display: flex; align-items: center; gap: 10px; font-size: 15px; }
+.legend .swatch { width: 26px; height: 3px; border-radius: 2px; display: inline-block; }
+
+.grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+.panel { background: var(--cream); border: 1px solid var(--line); border-radius: var(--radius); padding: 24px; min-width: 0; }
+.panel p { margin: 0; color: var(--muted); }
+
+.idcard {
+  background: var(--cream); border: 1px solid var(--line); border-radius: var(--radius); padding: 22px 24px;
+  display: flex; gap: 20px; align-items: center; max-width: 440px; margin-top: 18px;
+}
+.idcard .num { font-family: var(--font-latin); font-size: 1.6rem; font-weight: 600; letter-spacing: .04em; font-variant-numeric: tabular-nums; direction: ltr; unicode-bidi: isolate; }
+.idcard small { color: var(--muted); display: block; }
+.qr { width: 72px; height: 72px; flex: none; border-radius: 8px; background: var(--sand); padding: 6px; }
+
+.promises { list-style: none; padding: 0; margin: 0; display: grid; gap: 0; }
+.promises li { display: grid; grid-template-columns: 22px 1fr; gap: 14px; padding: 16px 0; border-bottom: 1px solid var(--line); }
+.promises li:last-child { border-bottom: 0; }
+.promises svg { margin-top: 5px; }
+.promises strong { display: block; font-weight: 600; }
+.promises span { color: var(--muted); }
+
+.plan { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; }
+.plan li { border-top: 2px solid var(--ink); padding-top: 14px; min-width: 0; }
+.plan li.later { border-top-color: var(--line); }
+.plan .tag { font-size: 12px; color: var(--muted); display: block; margin-bottom: 6px; }
+.plan p { margin: 0; color: var(--muted); font-size: 15px; }
+
+.get { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+.get .panel h3 { display: flex; align-items: center; gap: 10px; }
+.pill { font-size: 12px; font-weight: 500; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 2px 9px; }
+
+footer { border-top: 1px solid var(--line); padding-block: 28px 40px; color: var(--muted); font-size: 14px; }
+footer .wrap { display: flex; gap: 12px 24px; flex-wrap: wrap; justify-content: space-between; }
+
+@media (max-width: 860px) {
+  .hero { grid-template-columns: 1fr; padding-block: 40px 40px; }
+  .plan { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .get { grid-template-columns: 1fr; }
+}
+@media (max-width: 620px) {
+  nav.links { display: none; }
+  .langs { margin-inline-start: auto; }
+  .grid { grid-template-columns: 1fr; }
+  .plan { grid-template-columns: 1fr; }
+  section { padding-block: 44px; }
+  .idcard { flex-direction: row; }
+}
+</style>
+
+</head>
+<body>
+<header class="top">
+  <div class="wrap bar">
+    <a class="brand" href="#top" aria-label="EZIDINET">
+      <svg width="30" height="30" viewBox="0 0 108 108" aria-hidden="true">
+        <path d="M54,34 L36,66 M54,34 L72,66 M36,66 L72,66" stroke="var(--social)" stroke-width="4" fill="none"/>
+        <circle cx="54" cy="34" r="10" fill="var(--ink)"/><circle cx="36" cy="66" r="9" fill="var(--union)"/><circle cx="72" cy="66" r="9" fill="var(--gold)"/>
+      </svg>
+      <span class="word">EZIDINET</span>
+    </a>
+    <nav class="links" aria-label="Sections">
+      <a href="#network" data-i18n="navNetwork">الشبكة</a>
+      <a href="#privacy" data-i18n="navPrivacy">الخصوصية</a>
+      <a href="#get" data-i18n="navGet">احصل على EZIDINET</a>
+    </nav>
+    <div class="langs" role="group" aria-label="Language">
+      <button type="button" id="lang-ku" lang="ku" data-lang="ku" aria-pressed="false">Kurmancî</button>
+      <button type="button" id="lang-ar" lang="ar" data-lang="ar" aria-pressed="true">العربية</button>
+      <button type="button" id="lang-de" lang="de" data-lang="de" aria-pressed="false">Deutsch</button>
+      <button type="button" id="lang-en" lang="en" data-lang="en" aria-pressed="false">English</button>
+    </div>
+  </div>
+</header>
+
+<main id="top">
+  <div class="wrap hero">
+    <div>
+      <span class="status"><i></i><span data-i18n="status">قيد التطوير — نسخة تجريبية</span></span>
+      <h1 data-i18n="h1">شخص واحد. هوية واحدة. كل العلاقات.</h1>
+      <p class="lead" data-i18n="lead">بيت رقمي خاص يجمع العائلات والأجيال والمجتمعات الإيزيدية حول العالم — خاص افتراضياً.</p>
+      <div class="actions">
+        <a class="btn primary" href="#get" data-i18n="ctaGet">احصل على النسخة التجريبية</a>
+        <a class="btn ghost" href="#network" data-i18n="ctaLearn">كيف يعمل</a>
+      </div>
+    </div>
+    <svg class="graph" viewBox="0 0 440 360" role="img" aria-labelledby="graph-title">
+      <title id="graph-title" data-i18n="graphTitle">شخص واحد في مركز شبكة علاقاته</title>
+      <line class="edge" x1="220" y1="180" x2="140" y2="80" stroke="var(--family)"/>
+      <line class="edge" x1="220" y1="180" x2="300" y2="80" stroke="var(--family)"/>
+      <line class="edge" x1="220" y1="180" x2="360" y2="190" stroke="var(--union)" stroke-width="2.4"/>
+      <line class="edge" x1="220" y1="180" x2="300" y2="300" stroke="var(--family)"/>
+      <line class="edge" x1="220" y1="180" x2="90" y2="210" stroke="var(--friend)"/>
+      <line class="edge" x1="220" y1="180" x2="150" y2="310" stroke="var(--work)"/>
+      <line class="edge" x1="140" y1="80" x2="300" y2="80" stroke="var(--union)"/>
+      <line class="edge" x1="140" y1="80" x2="50" y2="110" stroke="var(--family)"/>
+      <line class="edge" x1="50" y1="110" x2="90" y2="210" stroke="var(--social)" stroke-dasharray="4 4"/>
+      <line class="edge" x1="360" y1="190" x2="300" y2="300" stroke="var(--family)"/>
+      <circle class="node" cx="140" cy="80" r="20"/><text class="initial" x="140" y="84">M</text><text x="140" y="116" data-i18n="gMother">الأم</text>
+      <circle class="node" cx="300" cy="80" r="20"/><text class="initial" x="300" y="84">F</text><text x="300" y="116" data-i18n="gFather">الأب</text>
+      <circle class="node" cx="360" cy="190" r="20"/><text class="initial" x="360" y="194">S</text><text x="360" y="226" data-i18n="gSpouse">الزوجة</text>
+      <circle class="node" cx="300" cy="300" r="20"/><text class="initial" x="300" y="304">D</text><text x="300" y="336" data-i18n="gDaughter">الابنة</text>
+      <circle class="node" cx="90" cy="210" r="20"/><text class="initial" x="90" y="214">A</text><text x="90" y="246" data-i18n="gFriend">صديق الطفولة</text>
+      <circle class="node" cx="150" cy="310" r="20"/><text class="initial" x="150" y="314">K</text><text x="150" y="346" data-i18n="gColleague">زميل عمل</text>
+      <circle class="node" cx="50" cy="110" r="16"/><text class="initial" x="50" y="114">H</text><text x="50" y="142" data-i18n="gUncle">الخال</text>
+      <circle class="me" cx="220" cy="180" r="30"/><text class="me-label" x="220" y="185" data-i18n="gYou">أنت</text>
+      <circle cx="243" cy="158" r="5" fill="var(--gold)"/>
+    </svg>
+  </div>
+
+  <section id="network">
+    <div class="wrap">
+      <p class="eyebrow" data-i18n="netEyebrow">ليست شجرة عائلة</p>
+      <h2 data-i18n="netH2">شبكة علاقات حقيقية، لا تسلسل هرمي</h2>
+      <p class="intro" data-i18n="netIntro">كل شخص يظهر مرة واحدة فقط، ويمكن أن يرتبط بعائلته وزواجه وأصدقائه وزملائه في الوقت نفسه. القريب نفسه يمكن أن يكون في فرعين من العائلة دون حساب مكرر.</p>
+      <ul class="legend">
+        <li><span class="swatch" style="background:var(--family)"></span><span data-i18n="cFamily">العائلة</span></li>
+        <li><span class="swatch" style="background:var(--union)"></span><span data-i18n="cUnion">الزواج والشراكة</span></li>
+        <li><span class="swatch" style="background:var(--friend)"></span><span data-i18n="cFriend">الأصدقاء</span></li>
+        <li><span class="swatch" style="background:var(--work)"></span><span data-i18n="cWork">العمل</span></li>
+        <li><span class="swatch" style="background:var(--social)"></span><span data-i18n="cSocial">اجتماعي</span></li>
+      </ul>
+      <div class="grid" style="margin-top:28px">
+        <div class="panel"><h3 data-i18n="f1h">كيف نحن مرتبطون؟</h3><p data-i18n="f1p">اختر شخصين لترى أقصر طريق مؤكَّد بينهما. إذا لم يوجد طريق مؤكد، لا يخترع النظام علاقة.</p></div>
+        <div class="panel"><h3 data-i18n="f2h">تأكيد من الطرفين</h3><p data-i18n="f2p">لا تصبح العلاقة مؤكدة لأن شخصاً أضافها. العلاقات العائلية الحساسة تحتاج تأكيد أكثر من شخص.</p></div>
+        <div class="panel"><h3 data-i18n="f3h">قرابة محسوبة بدقة</h3><p data-i18n="f3p">العم والخال، العمة والخالة، وأبناء العم: تُحسب من العلاقات المؤكدة وتُعرض بلغتك.</p></div>
+        <div class="panel"><h3 data-i18n="f4h">أربع لغات</h3><p data-i18n="f4p">الكرمانجية والعربية والألمانية والإنجليزية، مع اتجاه كامل من اليمين إلى اليسار للعربية.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="identity">
+    <div class="wrap">
+      <p class="eyebrow" data-i18n="idEyebrow">الهوية الرقمية</p>
+      <h2 data-i18n="idH2">رقم EZID ورمز QR للتعارف الآمن</h2>
+      <p class="intro" data-i18n="idIntro">يحصل كل عضو على رقم EZID عشوائي لا يكشف أي معلومة شخصية، ورمز QR يمكن إلغاؤه. مسح الرمز يرسل طلب تواصل فقط — لا يُنشئ أي علاقة دون موافقة الطرف الآخر.</p>
+      <div class="idcard" aria-label="Example">
+        <svg class="qr" viewBox="0 0 21 21" aria-hidden="true" shape-rendering="crispEdges" fill="var(--ink)">
+          <path d="M0 0h7v7H0zM1 1v5h5V1zM2 2h3v3H2zM14 0h7v7h-7zM15 1v5h5V1zM16 2h3v3h-3zM0 14h7v7H0zM1 15v5h5v-5zM2 16h3v3H2zM8 0h1v2H8zM10 1h2v1h-2zM9 3h2v2H9zM12 4h1v3h-1zM8 6h1v1H8zM8 8h3v1H8zM13 8h2v1h-2zM17 8h4v1h-4zM0 9h2v1H0zM4 9h3v1H4zM9 10h2v2H9zM12 10h1v1h-1zM15 10h2v2h-2zM19 10h2v1h-2zM1 11h2v1H1zM6 11h1v2H6zM13 12h1v2h-1zM17 12h3v1h-3zM8 13h4v1H8zM15 14h1v3h-1zM18 14h2v1h-2zM9 15h2v1H9zM12 16h2v1h-2zM17 16h1v2h-1zM19 17h2v1h-2zM8 17h2v2H8zM11 18h3v1h-3zM15 19h2v2h-2zM18 19h1v2h-1zM10 20h4v1h-4z"/>
+        </svg>
+        <div>
+          <small data-i18n="idLabel">رقم EZID (مثال)</small>
+          <div class="num">EZ-76101101</div>
+          <small data-i18n="idNote">ثمانية أرقام عشوائية — لا تاريخ ميلاد ولا هاتف ولا رقم هوية.</small>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="privacy">
+    <div class="wrap">
+      <p class="eyebrow" data-i18n="prEyebrow">الخصوصية أولاً</p>
+      <h2 data-i18n="prH2">وعدنا لكل عائلة</h2>
+      <p class="intro" data-i18n="prIntro">منصة لمجتمع عانى من الاضطهاد يجب أن تحميه أولاً. هذه القواعد مبنية في النظام نفسه، لا في الإعدادات فقط.</p>
+      <ul class="promises">
+        <li><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7" r="6" fill="var(--gold)"/></svg><div><strong data-i18n="p1s">غير قابل للبحث افتراضياً</strong><span data-i18n="p1t">لا يجدك أحد في البحث إلا إذا فعّلت ذلك بنفسك. لا يوجد دليل عام للأعضاء ولا شبكة عامة.</span></div></li>
+        <li><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7" r="6" fill="var(--gold)"/></svg><div><strong data-i18n="p2s">الدولة فقط، لا العنوان</strong><span data-i18n="p2t">الموقع على مستوى الدولة افتراضياً، والمدينة اختيارية. لا تُحفظ إحداثيات دقيقة أبداً.</span></div></li>
+        <li><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7" r="6" fill="var(--gold)"/></svg><div><strong data-i18n="p3s">لا استنتاج للدين أو الأصل</strong><span data-i18n="p3t">لا يستنتج النظام ولا الذكاء الاصطناعي هوية أحد من اسمه أو صوره أو عائلته أو مكانه.</span></div></li>
+        <li><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7" r="6" fill="var(--gold)"/></svg><div><strong data-i18n="p4s">حماية الأطفال</strong><span data-i18n="p4t">لا تواصل مع الغرباء، ولا ظهور علني، ولا إعلانات، ولا تتبّع. كل شيء بإدارة ولي الأمر.</span></div></li>
+        <li><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7" r="6" fill="var(--gold)"/></svg><div><strong data-i18n="p5s">بيانات في أوروبا</strong><span data-i18n="p5t">الاستضافة المخططة داخل الاتحاد الأوروبي ووفق قانون حماية البيانات الأوروبي، مع تشفير البيانات الحساسة.</span></div></li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="next">
+    <div class="wrap">
+      <p class="eyebrow" data-i18n="nxEyebrow">ما بعد ذلك</p>
+      <h2 data-i18n="nxH2">مراحل مخطط لها</h2>
+      <p class="intro" data-i18n="nxIntro">تُبنى المنصة على مراحل صغيرة، وكل مرحلة تُختبر وتُعتمد قبل التي تليها.</p>
+      <ol class="plan">
+        <li><span class="tag" data-i18n="t1">الآن</span><h3 data-i18n="n1h">الهوية والعلاقات</h3><p data-i18n="n1p">التسجيل، رقم EZID، رموز QR، شبكة العلاقات، طلبات التواصل.</p></li>
+        <li class="later"><span class="tag" data-i18n="t2">مخطط</span><h3 data-i18n="n2h">المجتمع</h3><p data-i18n="n2p">الترحيب في كل بلد، المهرجانات والمناسبات، مشاريع مجتمعية مفتوحة.</p></li>
+        <li class="later"><span class="tag" data-i18n="t2">مخطط</span><h3 data-i18n="n3h">التراث</h3><p data-i18n="n3p">متحف رقمي وأرشيف صوتي للأغاني والتاريخ الشفهي، بموافقة أصحابها ومراجعة بشرية.</p></li>
+        <li class="later"><span class="tag" data-i18n="t2">مخطط</span><h3 data-i18n="n4h">EZIDINET للأطفال</h3><p data-i18n="n4p">تعلّم الكرمانجية والثقافة بالقصص والألعاب، بإشراف كامل من الأهل.</p></li>
+      </ol>
+    </div>
+  </section>
+
+  <section id="get">
+    <div class="wrap">
+      <p class="eyebrow" data-i18n="getEyebrow">احصل على EZIDINET</p>
+      <h2 data-i18n="getH2">نسخ تجريبية للمختبرين</h2>
+      <p class="intro" data-i18n="getIntro">EZIDINET ليست مفتوحة للعموم بعد. نسخ الاختبار يرسلها فريق المشروع مباشرة إلى المختبرين المدعوين.</p>
+      <div class="get">
+        <div class="panel"><h3><span data-i18n="g1h">الموقع</span> <span class="pill" data-i18n="soon">قريباً</span></h3><p data-i18n="g1p">في المتصفح على أي كمبيوتر أو هاتف، عندما يصبح خادم الاختبار متاحاً على الإنترنت.</p></div>
+        <div class="panel"><h3><span data-i18n="g2h">Windows</span> <span class="pill" data-i18n="test">تجريبي</span></h3><p data-i18n="g2p">تطبيق EZIDINET Desktop يعمل كاملاً على جهازك، بدون إنترنت، مع بيانات تجريبية.</p></div>
+        <div class="panel"><h3><span data-i18n="g3h">Android</span> <span class="pill" data-i18n="test">تجريبي</span></h3><p data-i18n="g3p">تطبيق للهاتف يتصل بخادم EZIDINET — حالياً عبر جهاز الكمبيوتر على نفس شبكة الواي فاي.</p></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>© 2026 EZIDINET</span>
+    <span data-i18n="foot">نسخة تطوير. لا توجد بيانات حقيقية لأي شخص في النسخ التجريبية.</span>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var T = {
+    ar: {
+      navNetwork: 'الشبكة', navPrivacy: 'الخصوصية', navGet: 'احصل على EZIDINET',
+      status: 'قيد التطوير — نسخة تجريبية', h1: 'شخص واحد. هوية واحدة. كل العلاقات.',
+      lead: 'بيت رقمي خاص يجمع العائلات والأجيال والمجتمعات الإيزيدية حول العالم — خاص افتراضياً.',
+      ctaGet: 'احصل على النسخة التجريبية', ctaLearn: 'كيف يعمل',
+      graphTitle: 'شخص واحد في مركز شبكة علاقاته',
+      gMother: 'الأم', gFather: 'الأب', gSpouse: 'الزوجة', gDaughter: 'الابنة', gFriend: 'صديق الطفولة', gColleague: 'زميل عمل', gUncle: 'الخال', gYou: 'أنت',
+      netEyebrow: 'ليست شجرة عائلة', netH2: 'شبكة علاقات حقيقية، لا تسلسل هرمي',
+      netIntro: 'كل شخص يظهر مرة واحدة فقط، ويمكن أن يرتبط بعائلته وزواجه وأصدقائه وزملائه في الوقت نفسه. القريب نفسه يمكن أن يكون في فرعين من العائلة دون حساب مكرر.',
+      cFamily: 'العائلة', cUnion: 'الزواج والشراكة', cFriend: 'الأصدقاء', cWork: 'العمل', cSocial: 'اجتماعي',
+      f1h: 'كيف نحن مرتبطون؟', f1p: 'اختر شخصين لترى أقصر طريق مؤكَّد بينهما. إذا لم يوجد طريق مؤكد، لا يخترع النظام علاقة.',
+      f2h: 'تأكيد من الطرفين', f2p: 'لا تصبح العلاقة مؤكدة لأن شخصاً أضافها. العلاقات العائلية الحساسة تحتاج تأكيد أكثر من شخص.',
+      f3h: 'قرابة محسوبة بدقة', f3p: 'العم والخال، العمة والخالة، وأبناء العم: تُحسب من العلاقات المؤكدة وتُعرض بلغتك.',
+      f4h: 'أربع لغات', f4p: 'الكرمانجية والعربية والألمانية والإنجليزية، مع اتجاه كامل من اليمين إلى اليسار للعربية.',
+      idEyebrow: 'الهوية الرقمية', idH2: 'رقم EZID ورمز QR للتعارف الآمن',
+      idIntro: 'يحصل كل عضو على رقم EZID عشوائي لا يكشف أي معلومة شخصية، ورمز QR يمكن إلغاؤه. مسح الرمز يرسل طلب تواصل فقط — لا يُنشئ أي علاقة دون موافقة الطرف الآخر.',
+      idLabel: 'رقم EZID (مثال)', idNote: 'ثمانية أرقام عشوائية — لا تاريخ ميلاد ولا هاتف ولا رقم هوية.',
+      prEyebrow: 'الخصوصية أولاً', prH2: 'وعدنا لكل عائلة',
+      prIntro: 'منصة لمجتمع عانى من الاضطهاد يجب أن تحميه أولاً. هذه القواعد مبنية في النظام نفسه، لا في الإعدادات فقط.',
+      p1s: 'غير قابل للبحث افتراضياً', p1t: 'لا يجدك أحد في البحث إلا إذا فعّلت ذلك بنفسك. لا يوجد دليل عام للأعضاء ولا شبكة عامة.',
+      p2s: 'الدولة فقط، لا العنوان', p2t: 'الموقع على مستوى الدولة افتراضياً، والمدينة اختيارية. لا تُحفظ إحداثيات دقيقة أبداً.',
+      p3s: 'لا استنتاج للدين أو الأصل', p3t: 'لا يستنتج النظام ولا الذكاء الاصطناعي هوية أحد من اسمه أو صوره أو عائلته أو مكانه.',
+      p4s: 'حماية الأطفال', p4t: 'لا تواصل مع الغرباء، ولا ظهور علني، ولا إعلانات، ولا تتبّع. كل شيء بإدارة ولي الأمر.',
+      p5s: 'بيانات في أوروبا', p5t: 'الاستضافة المخططة داخل الاتحاد الأوروبي ووفق قانون حماية البيانات الأوروبي، مع تشفير البيانات الحساسة.',
+      nxEyebrow: 'ما بعد ذلك', nxH2: 'مراحل مخطط لها', nxIntro: 'تُبنى المنصة على مراحل صغيرة، وكل مرحلة تُختبر وتُعتمد قبل التي تليها.',
+      t1: 'الآن', t2: 'مخطط',
+      n1h: 'الهوية والعلاقات', n1p: 'التسجيل، رقم EZID، رموز QR، شبكة العلاقات، طلبات التواصل.',
+      n2h: 'المجتمع', n2p: 'الترحيب في كل بلد، المهرجانات والمناسبات، مشاريع مجتمعية مفتوحة.',
+      n3h: 'التراث', n3p: 'متحف رقمي وأرشيف صوتي للأغاني والتاريخ الشفهي، بموافقة أصحابها ومراجعة بشرية.',
+      n4h: 'EZIDINET للأطفال', n4p: 'تعلّم الكرمانجية والثقافة بالقصص والألعاب، بإشراف كامل من الأهل.',
+      getEyebrow: 'احصل على EZIDINET', getH2: 'نسخ تجريبية للمختبرين',
+      getIntro: 'EZIDINET ليست مفتوحة للعموم بعد. نسخ الاختبار يرسلها فريق المشروع مباشرة إلى المختبرين المدعوين.',
+      g1h: 'الموقع', g1p: 'في المتصفح على أي كمبيوتر أو هاتف، عندما يصبح خادم الاختبار متاحاً على الإنترنت.',
+      g2h: 'Windows', g2p: 'تطبيق EZIDINET Desktop يعمل كاملاً على جهازك، بدون إنترنت، مع بيانات تجريبية.',
+      g3h: 'Android', g3p: 'تطبيق للهاتف يتصل بخادم EZIDINET — حالياً عبر جهاز الكمبيوتر على نفس شبكة الواي فاي.',
+      soon: 'قريباً', test: 'تجريبي',
+      foot: 'نسخة تطوير. لا توجد بيانات حقيقية لأي شخص في النسخ التجريبية.'
+    },
+    en: {
+      navNetwork: 'Network', navPrivacy: 'Privacy', navGet: 'Get EZIDINET',
+      status: 'In development — test version', h1: 'One person. One identity. Every relationship.',
+      lead: 'A private digital home for Yazidi families, generations and communities around the world — private by default.',
+      ctaGet: 'Get the test version', ctaLearn: 'How it works',
+      graphTitle: 'One person at the centre of their relationship network',
+      gMother: 'Mother', gFather: 'Father', gSpouse: 'Wife', gDaughter: 'Daughter', gFriend: 'Childhood friend', gColleague: 'Colleague', gUncle: 'Uncle', gYou: 'You',
+      netEyebrow: 'Not a family tree', netH2: 'A real relationship network, not a hierarchy',
+      netIntro: 'Every person appears exactly once and can be connected to family, marriage, friends and colleagues at the same time. The same relative can belong to two family branches without a duplicate account.',
+      cFamily: 'Family', cUnion: 'Marriage & partnership', cFriend: 'Friends', cWork: 'Work', cSocial: 'Social',
+      f1h: 'How are we connected?', f1p: 'Choose two people to see the shortest confirmed path between them. If there is none, the system never invents a relationship.',
+      f2h: 'Confirmed by both sides', f2p: 'A relationship is not confirmed just because someone added it. Sensitive family relationships need more than one person to confirm.',
+      f3h: 'Kinship worked out precisely', f3p: 'Paternal and maternal uncles and aunts, cousins and in-laws are derived from confirmed relationships and shown in your language.',
+      f4h: 'Four languages', f4p: 'Kurmanji, Arabic, German and English, with full right-to-left layout for Arabic.',
+      idEyebrow: 'Digital identity', idH2: 'An EZID number and a QR code for meeting safely',
+      idIntro: 'Every member gets a random EZID number that reveals nothing personal, and a QR code that can be revoked. Scanning it only sends a connection request — no relationship exists until the other person agrees.',
+      idLabel: 'EZID number (example)', idNote: 'Eight random digits — no birth date, phone or ID number.',
+      prEyebrow: 'Privacy first', prH2: 'Our promise to every family',
+      prIntro: 'A platform for a community that has suffered persecution must protect it first. These rules are built into the system itself, not only into settings.',
+      p1s: 'Not searchable by default', p1t: 'Nobody finds you in search unless you turn it on yourself. There is no public member directory and no public network.',
+      p2s: 'Country, not address', p2t: 'Location is country-level by default and the city is optional. Precise coordinates are never stored.',
+      p3s: 'No guessing of religion or origin', p3t: 'Neither the system nor any AI infers anyone’s identity from their name, photos, family or location.',
+      p4s: 'Children are protected', p4t: 'No contact with strangers, no public exposure, no ads, no tracking. Everything is managed by a parent or guardian.',
+      p5s: 'Data in Europe', p5t: 'Hosting is planned inside the European Union under the GDPR, with sensitive data encrypted.',
+      nxEyebrow: 'What comes next', nxH2: 'Planned stages', nxIntro: 'The platform is built in small stages; each one is tested and approved before the next.',
+      t1: 'Now', t2: 'Planned',
+      n1h: 'Identity & relationships', n1p: 'Registration, EZID number, QR codes, the relationship network, connection requests.',
+      n2h: 'Community', n2p: 'Welcome guides for every country, festivals and events, open community projects.',
+      n3h: 'Heritage', n3p: 'A digital museum and a sound archive for songs and oral history, with consent and human review.',
+      n4h: 'EZIDINET Kids', n4p: 'Learning Kurmanji and culture through stories and games, fully supervised by parents.',
+      getEyebrow: 'Get EZIDINET', getH2: 'Test versions for testers',
+      getIntro: 'EZIDINET is not open to the public yet. Test versions are sent directly by the project team to invited testers.',
+      g1h: 'Website', g1p: 'In the browser on any computer or phone, once the test server is online.',
+      g2h: 'Windows', g2p: 'EZIDINET Desktop runs the complete platform on your computer, offline, with demo data.',
+      g3h: 'Android', g3p: 'A phone app that connects to an EZIDINET server — for now through a computer on the same Wi-Fi.',
+      soon: 'Soon', test: 'Test',
+      foot: 'Development version. Test versions contain no real person’s data.'
+    },
+    de: {
+      navNetwork: 'Netzwerk', navPrivacy: 'Datenschutz', navGet: 'EZIDINET erhalten',
+      status: 'In Entwicklung — Testversion', h1: 'Ein Mensch. Eine Identität. Alle Beziehungen.',
+      lead: 'Ein privates digitales Zuhause für ezidische Familien, Generationen und Gemeinschaften weltweit — standardmäßig privat.',
+      ctaGet: 'Testversion erhalten', ctaLearn: 'So funktioniert es',
+      graphTitle: 'Ein Mensch im Zentrum seines Beziehungsnetzes',
+      gMother: 'Mutter', gFather: 'Vater', gSpouse: 'Ehefrau', gDaughter: 'Tochter', gFriend: 'Kindheitsfreund', gColleague: 'Kollege', gUncle: 'Onkel', gYou: 'Du',
+      netEyebrow: 'Kein Stammbaum', netH2: 'Ein echtes Beziehungsnetz statt einer Hierarchie',
+      netIntro: 'Jeder Mensch erscheint genau einmal und kann gleichzeitig mit Familie, Ehe, Freunden und Kollegen verbunden sein. Dieselbe Verwandte kann zu zwei Familienzweigen gehören, ohne doppeltes Konto.',
+      cFamily: 'Familie', cUnion: 'Ehe & Partnerschaft', cFriend: 'Freunde', cWork: 'Arbeit', cSocial: 'Sozial',
+      f1h: 'Wie sind wir verbunden?', f1p: 'Wähle zwei Personen und sieh den kürzesten bestätigten Weg. Gibt es keinen, erfindet das System keine Beziehung.',
+      f2h: 'Von beiden Seiten bestätigt', f2p: 'Eine Beziehung gilt nicht als bestätigt, nur weil jemand sie eingetragen hat. Sensible Familienbeziehungen brauchen mehr als eine Bestätigung.',
+      f3h: 'Verwandtschaft genau berechnet', f3p: 'Onkel und Tanten väterlicher- und mütterlicherseits, Cousins und Schwiegerfamilie werden aus bestätigten Beziehungen abgeleitet.',
+      f4h: 'Vier Sprachen', f4p: 'Kurmanji, Arabisch, Deutsch und Englisch, mit vollständigem Rechts-nach-links-Layout für Arabisch.',
+      idEyebrow: 'Digitale Identität', idH2: 'EZID-Nummer und QR-Code für sicheres Kennenlernen',
+      idIntro: 'Jedes Mitglied erhält eine zufällige EZID-Nummer ohne persönliche Daten und einen widerrufbaren QR-Code. Das Scannen sendet nur eine Kontaktanfrage — eine Beziehung entsteht erst mit Zustimmung der anderen Person.',
+      idLabel: 'EZID-Nummer (Beispiel)', idNote: 'Acht zufällige Ziffern — kein Geburtsdatum, keine Telefon- oder Ausweisnummer.',
+      prEyebrow: 'Datenschutz zuerst', prH2: 'Unser Versprechen an jede Familie',
+      prIntro: 'Eine Plattform für eine Gemeinschaft, die Verfolgung erlitten hat, muss sie zuerst schützen. Diese Regeln stecken im System selbst, nicht nur in Einstellungen.',
+      p1s: 'Standardmäßig nicht auffindbar', p1t: 'Niemand findet dich in der Suche, außer du schaltest es selbst ein. Es gibt kein öffentliches Mitgliederverzeichnis und kein öffentliches Netz.',
+      p2s: 'Land statt Adresse', p2t: 'Der Standort ist standardmäßig nur das Land, die Stadt ist freiwillig. Genaue Koordinaten werden nie gespeichert.',
+      p3s: 'Kein Erraten von Religion oder Herkunft', p3t: 'Weder das System noch eine KI leitet die Identität aus Name, Fotos, Familie oder Ort ab.',
+      p4s: 'Kinder sind geschützt', p4t: 'Kein Kontakt mit Fremden, keine öffentliche Sichtbarkeit, keine Werbung, kein Tracking. Alles wird von Eltern verwaltet.',
+      p5s: 'Daten in Europa', p5t: 'Das Hosting ist in der EU nach DSGVO geplant, sensible Daten werden verschlüsselt.',
+      nxEyebrow: 'Wie es weitergeht', nxH2: 'Geplante Stufen', nxIntro: 'Die Plattform entsteht in kleinen Stufen; jede wird getestet und freigegeben, bevor die nächste beginnt.',
+      t1: 'Jetzt', t2: 'Geplant',
+      n1h: 'Identität & Beziehungen', n1p: 'Registrierung, EZID-Nummer, QR-Codes, Beziehungsnetz, Kontaktanfragen.',
+      n2h: 'Gemeinschaft', n2p: 'Willkommensinfos für jedes Land, Feste und Veranstaltungen, offene Gemeinschaftsprojekte.',
+      n3h: 'Kulturerbe', n3p: 'Ein digitales Museum und ein Tonarchiv für Lieder und mündliche Geschichte, mit Einwilligung und menschlicher Prüfung.',
+      n4h: 'EZIDINET Kids', n4p: 'Kurmanji und Kultur lernen mit Geschichten und Spielen, vollständig von Eltern begleitet.',
+      getEyebrow: 'EZIDINET erhalten', getH2: 'Testversionen für Testerinnen und Tester',
+      getIntro: 'EZIDINET ist noch nicht öffentlich. Testversionen verschickt das Projektteam direkt an eingeladene Testpersonen.',
+      g1h: 'Website', g1p: 'Im Browser auf jedem Computer oder Handy, sobald der Testserver online ist.',
+      g2h: 'Windows', g2p: 'EZIDINET Desktop führt die ganze Plattform auf deinem Computer aus, offline, mit Demodaten.',
+      g3h: 'Android', g3p: 'Eine Handy-App, die sich mit einem EZIDINET-Server verbindet — vorerst über einen Computer im selben WLAN.',
+      soon: 'Bald', test: 'Test',
+      foot: 'Entwicklungsversion. Testversionen enthalten keine Daten realer Personen.'
+    },
+    ku: {
+      navNetwork: 'Tor', navPrivacy: 'Nepenî', navGet: 'EZIDINET bistîne',
+      status: 'Di pêşveçûnê de — guhertoya ceribandinê', h1: 'Kesek. Nasnameyek. Hemû têkilî.',
+      lead: 'Malek dîjîtal a taybet ji bo malbat, nifş û civakên êzdî li seranserê cîhanê — bi xwe re taybet.',
+      ctaGet: 'Guhertoya ceribandinê bistîne', ctaLearn: 'Çawa dixebite',
+      graphTitle: 'Kesek li navenda tora têkiliyên xwe',
+      gMother: 'Dayik', gFather: 'Bav', gSpouse: 'Jin', gDaughter: 'Keç', gFriend: 'Hevalê zarokatiyê', gColleague: 'Hevkar', gUncle: 'Xal', gYou: 'Tu',
+      netEyebrow: 'Ne dara malbatê ye', netH2: 'Tora têkiliyên rastîn, ne hiyerarşî',
+      netIntro: 'Her kes tenê carekê xuya dike û dikare di heman demê de bi malbat, zewac, heval û hevkaran ve girêdayî be. Heman xizm dikare di du şaxên malbatê de be, bê hesabê ducarî.',
+      cFamily: 'Malbat', cUnion: 'Zewac û hevjînî', cFriend: 'Heval', cWork: 'Kar', cSocial: 'Civakî',
+      f1h: 'Em çawa girêdayî ne?', f1p: 'Du kesan hilbijêre û rêya herî kurt a pejirandî bibîne. Heke tune be, pergal tu carî têkiliyekê çênake.',
+      f2h: 'Ji her du aliyan ve pejirandî', f2p: 'Têkiliyek ji ber ku kesekî ew zêde kiriye nayê pejirandin. Têkiliyên malbatî yên hestiyar pejirandina zêdetir ji kesekî dixwazin.',
+      f3h: 'Xizmatî bi rastî tê hesabkirin', f3p: 'Mam û xal, met û xaltî, pismam û dotmam ji têkiliyên pejirandî têne derxistin û bi zimanê te têne nîşandan.',
+      f4h: 'Çar ziman', f4p: 'Kurmancî, Erebî, Almanî û Îngilîzî, bi rêza rast-ber-çep a tevahî ji bo Erebî.',
+      idEyebrow: 'Nasnameya dîjîtal', idH2: 'Hejmara EZID û koda QR ji bo naskirina ewle',
+      idIntro: 'Her endam hejmareke EZID a rasthatî distîne ku tu agahiyên kesane eşkere nake, û kodeke QR ku dikare were betalkirin. Skankirin tenê daxwaza têkiliyê dişîne — bê razîbûna kesê din tu têkilî çênabe.',
+      idLabel: 'Hejmara EZID (mînak)', idNote: 'Heşt reqemên rasthatî — ne roja jidayikbûnê, ne telefon, ne hejmara nasnameyê.',
+      prEyebrow: 'Pêşî nepenî', prH2: 'Soza me ji her malbatê re',
+      prIntro: 'Platformek ji bo civakeke ku zilm dîtiye divê pêşî wê biparêze. Ev qaîde di pergalê bi xwe de hatine avakirin, ne tenê di mîhengan de.',
+      p1s: 'Bi xwe re nayê dîtin', p1t: 'Kes te di lêgerînê de nabîne heta ku tu bi xwe wê vekî. Rêberek giştî ya endaman û toreke giştî tune.',
+      p2s: 'Welat, ne navnîşan', p2t: 'Cih bi xwe re tenê asta welat e, bajar bijarte ye. Koordînatên rastîn tu carî nayên tomarkirin.',
+      p3s: 'Texmîna ol an eslê tune', p3t: 'Ne pergal ne jî tu zîrekiya çêkirî nasnameya kesekî ji nav, wêne, malbat an cihê wî texmîn dike.',
+      p4s: 'Zarok têne parastin', p4t: 'Têkiliya bi biyaniyan re tune, xuyabûna giştî tune, reklam tune, şopandin tune. Hemû ji aliyê dêûbavan ve tê birêvebirin.',
+      p5s: 'Dane li Ewropayê', p5t: 'Hostkirin di nav Yekîtiya Ewropayê de li gorî GDPR tê plankirin, daneyên hestiyar têne şîfrekirin.',
+      nxEyebrow: 'Paşê çi tê', nxH2: 'Qonaxên plankirî', nxIntro: 'Platform bi qonaxên biçûk tê avakirin; her qonax tê ceribandin û pejirandin berî ya din.',
+      t1: 'Niha', t2: 'Plankirî',
+      n1h: 'Nasname û têkilî', n1p: 'Tomarkirin, hejmara EZID, kodên QR, tora têkiliyan, daxwazên têkiliyê.',
+      n2h: 'Civak', n2p: 'Rêberên bixêrhatinê ji bo her welatî, cejn û çalakî, projeyên civakî yên vekirî.',
+      n3h: 'Mîrat', n3p: 'Mûzeyeke dîjîtal û arşîveke deng ji bo stran û dîroka devkî, bi razîbûn û kontrola mirovî.',
+      n4h: 'EZIDINET Zarok', n4p: 'Fêrbûna Kurmancî û çandê bi çîrok û lîstikan, bi çavdêriya tevahî ya dêûbavan.',
+      getEyebrow: 'EZIDINET bistîne', getH2: 'Guhertoyên ceribandinê ji bo ceribîneran',
+      getIntro: 'EZIDINET hîn ji bo hemûyan ne vekirî ye. Guhertoyên ceribandinê rasterast ji aliyê tîma projeyê ve ji ceribînerên vexwendî re têne şandin.',
+      g1h: 'Malper', g1p: 'Di gerokê de li ser her komputer an telefonê, dema ku servera ceribandinê serhêl be.',
+      g2h: 'Windows', g2p: 'EZIDINET Desktop hemû platformê li ser komputera te dixebitîne, bê înternet, bi daneyên mînak.',
+      g3h: 'Android', g3p: 'Sepanek ji bo telefonê ku bi servera EZIDINET ve girêdide — niha bi rêya komputerekê li ser heman Wi-Fi.',
+      soon: 'Zû', test: 'Ceribandin',
+      foot: 'Guhertoya pêşveçûnê. Di guhertoyên ceribandinê de daneyên tu kesê rastîn tune ne.'
+    }
+  };
+  var DIR = { ar: 'rtl', en: 'ltr', de: 'ltr', ku: 'ltr' };
+
+  function apply(lang) {
+    var dict = T[lang] || T.ar;
+    document.documentElement.lang = lang;
+    document.documentElement.dir = DIR[lang] || 'ltr';
+    var nodes = document.querySelectorAll('[data-i18n]');
+    for (var i = 0; i < nodes.length; i++) {
+      var key = nodes[i].getAttribute('data-i18n');
+      if (dict[key] != null) nodes[i].textContent = dict[key];
+    }
+    var btns = document.querySelectorAll('.langs button');
+    for (var j = 0; j < btns.length; j++) btns[j].setAttribute('aria-pressed', String(btns[j].getAttribute('data-lang') === lang));
+    try { localStorage.setItem('ezidinet-lang', lang); } catch (e) { /* storage unavailable */ }
+  }
+
+  var initial = 'ar';
+  try {
+    var saved = localStorage.getItem('ezidinet-lang');
+    if (saved && T[saved]) initial = saved;
+    else {
+      var nav = (navigator.language || '').slice(0, 2).toLowerCase();
+      if (T[nav]) initial = nav;
+    }
+  } catch (e) { /* storage unavailable */ }
+  apply(initial);
+
+  document.querySelector('.langs').addEventListener('click', function (ev) {
+    var b = ev.target.closest('button[data-lang]');
+    if (b) apply(b.getAttribute('data-lang'));
+  });
+})();
+</script>
+</body>
+</html>

@@ -39,6 +39,10 @@ Demo accounts (development only, shown as shortcuts on the login screen):
 `omar@demo.ftn.local`, `anna@…`, `khaled@…`, `sara@…`, `karim@…`, `peter@…`, `julia@…`, `daniel@…` —
 password `demo-password-2026`.
 
+## Public website
+
+`website/` — static introduction page in four languages, no third-party requests. See [`website/README.md`](website/README.md).
+
 ## Desktop app (Windows/Linux)
 
 `desktop/` packages the whole platform (database, API, web app) into one desktop app — see
