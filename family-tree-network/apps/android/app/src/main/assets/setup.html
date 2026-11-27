@@ -21,8 +21,10 @@
 <body>
 <div class="card">
   <h1>EZIDINET</h1>
-  <p>Development build. Enter the address of the EZIDINET test server (for example the PC on your Wi-Fi running <code>npm run dev:web</code>).</p>
+  <p>Development build. Enter the address of the EZIDINET test server (for example the PC on your Wi-Fi running <code>npm run dev:lan</code>).</p>
   <p class="err" id="err">The server could not be reached. Check the address and that the phone is on the same network.</p>
+  <p class="err" id="rend">The page stopped unexpectedly and was closed safely. Press Connect to open it again.<br><span dir="rtl">توقفت الصفحة بشكل غير متوقع وأُغلقت بأمان. اضغط Connect لفتحها من جديد.</span></p>
+  <p class="err" id="old">This phone's "Android System WebView" is too old (version <span id="ver"></span>; 80 or newer is needed). Update "Android System WebView" (or Chrome) in the Play Store, then reopen EZIDINET.<br><span dir="rtl">نسخة "Android System WebView" على هذا الهاتف قديمة. حدّثها (أو حدّث Chrome) من متجر Play ثم افتح EZIDINET من جديد.</span></p>
   <label for="url">Server address</label>
   <input id="url" type="url" inputmode="url" autocomplete="off" placeholder="http://192.168.1.20:3000">
   <button id="go" type="button">Connect</button>
@@ -34,6 +36,11 @@
 <script>
   var shell = window.EzidinetShell;
   var input = document.getElementById('url');
+  if (location.search.indexOf('webview=old') >= 0 && shell) {
+    document.getElementById('ver').textContent = shell.webViewVersion() || '?';
+    document.getElementById('old').style.display = 'block';
+  }
+  if (location.search.indexOf('error=renderer') >= 0) document.getElementById('rend').style.display = 'block';
   if (location.search.indexOf('error=1') >= 0) document.getElementById('err').style.display = 'block';
   if (shell && shell.currentServer()) input.value = shell.currentServer();
   document.getElementById('go').addEventListener('click', function () {

@@ -4,11 +4,17 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.SystemClock;
+import android.view.Gravity;
+import android.view.ViewGroup;
+import android.widget.TextView;
 import android.webkit.JavascriptInterface;
 import android.webkit.PermissionRequest;
+import android.webkit.RenderProcessGoneDetail;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
@@ -26,17 +32,31 @@ public class MainActivity extends Activity {
     private static final String KEY_SERVER = "server_url";
     private static final String SETUP_URL = "file:///android_asset/setup.html";
     private static final int CAMERA_REQUEST = 7;
+    /** The web app needs a WebView based on Chrome 80 or newer (globalThis, optional chaining, …). */
+    static final int MIN_WEBVIEW_MAJOR = 80;
 
     private WebView web;
     private PermissionRequest pendingPermission;
+    private long rendererCrashWindowStart;
+    private int rendererCrashes;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        web = new WebView(this);
+        web = createWebView();
         setContentView(web);
 
-        WebSettings s = web.getSettings();
+        if (webViewMajor() < MIN_WEBVIEW_MAJOR) {           // too old: show the update hint instead of a blank page
+            web.loadUrl(SETUP_URL + "?webview=old");
+            return;
+        }
+        String server = savedServer();
+        web.loadUrl(server == null ? SETUP_URL : server);
+    }
+
+    private WebView createWebView() {
+        WebView w = new WebView(this);
+        WebSettings s = w.getSettings();
         s.setJavaScriptEnabled(true);
         s.setDomStorageEnabled(true);           // the web app keeps its session in sessionStorage
         s.setAllowFileAccess(false);            // only the bundled setup asset is loaded from file://
@@ -44,9 +64,9 @@ public class MainActivity extends Activity {
         s.setMediaPlaybackRequiresUserGesture(true);
         WebView.setWebContentsDebuggingEnabled(BuildConfig.DEBUG);
 
-        web.addJavascriptInterface(new Bridge(), "EzidinetShell");
-        web.setWebViewClient(new ShellClient());
-        web.setWebChromeClient(new WebChromeClient() {
+        w.addJavascriptInterface(new Bridge(), "EzidinetShell");
+        w.setWebViewClient(new ShellClient());
+        w.setWebChromeClient(new WebChromeClient() {
             @Override
             public void onPermissionRequest(PermissionRequest request) {
                 // Grant camera to the configured server only, and only after the Android permission.
@@ -59,9 +79,7 @@ public class MainActivity extends Activity {
                 }
             }
         });
-
-        String server = savedServer();
-        web.loadUrl(server == null ? SETUP_URL : server);
+        return w;
     }
 
     @Override
@@ -77,7 +95,18 @@ public class MainActivity extends Activity {
 
     @Override
     public void onBackPressed() {
-        if (web.canGoBack()) web.goBack(); else super.onBackPressed();
+        if (web != null && web.canGoBack()) web.goBack(); else super.onBackPressed();
+    }
+
+    /** Major version of the installed WebView (e.g. 120), or 0 if unknown. */
+    private static int webViewMajor() {
+        try {
+            PackageInfo p = WebView.getCurrentWebViewPackage();
+            if (p == null || p.versionName == null) return 0;
+            return Integer.parseInt(p.versionName.split("\\.")[0]);
+        } catch (RuntimeException e) {
+            return 0;
+        }
     }
 
     private String savedServer() {
@@ -109,6 +138,37 @@ public class MainActivity extends Activity {
             return true;
         }
 
+        /**
+         * The WebView renderer process stopped (crash, or killed by the system under memory pressure).
+         * Without this handler Android ends the whole app. Replace the WebView and show the setup page.
+         */
+        @Override
+        public boolean onRenderProcessGone(WebView view, RenderProcessGoneDetail detail) {
+            if (view != web) return true;
+            ViewGroup parent = (ViewGroup) web.getParent();
+            if (parent != null) parent.removeView(web);
+            web.destroy();
+            long now = SystemClock.elapsedRealtime();
+            if (now - rendererCrashWindowStart > 180_000) { rendererCrashWindowStart = now; rendererCrashes = 0; }
+            if (++rendererCrashes >= 3) {
+                // Repeated crashes: stop retrying (no crash loop) and explain natively.
+                TextView msg = new TextView(MainActivity.this);
+                msg.setPadding(48, 48, 48, 48);
+                msg.setGravity(Gravity.CENTER);
+                msg.setTextSize(17);
+                msg.setText("EZIDINET could not display the page because Android System WebView keeps stopping. "
+                        + "Please update \"Android System WebView\" and Chrome in the Play Store, then reopen the app.\n\n"
+                        + "تعذّر عرض الصفحة لأن Android System WebView يتوقف باستمرار. حدّث Android System WebView و Chrome من متجر Play ثم افتح التطبيق من جديد.");
+                web = null;
+                setContentView(msg);
+                return true;
+            }
+            web = createWebView();
+            setContentView(web);
+            web.loadUrl(SETUP_URL + "?error=renderer");
+            return true;
+        }
+
         @Override
         public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
             if (request.isForMainFrame()) {
@@ -126,13 +186,19 @@ public class MainActivity extends Activity {
         }
 
         @JavascriptInterface
+        public int webViewVersion() {
+            return webViewMajor();
+        }
+
+        @JavascriptInterface
         public boolean saveServer(final String url) {
             Uri u = Uri.parse(url == null ? "" : url.trim());
             String scheme = u.getScheme();
             if (u.getHost() == null || !("http".equals(scheme) || "https".equals(scheme))) return false;
             final String clean = scheme + "://" + u.getHost() + (u.getPort() != -1 ? ":" + u.getPort() : "") + "/";
+            if (webViewMajor() < MIN_WEBVIEW_MAJOR) return false;
             runOnUiThread(() -> {
-                if (!SETUP_URL.equals(stripQuery(web.getUrl()))) return;
+                if (web == null || !SETUP_URL.equals(stripQuery(web.getUrl()))) return;
                 SharedPreferences.Editor e = getSharedPreferences(PREFS, MODE_PRIVATE).edit();
                 e.putString(KEY_SERVER, clean).apply();
                 web.clearHistory();
