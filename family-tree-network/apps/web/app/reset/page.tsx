@@ -60,7 +60,7 @@ function Reset() {
     return (
       <AccountPage title={a.resetTitle}>
         <p className="success" data-testid="reset-done">{a.resetDone}</p>
-        <a className="btn gold" href="/">{a.backToLogin}</a>
+        <a className="btn gold" href="/app">{a.backToLogin}</a>
       </AccountPage>
     );
   }

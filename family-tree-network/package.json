@@ -13,7 +13,8 @@
     "dev:api": "npm run start:dev -w @ftn/api",
     "dev:web": "npm run dev -w @ftn/web",
     "db:migrate": "npm run db:migrate -w @ftn/api",
-    "db:seed": "npm run db:seed -w @ftn/api"
+    "db:seed": "npm run db:seed -w @ftn/api",
+    "site:build": "python3 website/make_site.py website/source.html apps/web/public/site/index.html"
   },
   "engines": {
     "node": ">=20"

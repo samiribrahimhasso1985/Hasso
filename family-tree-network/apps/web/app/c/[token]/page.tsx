@@ -84,7 +84,7 @@ function Scanned({ token, session }: { token: string; session: Session }) {
           </>
         )}
         <p style={{ marginTop: 18 }}>
-          <a className="link" href="/">
+          <a className="link" href="/app">
             {t.myView}
           </a>
         </p>

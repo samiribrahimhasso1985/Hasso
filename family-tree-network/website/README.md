@@ -1,33 +1,24 @@
-# EZIDINET — public website (static HTML)
+# EZIDINET — website (part of the web app)
 
-One self-contained page (`index.html`) in Kurmanji, Arabic, German and English (Arabic right-to-left), light and dark
-mode, phone and desktop layouts. No build step, no server code, no cookies, no tracking, **no third-party requests**
-(fonts are self-hosted in `fonts/` — important for GDPR, e.g. Google Fonts rulings in Germany).
+The public website and the platform are **one address**:
 
-Content rules: describes only what exists or is clearly marked as planned/test; no invented numbers, members or
-testimonials. The language follows the visitor's browser and can be switched; the choice is remembered locally.
+| Address | What |
+|---|---|
+| `/` | public website (this folder's `source.html`, built into `apps/web/public/site/index.html`) |
+| `/app` | the platform: sign in, create account (`/app?mode=register`), relationship network |
+| `/verify`, `/reset`, `/dev/mailbox` | e-mail confirmation, new password, developer mailbox (local testing) |
 
-## Motion
-* The hero network is alive: people drift slowly, the centre breathes, rings ripple from it, and pulses travel along
-  20 relationship lines between everyone (category colours). Hover or tap a person to highlight their connections.
-* Animated favicon: the three-person mark rotates and a pulse travels between the people (canvas, 8 fps; SVG
-  fallback `favicon.svg` animates on its own in Firefox).
-* Everything stops for visitors who prefer reduced motion; the animation also pauses when the page is not visible.
+The Android app opens the same address, so on the phone people see the website first and sign in inside the app
+with the same account.
 
-## Sign in
-The header button **Sign in / دخول** leads to a section that opens the platform. During testing the platform runs in
-EZIDINET Desktop on the same computer (`http://127.0.0.1:47211`); the standalone page checks whether the app is
-running and says so (the API's own health route is not used: its `Cross-Origin-Resource-Policy` header correctly
-blocks cross-origin reads). When a public test server exists, only this link changes.
+## Edit and build
+Edit `source.html` (also used for the claude.ai preview), then `npm run site:build` (writes
+`apps/web/public/site/index.html` with self-hosted fonts from `/site/fonts`, favicon `/site/favicon.svg`).
 
-## Files
-`source.html` is the editable page (also published as the claude.ai preview); `python3 make_site.py source.html
-index.html` produces the standalone `index.html` with self-hosted fonts.
+## Content and privacy
+Four languages (Kurmanji draft, Arabic RTL, German, English), light/dark, phone and desktop layouts, living
+relationship network and animated favicon (both stop for reduced motion). No cookies, no tracking, no third-party
+requests. Only what exists or is clearly marked planned/test; no invented numbers, members or testimonials.
 
-## View
-Open `index.html` in any browser (double-click). A private preview was also published as a claude.ai artifact.
-
-## Publish (needs owner approval and a domain decision, EZ-18)
-Any static host works by uploading this folder (e.g. the same EU server as the platform, or a static-site host).
-Before going public: imprint/Impressum and privacy policy pages (legal requirement in Germany), final domain, and a
-review of the Kurmanji text by a native speaker (current Kurmanji is a draft).
+## Before going public (needs owner approval)
+Online server and domain (EZ-18), Impressum and privacy policy pages, native review of the Kurmanji text.

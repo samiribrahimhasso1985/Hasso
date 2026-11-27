@@ -1,10 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import AuthScreen from '../components/AuthScreen';
-import Dashboard from '../components/Dashboard';
-import { Api, SESSION_ENDED_EVENT, type Session } from '../lib/api';
-import { I18nProvider } from '../lib/i18n';
+import AuthScreen from '../../components/AuthScreen';
+import Dashboard from '../../components/Dashboard';
+import { Api, SESSION_ENDED_EVENT, type Session } from '../../lib/api';
+import { I18nProvider } from '../../lib/i18n';
 
 const KEY = 'ftn.session';
 

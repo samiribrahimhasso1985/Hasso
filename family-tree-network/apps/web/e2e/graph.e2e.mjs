@@ -22,7 +22,7 @@ async function loginAs(name, lang = 'en') {
   const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
   const errors = [];
   page.on('pageerror', (e) => errors.push(e.message));
-  await page.goto(WEB);
+  await page.goto(`${WEB}/app`);
   await page.click(`[data-testid=lang-${lang}]`);
   await page.click(`[data-testid=demo-${name}]`);
   const outcome = await Promise.race([
@@ -111,7 +111,7 @@ test('Arabic switches the whole interface to RTL; German/English are LTR', async
 
 test('phone width: no horizontal scrolling', async () => {
   const page = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
-  await page.goto(WEB);
+  await page.goto(`${WEB}/app`);
   await page.click('[data-testid=demo-omar]');
   await page.waitForSelector('[data-testid=graph-canvas] canvas');
   await page.evaluate(() => window.scrollTo(0, 0));
@@ -153,7 +153,7 @@ test('account: 3-step registration with consents → verify e-mail → sign out 
   const errors = [];
   page.on('pageerror', (e) => errors.push(e.message));
   const email = `newcomer-${Date.now()}@example.test`;
-  await page.goto(`${WEB}/?mode=register`);
+  await page.goto(`${WEB}/app?mode=register`);
   await page.click('[data-testid=lang-ar]');
   await page.waitForSelector('[data-testid=register-form]');
   assert.equal(await page.getAttribute('html', 'dir'), 'rtl');
@@ -187,7 +187,7 @@ test('account: 3-step registration with consents → verify e-mail → sign out 
   assert.equal(new URL(page.url()).search, '', 'token removed from the address bar');
 
   // Back in the app: banner gone; sign out ends the session.
-  await page.goto(WEB);
+  await page.goto(`${WEB}/app`);
   await page.waitForSelector('[data-testid=graph-canvas] canvas');
   await page.waitForTimeout(800);
   assert.equal(await page.$('[data-testid=verify-banner]'), null);
@@ -212,13 +212,36 @@ test('account: 3-step registration with consents → verify e-mail → sign out 
   await page.waitForSelector('[data-testid=reset-done]');
 
   // Sign in with the new password.
-  await page.goto(WEB);
+  await page.goto(`${WEB}/app`);
   await page.fill('#login-email', email);
   await page.fill('#login-password', 'new-mountain-path-77');
   await page.click('[data-testid=login-form] button[type=submit]');
   await page.waitForSelector('[data-testid=graph-canvas] canvas');
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
   assert.ok(overflow <= 0, `no horizontal scroll (${overflow})`);
+  assert.deepEqual(errors, []);
+  await page.close();
+});
+
+test('website and platform are one address: home page → Sign in / Create account → platform', async () => {
+  const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.goto(WEB);
+  await page.click('#lang-ar');
+  assert.match(await page.textContent('h1'), /شخص واحد/);
+  assert.equal(await page.getAttribute('html', 'dir'), 'rtl');
+  assert.ok(await page.$('#net-nodes g'), 'living relationship network is drawn');
+  const fonts = await page.evaluate(async () => { await document.fonts.ready; return document.fonts.check('600 20px "IBM Plex Sans Arabic"', 'شخص'); });
+  assert.ok(fonts, 'self-hosted Arabic font loads from /site/fonts');
+  // Header "Sign in" opens the platform at the same address.
+  await page.click('.login-btn');
+  await page.waitForSelector('[data-testid=login-form]');
+  assert.equal(new URL(page.url()).pathname, '/app');
+  // "Create account" opens the registration directly.
+  await page.goto(WEB);
+  await page.click('#open-register');
+  await page.waitForSelector('[data-testid=register-form]');
   assert.deepEqual(errors, []);
   await page.close();
 });

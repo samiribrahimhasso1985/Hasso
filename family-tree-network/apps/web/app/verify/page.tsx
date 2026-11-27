@@ -34,7 +34,7 @@ function Verify() {
       <p data-testid="verify-result" className={state === 'ok' ? 'success' : state === 'invalid' ? 'error' : 'muted'}>
         {state === 'working' ? a.verifying : state === 'ok' ? a.verified : a.linkInvalid}
       </p>
-      {state !== 'working' && <a className="btn gold" href="/">{a.toApp}</a>}
+      {state !== 'working' && <a className="btn gold" href="/app">{a.toApp}</a>}
     </AccountPage>
   );
 }
