@@ -191,7 +191,8 @@ export class AuthService {
       locale: user.locale,
       profileId: user.profile!.id,
       displayName: user.profile!.displayName,
-      mailbox: this.mail.outboxEnabled ? 'developer' : null,
+      // The mailbox link is only offered where the mailbox is open (local testing), never where it needs a key.
+      mailbox: this.mail.outboxEnabled && !process.env.OUTBOX_KEY ? 'developer' : null,
     };
   }
 

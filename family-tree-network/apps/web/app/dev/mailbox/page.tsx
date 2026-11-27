@@ -22,7 +22,9 @@ function Mailbox() {
   const [unavailable, setUnavailable] = useState(false);
 
   useEffect(() => {
-    const load = () => new Api(null, locale).outbox().then((r) => setMessages(r.messages)).catch(() => setUnavailable(true));
+    // On the online test server the mailbox needs its key: /dev/mailbox?key=… (OUTBOX_KEY, known only to the owner).
+    const key = new URLSearchParams(window.location.search).get('key') ?? undefined;
+    const load = () => new Api(null, locale).outbox(key).then((r) => setMessages(r.messages)).catch(() => setUnavailable(true));
     load();
     const id = setInterval(load, 4000);
     return () => clearInterval(id);

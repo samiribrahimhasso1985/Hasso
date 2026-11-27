@@ -192,3 +192,18 @@ describe('developer mailbox', () => {
     Object.defineProperty(mail, 'transport', { value: original, configurable: true });
   });
 });
+
+describe('developer mailbox on an online server', () => {
+  it('needs OUTBOX_KEY when one is configured, and the mailbox link is not offered', async () => {
+    process.env.OUTBOX_KEY = 'k'.repeat(40);
+    try {
+      expect((await http().get('/api/dev/outbox')).status).toBe(404);
+      expect((await http().get('/api/dev/outbox?key=wrong')).status).toBe(404);
+      expect((await http().get(`/api/dev/outbox?key=${'k'.repeat(40)}`)).status).toBe(200);
+      const { res } = await registerUser();
+      expect(res.body.mailbox).toBeNull();
+    } finally {
+      delete process.env.OUTBOX_KEY;
+    }
+  });
+});

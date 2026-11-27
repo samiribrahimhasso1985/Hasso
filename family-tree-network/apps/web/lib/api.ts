@@ -201,8 +201,8 @@ export class Api {
   resetPassword(token: string, password: string) {
     return this.req<{ ok: boolean }>('POST', '/auth/reset-password', { token, password });
   }
-  outbox() {
-    return this.req<{ messages: OutboxMessage[] }>('GET', '/dev/outbox');
+  outbox(key?: string) {
+    return this.req<{ messages: OutboxMessage[] }>('GET', `/dev/outbox${key ? `?key=${encodeURIComponent(key)}` : ''}`);
   }
   ego(params: { center?: string; depth?: number; categories?: Category[]; relativeTo?: string }) {
     const q = new URLSearchParams();
