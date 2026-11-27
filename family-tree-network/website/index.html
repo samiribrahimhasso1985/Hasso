@@ -109,19 +109,24 @@ html[lang="ar"] h1 { letter-spacing: 0; line-height: 1.3; }
 }
 .btn.primary { background: var(--ink); color: var(--sand); }
 .btn.ghost { color: var(--ink); background: transparent; border-color: var(--line); }
-.graph { width: 100%; max-width: 100%; height: auto; }
-.graph .edge { stroke-width: 1.6; fill: none; }
-.graph .node { fill: var(--cream); stroke: var(--line); stroke-width: 1.2; }
-.graph .me { fill: var(--ink); }
-.graph text { font-size: 13px; fill: var(--muted); text-anchor: middle; font-family: inherit; }
-.graph .me-label { fill: var(--sand); font-weight: 600; font-size: 12px; }
+.graph { width: 100%; max-width: 100%; height: auto; overflow: visible; touch-action: manipulation; }
+.graph .edge { fill: none; stroke-width: 1.3; stroke-linecap: round; opacity: .38; transition: opacity .35s ease, stroke-width .35s ease; }
+.graph .edge.core { stroke-width: 1.9; opacity: .75; }
+.graph.focus .edge { opacity: .08; }
+.graph.focus .edge.on { opacity: 1; stroke-width: 2.6; }
+.graph .node circle { fill: var(--cream); stroke: var(--line); stroke-width: 1.2; transition: stroke .3s ease, stroke-width .3s ease; }
+.graph .node { cursor: pointer; }
+.graph .node:hover circle, .graph .node.on circle { stroke: var(--accent); stroke-width: 2; }
+.graph.focus .node:not(.on) { opacity: .45; }
+.graph .node { transition: opacity .35s ease; }
+.graph .me circle { fill: var(--ink); stroke: none; }
+.graph text { font-size: 13px; fill: var(--muted); text-anchor: middle; font-family: inherit; pointer-events: none; }
+.graph .me text { fill: var(--sand); font-weight: 600; font-size: 13px; }
 .graph .initial { fill: var(--ink); font-size: 12px; font-weight: 600; }
-@media (prefers-reduced-motion: no-preference) {
-  .graph .edge { stroke-dasharray: 220; stroke-dashoffset: 0; animation: draw 1.4s ease-out both; }
-  .graph .edge:nth-of-type(2n) { animation-delay: .15s; }
-  .graph .edge:nth-of-type(3n) { animation-delay: .3s; }
-  @keyframes draw { from { stroke-dashoffset: 220; } to { stroke-dashoffset: 0; } }
-}
+.graph .node:focus { outline: none; }
+.graph .node:focus-visible circle { stroke: var(--accent); stroke-width: 2.6; }
+.graph .halo { fill: none; stroke: var(--gold); stroke-width: 1.2; }
+.graph .pulse { filter: drop-shadow(0 0 3px var(--gold)); }
 
 /* Sections */
 section { padding-block: 56px; border-top: 1px solid var(--line); }
@@ -218,27 +223,9 @@ footer .wrap { display: flex; gap: 12px 24px; flex-wrap: wrap; justify-content: 
         <a class="btn ghost" href="#network" data-i18n="ctaLearn">كيف يعمل</a>
       </div>
     </div>
-    <svg class="graph" viewBox="0 0 440 360" role="img" aria-labelledby="graph-title">
+    <svg class="graph" id="net" viewBox="0 0 440 360" role="img" aria-labelledby="graph-title">
       <title id="graph-title" data-i18n="graphTitle">شخص واحد في مركز شبكة علاقاته</title>
-      <line class="edge" x1="220" y1="180" x2="140" y2="80" stroke="var(--family)"/>
-      <line class="edge" x1="220" y1="180" x2="300" y2="80" stroke="var(--family)"/>
-      <line class="edge" x1="220" y1="180" x2="360" y2="190" stroke="var(--union)" stroke-width="2.4"/>
-      <line class="edge" x1="220" y1="180" x2="300" y2="300" stroke="var(--family)"/>
-      <line class="edge" x1="220" y1="180" x2="90" y2="210" stroke="var(--friend)"/>
-      <line class="edge" x1="220" y1="180" x2="150" y2="310" stroke="var(--work)"/>
-      <line class="edge" x1="140" y1="80" x2="300" y2="80" stroke="var(--union)"/>
-      <line class="edge" x1="140" y1="80" x2="50" y2="110" stroke="var(--family)"/>
-      <line class="edge" x1="50" y1="110" x2="90" y2="210" stroke="var(--social)" stroke-dasharray="4 4"/>
-      <line class="edge" x1="360" y1="190" x2="300" y2="300" stroke="var(--family)"/>
-      <circle class="node" cx="140" cy="80" r="20"/><text class="initial" x="140" y="84">M</text><text x="140" y="116" data-i18n="gMother">الأم</text>
-      <circle class="node" cx="300" cy="80" r="20"/><text class="initial" x="300" y="84">F</text><text x="300" y="116" data-i18n="gFather">الأب</text>
-      <circle class="node" cx="360" cy="190" r="20"/><text class="initial" x="360" y="194">S</text><text x="360" y="226" data-i18n="gSpouse">الزوجة</text>
-      <circle class="node" cx="300" cy="300" r="20"/><text class="initial" x="300" y="304">D</text><text x="300" y="336" data-i18n="gDaughter">الابنة</text>
-      <circle class="node" cx="90" cy="210" r="20"/><text class="initial" x="90" y="214">A</text><text x="90" y="246" data-i18n="gFriend">صديق الطفولة</text>
-      <circle class="node" cx="150" cy="310" r="20"/><text class="initial" x="150" y="314">K</text><text x="150" y="346" data-i18n="gColleague">زميل عمل</text>
-      <circle class="node" cx="50" cy="110" r="16"/><text class="initial" x="50" y="114">H</text><text x="50" y="142" data-i18n="gUncle">الخال</text>
-      <circle class="me" cx="220" cy="180" r="30"/><text class="me-label" x="220" y="185" data-i18n="gYou">أنت</text>
-      <circle cx="243" cy="158" r="5" fill="var(--gold)"/>
+      <g id="net-halos"></g><g id="net-edges"></g><g id="net-pulses"></g><g id="net-nodes"></g>
     </svg>
   </div>
 
@@ -487,6 +474,173 @@ footer .wrap { display: flex; gap: 12px 24px; flex-wrap: wrap; justify-content: 
       foot: 'Guhertoya pêşveçûnê. Di guhertoyên ceribandinê de daneyên tu kesê rastîn tune ne.'
     }
   };
+
+  /* Living relationship network: drifting people, breathing centre, pulses travelling between everyone. */
+  (function () {
+    var svg = document.getElementById('net');
+    if (!svg) return;
+    var NS = 'http://www.w3.org/2000/svg';
+    var COLORS = { family: 'var(--family)', union: 'var(--union)', friend: 'var(--friend)', work: 'var(--work)', social: 'var(--social)' };
+    var N = [
+      { id: 'me', x: 220, y: 180, r: 30, me: true, key: 'gYou' },
+      { id: 'mo', x: 140, y: 78, r: 20, i: 'M', key: 'gMother' },
+      { id: 'fa', x: 302, y: 78, r: 20, i: 'F', key: 'gFather' },
+      { id: 'sp', x: 368, y: 192, r: 20, i: 'S', key: 'gSpouse' },
+      { id: 'da', x: 300, y: 298, r: 20, i: 'D', key: 'gDaughter' },
+      { id: 'co', x: 148, y: 300, r: 20, i: 'K', key: 'gColleague' },
+      { id: 'fr', x: 78, y: 210, r: 20, i: 'A', key: 'gFriend' },
+      { id: 'un', x: 60, y: 100, r: 17, i: 'H', key: 'gUncle' }
+    ];
+    var E = [
+      ['me','mo','family'], ['me','fa','family'], ['me','sp','union'], ['me','da','family'],
+      ['me','co','work'], ['me','fr','friend'], ['me','un','family'],
+      ['mo','fa','union'], ['mo','un','family'], ['fa','sp','social'], ['sp','da','family'],
+      ['da','co','social'], ['co','fr','work'], ['fr','un','friend'], ['mo','fr','social'],
+      ['fa','da','family'], ['un','co','social'], ['sp','co','friend'], ['mo','sp','social'], ['fa','fr','social']
+    ];
+    var byId = {};
+    var gE = svg.querySelector('#net-edges'), gN = svg.querySelector('#net-nodes'),
+        gP = svg.querySelector('#net-pulses'), gH = svg.querySelector('#net-halos');
+    function el(tag, attrs, parent) {
+      var e = document.createElementNS(NS, tag);
+      for (var k in attrs) e.setAttribute(k, attrs[k]);
+      if (parent) parent.appendChild(e);
+      return e;
+    }
+    N.forEach(function (n, idx) {
+      n.px = n.x; n.py = n.y;
+      n.ax = n.me ? 3 : 6 + (idx % 3) * 2;       // drift amplitude
+      n.ay = n.me ? 3 : 5 + ((idx + 1) % 3) * 2;
+      n.w1 = 0.00031 + idx * 0.000037;           // drift speeds (radians per ms)
+      n.w2 = 0.00027 + idx * 0.000029;
+      n.p1 = idx * 1.7; n.p2 = idx * 2.3;
+      n.g = el('g', { 'class': 'node' + (n.me ? ' me' : ''), tabindex: '0', 'data-id': n.id }, gN);
+      n.c = el('circle', { r: n.r }, n.g);
+      if (n.i) { n.t = el('text', { 'class': 'initial', dy: '4' }, n.g); n.t.textContent = n.i; }
+      n.l = el('text', n.me ? { dy: '5' } : { dy: String(n.r + 17) }, n.g);
+      n.l.setAttribute('data-i18n', n.key);
+      byId[n.id] = n;
+    });
+    E.forEach(function (e) {
+      e.a = byId[e[0]]; e.b = byId[e[1]]; e.cat = e[2];
+      e.core = e[0] === 'me';
+      e.line = el('line', { 'class': 'edge' + (e.core ? ' core' : ''), stroke: COLORS[e.cat] }, gE);
+    });
+    var me = byId.me;
+
+    function place(t) {
+      N.forEach(function (n) {
+        n.px = n.x + Math.sin(t * n.w1 + n.p1) * n.ax;
+        n.py = n.y + Math.cos(t * n.w2 + n.p2) * n.ay;
+        n.g.setAttribute('transform', 'translate(' + n.px.toFixed(2) + ' ' + n.py.toFixed(2) + ')');
+      });
+      var s = 1 + Math.sin(t * 0.0021) * 0.045;   // breathing centre
+      me.c.setAttribute('r', (me.r * s).toFixed(2));
+      E.forEach(function (e) {
+        e.line.setAttribute('x1', e.a.px.toFixed(2)); e.line.setAttribute('y1', e.a.py.toFixed(2));
+        e.line.setAttribute('x2', e.b.px.toFixed(2)); e.line.setAttribute('y2', e.b.py.toFixed(2));
+      });
+    }
+
+    // Focus: hover / tap a person to see their connections.
+    function focus(id) {
+      svg.classList.toggle('focus', !!id);
+      N.forEach(function (n) { n.g.classList.toggle('on', n.id === id || E.some(function (e) { return (e.a.id === id && e.b === n) || (e.b.id === id && e.a === n); })); });
+      E.forEach(function (e) { e.line.classList.toggle('on', e.a.id === id || e.b.id === id); });
+    }
+    var focused = null;
+    N.forEach(function (n) {
+      n.g.addEventListener('pointerenter', function (ev) { if (ev.pointerType === 'mouse') focus(n.id); });
+      n.g.addEventListener('pointerleave', function (ev) { if (ev.pointerType === 'mouse' && focused !== n.id) focus(focused); });
+      n.g.addEventListener('click', function () { focused = focused === n.id ? null : n.id; focus(focused); });
+      n.g.addEventListener('focus', function () { focus(n.id); });
+      n.g.addEventListener('blur', function () { focus(focused); });
+    });
+
+    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    place(0);
+    if (reduce) return; // still, complete picture for people who prefer less motion
+
+    var pulses = [], halos = [], lastPulse = 0, lastHalo = -2000, visible = true, prev = null;
+    function spawnPulse(t) {
+      var pool = focused ? E.filter(function (e) { return e.a.id === focused || e.b.id === focused; }) : E;
+      var e = pool[Math.floor(Math.random() * pool.length)];
+      if (!e) return;
+      var forward = e.core ? Math.random() < 0.5 : Math.random() < 0.5;
+      var dot = el('circle', { 'class': 'pulse', r: e.core ? 3.2 : 2.6, fill: e.cat === 'union' ? 'var(--gold)' : COLORS[e.cat] }, gP);
+      pulses.push({ e: e, from: forward ? e.a : e.b, to: forward ? e.b : e.a, start: t, dur: 1500 + Math.random() * 900, dot: dot });
+    }
+    function spawnHalo(t) {
+      halos.push({ start: t, c: el('circle', { 'class': 'halo', r: me.r }, gH) });
+    }
+    function frame(now) {
+      if (!visible || document.hidden) { prev = null; return; }
+      place(now);
+      if (now - lastPulse > 520) { spawnPulse(now); lastPulse = now; }
+      if (now - lastHalo > 2600) { spawnHalo(now); lastHalo = now; }
+      pulses = pulses.filter(function (p) {
+        var k = (now - p.start) / p.dur;
+        if (k >= 1) { p.dot.remove(); return false; }
+        var q = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2; // ease in-out
+        p.dot.setAttribute('cx', (p.from.px + (p.to.px - p.from.px) * q).toFixed(2));
+        p.dot.setAttribute('cy', (p.from.py + (p.to.py - p.from.py) * q).toFixed(2));
+        p.dot.setAttribute('opacity', String(Math.min(1, Math.sin(Math.PI * k) * 1.6)));
+        return true;
+      });
+      halos = halos.filter(function (h) {
+        var k = (now - h.start) / 3200;
+        if (k >= 1) { h.c.remove(); return false; }
+        h.c.setAttribute('cx', me.px.toFixed(2)); h.c.setAttribute('cy', me.py.toFixed(2));
+        h.c.setAttribute('r', (me.r + k * 70).toFixed(2));
+        h.c.setAttribute('opacity', (0.55 * (1 - k)).toFixed(3));
+        return true;
+      });
+      requestAnimationFrame(frame);
+    }
+    function resume() { if (visible && !document.hidden) requestAnimationFrame(frame); }
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver(function (entries) {
+        var was = visible; visible = entries[0].isIntersecting; if (visible && !was) resume();
+      }).observe(svg);
+    }
+    document.addEventListener('visibilitychange', resume);
+    requestAnimationFrame(frame);
+  })();
+
+  /* Animated favicon (standalone website only): a pulse travels around the three people, the centre breathes. */
+  (function () {
+    var link = document.querySelector('link[rel="icon"]');
+    if (!link || (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)) return;
+    var cv = document.createElement('canvas'); cv.width = cv.height = 64;
+    var g = cv.getContext('2d'); if (!g) return;
+    var BASE = [[0, -15], [-13, 9], [13, 9]];   // three people around the centre (32,33)
+    var C = ['#30302D', '#B58F7B', '#C9A34F'];
+    function draw(t) {
+      var ang = (t / 9000) * Math.PI * 2;          // slow rotation: one turn in 9 s
+      var P = BASE.map(function (q) {
+        return [32 + q[0] * Math.cos(ang) - q[1] * Math.sin(ang), 33 + q[0] * Math.sin(ang) + q[1] * Math.cos(ang)];
+      });
+      g.clearRect(0, 0, 64, 64);
+      g.fillStyle = '#F3F0E9';
+      g.beginPath(); g.moveTo(14, 2); g.arcTo(62, 2, 62, 62, 14); g.arcTo(62, 62, 2, 62, 14); g.arcTo(2, 62, 2, 2, 14); g.arcTo(2, 2, 62, 2, 14); g.fill();
+      g.strokeStyle = '#858078'; g.lineWidth = 3; g.lineJoin = 'round';
+      g.beginPath(); g.moveTo(P[0][0], P[0][1]); g.lineTo(P[1][0], P[1][1]); g.lineTo(P[2][0], P[2][1]); g.closePath(); g.stroke();
+      var breathe = 1 + Math.sin(t / 380) * 0.1;
+      for (var i = 0; i < 3; i++) {
+        g.fillStyle = C[i]; g.beginPath(); g.arc(P[i][0], P[i][1], (i === 0 ? 7 * breathe : 5.6), 0, 7); g.fill();
+      }
+      var k = (t / 1800) % 1, seg = Math.floor(k * 3), f = k * 3 - seg;   // pulse travelling between the people
+      var a = P[seg], b = P[(seg + 1) % 3];
+      var x = a[0] + (b[0] - a[0]) * f, y = a[1] + (b[1] - a[1]) * f;
+      g.fillStyle = '#FFFFFF'; g.beginPath(); g.arc(x, y, 4.6, 0, 7); g.fill();
+      g.fillStyle = '#8C6A57'; g.beginPath(); g.arc(x, y, 3, 0, 7); g.fill();
+      link.href = cv.toDataURL('image/png');
+    }
+    link.type = 'image/png';
+    setInterval(function () { draw(performance.now()); }, 125);   // 8 frames per second is enough for a tab icon
+    draw(0);
+  })();
+
   var DIR = { ar: 'rtl', en: 'ltr', de: 'ltr', ku: 'ltr' };
 
   function apply(lang) {
