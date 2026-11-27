@@ -25,7 +25,7 @@ import javax.crypto.spec.SecretKeySpec
 const val PROTOCOL_VERSION = 1
 
 /** Android NSD service type advertised by camera phones. */
-const val NSD_SERVICE_TYPE = "_dmpcam._tcp."
+const val NSD_SERVICE_TYPE = "_dmpcam._tcp"
 
 @Serializable
 sealed interface LinkMessage

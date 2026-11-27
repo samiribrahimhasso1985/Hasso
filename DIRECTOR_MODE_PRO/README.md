@@ -1,15 +1,16 @@
 # DIRECTOR MODE PRO — Android
 
-Version: 0.4.0 (versionCode 4)
+Version: 0.5.0 (versionCode 6)
 Package: `com.directormodepro.app`
 Minimum Android: 8.0 (API 26) • Target/compile SDK 36
 Language: Kotlin + Jetpack Compose (Material 3)
 
-## What works in 0.4.0
+## What works in 0.5.0
 
 | Area | Status |
 |---|---|
 | **Languages: English, العربية (RTL), Deutsch** — in-app picker in Settings, also in Android 13+ system settings | ✅ Implemented, completeness checked by `LocalizationTest` |
+| **Multi-phone link**: one director phone/tablet controls several camera phones on the same Wi-Fi — PIN pairing (HMAC, never stored), record/stop all with shared take names, live low-res preview, battery/storage, lens flip, auto-reconnect | ✅ Implemented, end-to-end tested over localhost — **not yet run on 2 real phones** |
 | **Phone cameras** (back/front) via CameraX: live preview, video recording to `Movies/DirectorModePro`, zoom | ✅ Implemented — **not yet run on a device** |
 | Camera source management (add / edit / remove, brand, model, transport, endpoint) | ✅ Implemented |
 | Local persistence (Room database `director_mode_pro.db`) | ✅ Implemented, survives restarts |
@@ -46,6 +47,7 @@ Adding a camera = one new adapter + one branch in `DefaultCameraAdapterFactory`.
 | `androidx.media3` 1.8.0 (exoplayer, exoplayer-rtsp, ui) | Google-maintained player with a built-in RTSP client; avoids bundling native decoders. |
 | `lifecycle-viewmodel-compose` / `lifecycle-runtime-compose` 2.9.4 | ViewModel + lifecycle-aware Flow collection; same version as the existing lifecycle dependency. |
 | `androidx.camera` 1.5.1 (camera2, lifecycle, video, view) | Google's official API for the built-in cameras: preview, recording, zoom. |
+| `kotlinx-serialization-json` 1.9.0 | JSON messages between linked phones (director ↔ camera). |
 | `androidx.appcompat` 1.7.1 | Per-app language switching (`AppCompatDelegate.setApplicationLocales`) that also works on Android 8–12. |
 | `junit` 4.13.2, `kotlinx-coroutines-test` 1.10.2 | Unit tests. |
 
@@ -56,7 +58,7 @@ Requirements: JDK 17+ (CI uses 17), Android SDK Platform 36, Build-Tools 36. Gra
 ```bash
 cd DIRECTOR_MODE_PRO
 echo "sdk.dir=/path/to/Android/sdk" > local.properties   # Android Studio creates this automatically
-./gradlew :app:testDebugUnitTest      # 53 JVM unit tests
+./gradlew :app:testDebugUnitTest      # 63 JVM unit tests
 ./gradlew :app:assembleDebug          # -> app/build/outputs/apk/debug/app-debug.apk
 ./gradlew :app:connectedDebugAndroidTest   # Room DAO test, needs a device/emulator
 ```
@@ -70,6 +72,10 @@ GitHub Actions: `.github/workflows/android-apk.yml` (repository root) runs the u
 2. Cameras → **Add camera source** → *RTSP stream* → paste the URL → Save.
 3. **TEST CONNECTION** → the card should show REACHABLE and `✓ Preview`.
 4. Studio → **START PREVIEW** on that card.
+
+## Multi-phone link (architecture)
+`link/LinkProtocol.kt` (frames, messages, PIN auth) · `link/CameraNodeServer.kt` (camera phone) · `link/DirectorSession.kt` (director) · `link/LinkDiscovery.kt` (Android NSD `_dmpcam._tcp`) · `link/CameraXNodeController.kt` (CameraX on the camera phone) · `ui/link/LinkScreens.kt`.
+Full-quality video stays on each camera phone; only ~480 px JPEG preview frames travel to the director. After pairing, commands travel unencrypted on the local network (no secrets are sent).
 
 ## Localization
 - Strings: `res/values` (English, default), `res/values-ar`, `res/values-de`. Camera brand/model names stay untranslated.

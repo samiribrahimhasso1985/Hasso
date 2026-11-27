@@ -39,6 +39,14 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.directormodepro.app.camera.core.CameraConnectionStatus
 import com.directormodepro.app.camera.core.CameraId
+import androidx.compose.material.icons.filled.Link
+import androidx.compose.ui.platform.LocalContext
+import com.directormodepro.app.link.DeviceRole
+import com.directormodepro.app.link.DirectorSession
+import com.directormodepro.app.ui.link.CameraNodeScreen
+import com.directormodepro.app.ui.link.DevicesScreen
+import com.directormodepro.app.ui.link.RemotePhonesSection
+import com.directormodepro.app.ui.link.RoleScreen
 import com.directormodepro.app.ui.text
 import com.directormodepro.app.ui.theme.Danger
 import com.directormodepro.app.ui.theme.Live
@@ -69,7 +77,30 @@ import com.directormodepro.app.ui.theme.White
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent { DirectorModeApp() }
+        setContent { DirectorModeRoot() }
+    }
+}
+
+private val directorColors = darkColorScheme(
+    background = Bg, surface = Panel, primary = Accent, onPrimary = Bg,
+    onBackground = White, onSurface = White, secondary = Muted
+)
+
+/** Chooses what this device runs: the role picker, the camera-phone mode, or the director app. */
+@Composable
+fun DirectorModeRoot() {
+    val container = (LocalContext.current.applicationContext as DirectorModeApplication).container
+    val roleStore = container.roleStore
+    val role by roleStore.role.collectAsStateWithLifecycle()
+    MaterialTheme(colorScheme = directorColors) {
+        when (role) {
+            null -> RoleScreen(roleStore.deviceLabel) { chosen, name ->
+                roleStore.deviceLabel = name
+                roleStore.setRole(chosen)
+            }
+            DeviceRole.CAMERA -> CameraNodeScreen(roleStore.deviceLabel, onChangeRole = { roleStore.setRole(null) })
+            DeviceRole.DIRECTOR -> DirectorModeApp(session = container.directorSession, onChangeRole = { roleStore.setRole(null) })
+        }
     }
 }
 
@@ -78,17 +109,18 @@ private data class EditorRequest(val editing: SourceUiState?)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DirectorModeApp(viewModel: DirectorViewModel = viewModel(factory = DirectorViewModel.Factory)) {
+fun DirectorModeApp(
+    session: DirectorSession,
+    onChangeRole: () -> Unit,
+    viewModel: DirectorViewModel = viewModel(factory = DirectorViewModel.Factory)
+) {
     var selectedTab by rememberSaveable { mutableIntStateOf(0) }
     var editor by remember { mutableStateOf<EditorRequest?>(null) }
     val defaultProduction = stringResource(R.string.production_default_name)
     var projectName by rememberSaveable { mutableStateOf(defaultProduction) }
     val sources by viewModel.sources.collectAsStateWithLifecycle()
 
-    MaterialTheme(colorScheme = darkColorScheme(
-        background = Bg, surface = Panel, primary = Accent, onPrimary = Bg,
-        onBackground = White, onSurface = White, secondary = Muted
-    )) {
+    MaterialTheme(colorScheme = directorColors) {
         Scaffold(
             containerColor = Bg,
             topBar = {
@@ -108,10 +140,10 @@ fun DirectorModeApp(viewModel: DirectorViewModel = viewModel(factory = DirectorV
             bottomBar = {
                 NavigationBar(containerColor = Panel, contentColor = White) {
                     val items = listOf(
-                        stringResource(R.string.nav_studio), stringResource(R.string.nav_cameras),
+                        stringResource(R.string.nav_studio), stringResource(R.string.nav_cameras), stringResource(R.string.nav_devices),
                         stringResource(R.string.nav_tools), stringResource(R.string.nav_settings)
                     )
-                    val icons = listOf(Icons.Default.GridView, Icons.Default.CameraAlt, Icons.Default.Tune, Icons.Default.Settings)
+                    val icons = listOf(Icons.Default.GridView, Icons.Default.CameraAlt, Icons.Default.Link, Icons.Default.Tune, Icons.Default.Settings)
                     items.forEachIndexed { index, label ->
                         NavigationBarItem(
                             selected = selectedTab == index,
@@ -126,7 +158,7 @@ fun DirectorModeApp(viewModel: DirectorViewModel = viewModel(factory = DirectorV
             }
         ) { padding ->
             when (selectedTab) {
-                0 -> StudioScreen(Modifier.padding(padding), projectName, sources,
+                0 -> StudioScreen(Modifier.padding(padding), projectName, sources, session,
                     onProjectChange = { projectName = it }, onAdd = { editor = EditorRequest(null) }, onTest = viewModel::testConnection)
                 1 -> CameraSourcesScreen(
                     modifier = Modifier.padding(padding),
@@ -137,8 +169,9 @@ fun DirectorModeApp(viewModel: DirectorViewModel = viewModel(factory = DirectorV
                     onTest = viewModel::testConnection,
                     onDisconnect = viewModel::disconnect
                 )
-                2 -> ToolsScreen(Modifier.padding(padding))
-                else -> SettingsScreen(Modifier.padding(padding))
+                2 -> DevicesScreen(Modifier.padding(padding), session)
+                3 -> ToolsScreen(Modifier.padding(padding))
+                else -> SettingsScreen(Modifier.padding(padding), onChangeRole)
             }
         }
 
@@ -162,7 +195,7 @@ fun DirectorModeApp(viewModel: DirectorViewModel = viewModel(factory = DirectorV
 
 @Composable
 private fun StudioScreen(
-    modifier: Modifier, projectName: String, sources: List<SourceUiState>,
+    modifier: Modifier, projectName: String, sources: List<SourceUiState>, session: DirectorSession,
     onProjectChange: (String) -> Unit, onAdd: () -> Unit, onTest: (CameraId) -> Unit
 ) {
     LazyVerticalGrid(
@@ -192,6 +225,8 @@ private fun StudioScreen(
                 }
             }
         }
+        // Linked camera phones (multi-phone production) come first: they are the live set.
+        item(span = { GridItemSpan(maxLineSpan) }) { RemotePhonesSection(session) }
         item(span = { GridItemSpan(maxLineSpan) }) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(stringResource(R.string.multiview_title), fontWeight = FontWeight.Bold, fontSize = 12.sp, letterSpacing = 1.2.sp)
@@ -330,10 +365,20 @@ private fun ToolsScreen(modifier: Modifier) {
 }
 
 @Composable
-private fun SettingsScreen(modifier: Modifier) {
+private fun SettingsScreen(modifier: Modifier, onChangeRole: () -> Unit) {
     Column(modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
         Text(stringResource(R.string.settings_title), fontSize = 22.sp, fontWeight = FontWeight.Bold)
         LanguagePicker()
+        Row(
+            Modifier.fillMaxWidth().background(Panel, RoundedCornerShape(12.dp)).padding(horizontal = 14.dp, vertical = 6.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(Modifier.weight(1f)) {
+                Text(stringResource(R.string.settings_role), color = Muted, fontSize = 11.sp)
+                Text(stringResource(R.string.role_director), fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
+            }
+            TextButton(onClick = onChangeRole) { Text(stringResource(R.string.settings_role_change), color = Accent) }
+        }
         SettingRow(stringResource(R.string.settings_version), stringResource(R.string.settings_version_value, BuildInfo.VERSION_NAME))
         SettingRow(stringResource(R.string.settings_platform), stringResource(R.string.settings_platform_value))
         SettingRow(stringResource(R.string.settings_architecture), stringResource(R.string.settings_architecture_value))
@@ -378,5 +423,5 @@ private fun SettingRow(title: String, value: String) {
 }
 
 private object BuildInfo {
-    const val VERSION_NAME = "0.4.1"
+    const val VERSION_NAME = "0.5.0"
 }
