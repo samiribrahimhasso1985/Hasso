@@ -42,6 +42,7 @@ Status values: ✅ carried over (already approved/implemented) · ❓ needs owne
 | **EZ-15** | Kurmanji in Arabic script (`ku-Arab`, RTL) for readers in Iraq/Syria | Raise priority: before public launch, with native reviewers |
 | **EZ-16** | Launch sequence across the target countries | EU (Germany) soft launch → UK/USA/Canada/Australia → Armenia/Georgia → active outreach in Iraq/Syria/Turkey after at-risk features → Russia after EZ-14 (`TARGET_MARKETS.md` §4) |
 | **EZ-17** | At-risk-country protections | Add discreet mode, login alerts, session list/remote logout before outreach in high-risk countries |
+| **EZ-18 … EZ-28** | v1.2 expansion decisions (name/domain, WORLD directory scope, Pulse privacy, Emergency, ages 13–16, My Companion, public profile pages, Open Community vs Project Hub, expansion order, 3D heritage, Personal Sale limits) | see `../EZIDINET_EXPANSION_PROPOSAL_V1.2.md` §9 |
 
 ## 3. Excluded by the owner (never built, never renamed)
 ⛔ My Digital Passport · ⛔ My Proof · ⛔ Project Hub · ⛔ Company Directory · ⛔ FN Magazine · ⛔ My Video Archive ·
@@ -56,4 +57,5 @@ directory of companies.
 * Q-1 Who forms the cultural review group for heritage and EZID Kids content (names/roles)?
 * ~~Q-2 Which countries are the first target markets?~~ **Answered 2026-11-26:** Europe and Asia incl. Iraq, Syria, Turkey; Georgia, Armenia, USA, Australia and every other country with Yazidi communities → `TARGET_MARKETS.md`.
 * Q-3 Should FN Coins / FN Originals keep the "FN" prefix under the EZIDNET brand?
+* Q-5 (v1.2) Which verified aid organizations and cultural institutions are the first partners?
 * Q-4 Minimum age for an own (adult-area) account: 16 (EU default) — confirm.

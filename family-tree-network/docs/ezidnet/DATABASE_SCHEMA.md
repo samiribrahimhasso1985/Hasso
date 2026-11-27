@@ -74,3 +74,9 @@ QR code, people search results.
 Social (posts with audiences, messages, notifications, events), Heritage (oral history items with consent of the
 speaker, historical timeline entries with source classification), Business, Creator (only `videos.section` ∈ PUBLIC,
 FAMILY), Knowledge, Services — following `../FAMILY_NETWORK_MASTER_IMPLEMENTATION_PLAN.md` §7 minus excluded features.
+
+## v1.2 update (2026-11-27) — proposal
+The owner's Approved Expansion Scope v1.2 (Heritage, WORLD, Pulse, Welcome, Emergency, Festivals, Kids additions, AI
+Ecosystem, Freelance, Smart Profile Ads, Open Community Participation) is integrated as a **proposal** in
+`../EZIDINET_EXPANSION_PROPOSAL_V1.2.md` (screen map §2, database §4, roadmap & budget §5). Nothing in it is
+implemented before approval. Official name: EZIDINET.

@@ -1,7 +1,7 @@
 # Progress Report — FAMILY NETWORK
 
 Kept up to date after every phase or significant change (CLAUDE.md §26).
-Last update: **2026-11-26** · Branch: `ccr-47c5f9b6-alewtl`
+Last update: **2026-11-27** · Branch: `ccr-47c5f9b6-alewtl`
 Primary reference: `FAMILY_NETWORK_MASTER_SPECIFICATION_3.0.md` · Phase 1 detail: `FAMILY_NETWORK_MASTER_IMPLEMENTATION_PLAN.md`
 
 ## 1. Summary
@@ -102,3 +102,6 @@ After approval of the gates: R1.1 → R1.10 in the order of the master plan §9,
 | 2026-11-26 | Project book (Arabic PDF) explaining every step and why (`docs/book/`) |
 | 2026-11-26 | **EZIDNET v1.1** plan received; 16 documents in `docs/ezidnet/` (vision, architecture, screens, database incl. EZID Kids model, security, localization, roadmap, tests, deployment, decisions EZ-1…EZ-13, 4 Kids documents). Waiting for approval; no code changed. |
 | 2026-11-26 | Module 34 (monetization & commerce) and approved additions 3.0 stored; **Master Specification 3.0** created as single reference; 7-phase order adopted; gates G9–G12 and questions Q1–Q6 added. No code changed. |
+| 2026-11-26 | Target countries answered (Q-2): `docs/ezidnet/TARGET_MARKETS.md`, decisions EZ-14…EZ-17 |
+| 2026-11-27 | **Android development APK** (`apps/android`, WebView shell, debug-signed, 15 KB): built and verified (`aapt`, `apksigner`); optional same-origin API proxy in the web app (`API_PROXY_TARGET`) + `dev:lan` script; phone mode tested in a Pixel 7 emulated browser through the LAN address (login, graph, Arabic RTL, 0 page errors). Not run on a real device or emulator (no KVM here). UI renamed **EZIDINET**. |
+| 2026-11-27 | **EZIDINET v1.2** expansion scope + Smart Profile Ads + Open Community Participation stored verbatim (`docs/specs/EZIDINET_V1.2_APPROVED_SCOPE.md`); 13 module documents `docs/EZIDINET_*.md`; consolidated proposal with screen map, database, API, roles, roadmap/budget and decisions EZ-18…EZ-28 (`docs/EZIDINET_EXPANSION_PROPOSAL_V1.2.md`). **Waiting for approval; no expansion module implemented.** |

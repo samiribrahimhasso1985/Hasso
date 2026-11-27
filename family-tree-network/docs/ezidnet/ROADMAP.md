@@ -38,3 +38,9 @@ people search · privacy & permissions · basic admin · 4 languages · responsi
 ## Kids preparation inside the MVP (no Kids features shipped yet)
 Guardian/child data model reviewed · consent texts drafted · content review group formed · first content inventory
 (lessons, stories, alphabet audio) prepared by the community.
+
+## v1.2 update (2026-11-27) — proposal
+The owner's Approved Expansion Scope v1.2 (Heritage, WORLD, Pulse, Welcome, Emergency, Festivals, Kids additions, AI
+Ecosystem, Freelance, Smart Profile Ads, Open Community Participation) is integrated as a **proposal** in
+`../EZIDINET_EXPANSION_PROPOSAL_V1.2.md` (screen map §2, database §4, roadmap & budget §5). Nothing in it is
+implemented before approval. Official name: EZIDINET.

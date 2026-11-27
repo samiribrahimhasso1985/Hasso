@@ -706,6 +706,17 @@ Full text: [`docs/specs/APPROVED_ADDITIONS_3_0.md`](docs/specs/APPROVED_ADDITION
 
 The owner sent the EZIDNET.COM Master Development Plan v1.1 (platform for the Yazidi community worldwide, incl. EZID Kids). Full text and the complete documentation set: [`docs/ezidnet/`](docs/ezidnet/README.md). **Until decision EZ-1 is approved, no code changes for EZIDNET**; the plan itself says to stop after documentation. Key rules already binding: never overwrite/delete files or purchase/deploy without permission; excluded features (My Digital Passport, My Proof, Project Hub, Company Directory, FN Magazine, My Video Archive, Friends Videos) are never built or renamed; never infer religious or ethnic identity; children's data protected per `docs/ezidnet/EZID_KIDS_SAFETY.md`.
 
+## 37. EZIDINET v1.2 — EXPANSION SCOPE, SMART PROFILE ADS, OPEN COMMUNITY (PROPOSAL, PENDING APPROVAL)
+
+Full text (verbatim): [`docs/specs/EZIDINET_V1.2_APPROVED_SCOPE.md`](docs/specs/EZIDINET_V1.2_APPROVED_SCOPE.md).
+Proposal & decisions EZ-18…EZ-28: [`docs/EZIDINET_EXPANSION_PROPOSAL_V1.2.md`](docs/EZIDINET_EXPANSION_PROPOSAL_V1.2.md);
+13 module documents `docs/EZIDINET_*.md`. Official project name **EZIDINET**. Binding rules: docs, screen map,
+database and roadmap first; **no expansion module is implemented before owner approval**; do not implement all modules
+at once; €5,000 ceiling; Open Community: ordinary projects need no prior admin approval, special review for fundraising,
+emergency, children, sensitive data, high-risk events (supersedes earlier pre-approval); Smart Profile Ads: every listing
+belongs to a real account (`owner_user_id`), never duplicate profiles, routes `/profile/{slug}` and `/business/{slug}`,
+Personal Sale free, business advertising paid, only public fields shown, no ads for children.
+
 ---
 
 ## Working notes for this repository

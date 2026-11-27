@@ -2,6 +2,12 @@
 const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+  // Optional same-origin API proxy (used by the Android development shell): when API_PROXY_TARGET is set,
+  // the browser calls /api/* on the web server and Next.js forwards it to the API. Off by default.
+  async rewrites() {
+    const target = process.env.API_PROXY_TARGET;
+    return target ? [{ source: '/api/:path*', destination: `${target.replace(/\/$/, '')}/:path*` }] : [];
+  },
   async headers() {
     return [
       {

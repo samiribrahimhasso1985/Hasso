@@ -11,7 +11,7 @@ export const LOCALES: { code: Locale; name: string }[] = [
 ];
 
 const en = {
-  appName: 'EZIDNET',
+  appName: 'EZIDINET',
   tagline: 'One person. One identity. Every relationship.',
   welcomeBody: 'A digital home connecting Yazidi families, generations and communities worldwide — private by default.',
   email: 'Email',
@@ -139,7 +139,7 @@ const en = {
 export type Dict = typeof en;
 
 const de: Dict = {
-  appName: 'EZIDNET',
+  appName: 'EZIDINET',
   tagline: 'Ein Mensch. Eine Identität. Alle Beziehungen.',
   welcomeBody: 'Ein digitales Zuhause, das jesidische Familien, Generationen und Gemeinschaften weltweit verbindet – standardmäßig privat.',
   email: 'E-Mail',
@@ -265,7 +265,7 @@ const de: Dict = {
 };
 
 const ar: Dict = {
-  appName: 'EZIDNET',
+  appName: 'EZIDINET',
   tagline: 'شخص واحد. هوية واحدة. كل العلاقات.',
   welcomeBody: 'بيت رقمي يجمع العائلات والأجيال والمجتمعات الإيزيدية حول العالم — خاص افتراضياً.',
   email: 'البريد الإلكتروني',
@@ -393,7 +393,7 @@ const ar: Dict = {
 
 /** Kurmanji (Latin/Hawar script) — DRAFT translation, must be reviewed by native speakers (docs/ezidnet/LOCALIZATION.md). */
 const ku: Dict = {
-  appName: 'EZIDNET',
+  appName: 'EZIDINET',
   tagline: 'Kesek. Nasnameyek. Hemû têkilî.',
   welcomeBody: 'Malek dîjîtal ku malbat, nifş û civakên êzdî li seranserê cîhanê bi hev ve girêdide — bi xwerû taybet.',
   email: 'E-name',

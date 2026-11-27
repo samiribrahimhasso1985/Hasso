@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Network mark: three nodes and their connections (no religious or ethnic symbol). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp"
+    android:viewportWidth="108" android:viewportHeight="108">
+    <path android:strokeColor="#858078" android:strokeWidth="2.5"
+        android:pathData="M54,38 L38,66 M54,38 L70,66 M38,66 L70,66" />
+    <path android:fillColor="#30302D" android:pathData="M54,38m-7,0a7,7 0,1 1,14 0a7,7 0,1 1,-14 0" />
+    <path android:fillColor="#B58F7B" android:pathData="M38,66m-6,0a6,6 0,1 1,12 0a6,6 0,1 1,-12 0" />
+    <path android:fillColor="#C9A34F" android:pathData="M70,66m-6,0a6,6 0,1 1,12 0a6,6 0,1 1,-12 0" />
+</vector>

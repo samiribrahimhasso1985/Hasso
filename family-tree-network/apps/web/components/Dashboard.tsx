@@ -150,7 +150,7 @@ export default function Dashboard({ session, onLogout }: { session: Session; onL
       <header className="topbar">
         <div className="brand">
           <Logo size={34} />
-          <span>EZIDNET</span>
+          <span>EZIDINET</span>
         </div>
         <div className="top-search">
           <PersonPicker

@@ -39,6 +39,11 @@ Demo accounts (development only, shown as shortcuts on the login screen):
 `omar@demo.ftn.local`, `anna@…`, `khaled@…`, `sara@…`, `karim@…`, `peter@…`, `julia@…`, `daniel@…` —
 password `demo-password-2026`.
 
+## Android development app
+
+`apps/android` contains a small WebView app that opens the web app from your own test server (e.g. your PC on the same
+Wi-Fi). See [`apps/android/README.md`](apps/android/README.md). Development build only — not for real users.
+
 ## Tests
 
 ```bash

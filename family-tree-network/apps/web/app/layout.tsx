@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'EZIDNET',
+  title: 'EZIDINET',
   description: 'A digital home for Yazidi families, generations and communities worldwide.',
 };
 

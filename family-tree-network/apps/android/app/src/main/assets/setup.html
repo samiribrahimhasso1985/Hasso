@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EZIDINET</title>
+<style>
+  :root { --bg:#F3F0E9; --card:#FAF9F5; --ink:#30302D; --muted:#6B675F; --line:#DDD8CE; --accent:#8C6A57; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font-family: system-ui, sans-serif; padding:24px 16px; }
+  .card { max-width:480px; margin:0 auto; background:var(--card); border:1px solid var(--line); border-radius:18px; padding:24px; }
+  h1 { font-size:22px; font-weight:600; margin:0 0 4px; letter-spacing:.04em; }
+  p { color:var(--muted); line-height:1.5; font-size:15px; }
+  label { display:block; font-size:14px; margin:16px 0 6px; }
+  input { width:100%; padding:12px; font-size:16px; border:1px solid var(--line); border-radius:12px; background:#fff; color:var(--ink); }
+  button { margin-top:16px; width:100%; padding:13px; font-size:16px; border:0; border-radius:12px; background:var(--ink); color:#fff; }
+  .err { color:#8A3B2E; display:none; }
+  .ar { direction:rtl; text-align:right; font-size:14px; border-top:1px solid var(--line); margin-top:20px; padding-top:12px; }
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>EZIDINET</h1>
+  <p>Development build. Enter the address of the EZIDINET test server (for example the PC on your Wi-Fi running <code>npm run dev:web</code>).</p>
+  <p class="err" id="err">The server could not be reached. Check the address and that the phone is on the same network.</p>
+  <label for="url">Server address</label>
+  <input id="url" type="url" inputmode="url" autocomplete="off" placeholder="http://192.168.1.20:3000">
+  <button id="go" type="button">Connect</button>
+  <p class="err" id="bad">Please enter a valid http:// or https:// address.</p>
+  <div class="ar">
+    <p>نسخة تجريبية للتطوير. أدخل عنوان خادم EZIDINET التجريبي (مثلاً الحاسوب على نفس شبكة الواي فاي الذي يشغّل التطبيق)، ثم اضغط Connect.</p>
+  </div>
+</div>
+<script>
+  var shell = window.EzidinetShell;
+  var input = document.getElementById('url');
+  if (location.search.indexOf('error=1') >= 0) document.getElementById('err').style.display = 'block';
+  if (shell && shell.currentServer()) input.value = shell.currentServer();
+  document.getElementById('go').addEventListener('click', function () {
+    var ok = shell && shell.saveServer(input.value);
+    document.getElementById('bad').style.display = ok ? 'none' : 'block';
+  });
+</script>
+</body>
+</html>
