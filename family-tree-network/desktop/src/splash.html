@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; img-src data:">
+<title>EZIDINET</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #F3F0E9; color: #30302D; font-family: "Segoe UI", system-ui, sans-serif; }
+  body { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; -webkit-app-region: drag; }
+  .word { letter-spacing: .28em; font-weight: 600; font-size: 20px; }
+  .msg { color: #6B675F; font-size: 14px; text-align: center; line-height: 1.6; }
+  .bar { width: 160px; height: 3px; background: #DDD8CE; border-radius: 3px; overflow: hidden; }
+  .bar i { display: block; width: 40%; height: 100%; background: #8C6A57; animation: m 1.2s ease-in-out infinite; }
+  @keyframes m { 0% { transform: translateX(-100%); } 100% { transform: translateX(250%); } }
+</style>
+</head>
+<body>
+  <svg width="56" height="56" viewBox="0 0 108 108" aria-hidden="true">
+    <path d="M54,38 L38,66 M54,38 L70,66 M38,66 L70,66" stroke="#858078" stroke-width="2.5" fill="none"/>
+    <circle cx="54" cy="38" r="7" fill="#30302D"/><circle cx="38" cy="66" r="6" fill="#B58F7B"/><circle cx="70" cy="66" r="6" fill="#C9A34F"/>
+  </svg>
+  <div class="word">EZIDINET</div>
+  <div class="bar"><i></i></div>
+  <div class="msg">Starting… the first start takes a little longer.<br><span dir="rtl">جارٍ التشغيل… التشغيل الأول يستغرق وقتاً أطول قليلاً.</span></div>
+</body>
+</html>
