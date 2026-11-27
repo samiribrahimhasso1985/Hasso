@@ -128,6 +128,15 @@ html[lang="ar"] h1 { letter-spacing: 0; line-height: 1.3; }
 .graph .halo { fill: none; stroke: var(--gold); stroke-width: 1.2; }
 .graph .pulse { filter: drop-shadow(0 0 3px var(--gold)); }
 
+.login-btn { padding: 8px 16px; font-size: 14px; }
+.login-box { display: grid; gap: 18px; max-width: 720px; }
+.steps { margin: 0; padding-inline-start: 1.3em; display: grid; gap: 8px; color: var(--ink); }
+.login-actions { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.login-status { font-size: 14px; color: var(--muted); }
+.login-status.ok::before, .login-status.off::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-inline-end: 8px; vertical-align: middle; }
+.login-status.ok::before { background: #6E8B5E; }
+.login-status.off::before { background: var(--union); }
+
 /* Sections */
 section { padding-block: 56px; border-top: 1px solid var(--line); }
 .eyebrow { font-size: 12px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); margin: 0 0 10px; }
@@ -180,6 +189,7 @@ footer .wrap { display: flex; gap: 12px 24px; flex-wrap: wrap; justify-content: 
 @media (max-width: 620px) {
   nav.links { display: none; }
   .langs { margin-inline-start: auto; }
+  .bar { gap: 12px; }
   .grid { grid-template-columns: 1fr; }
   .plan { grid-template-columns: 1fr; }
   section { padding-block: 44px; }
@@ -203,6 +213,7 @@ footer .wrap { display: flex; gap: 12px 24px; flex-wrap: wrap; justify-content: 
       <a href="#privacy" data-i18n="navPrivacy">الخصوصية</a>
       <a href="#get" data-i18n="navGet">احصل على EZIDINET</a>
     </nav>
+    <a class="btn primary login-btn" href="#login" data-i18n="navLogin">دخول</a>
     <div class="langs" role="group" aria-label="Language">
       <button type="button" id="lang-ku" lang="ku" data-lang="ku" aria-pressed="false">Kurmancî</button>
       <button type="button" id="lang-ar" lang="ar" data-lang="ar" aria-pressed="true">العربية</button>
@@ -297,6 +308,25 @@ footer .wrap { display: flex; gap: 12px 24px; flex-wrap: wrap; justify-content: 
     </div>
   </section>
 
+  <section id="login">
+    <div class="wrap">
+      <p class="eyebrow" data-i18n="lgEyebrow">الدخول</p>
+      <h2 data-i18n="lgH2">ادخل إلى منصة EZIDINET</h2>
+      <p class="intro" data-i18n="lgIntro">في مرحلة الاختبار تعمل المنصة داخل تطبيق EZIDINET Desktop على حاسوبك. عندما يصبح خادم الاختبار على الإنترنت، سيفتح هذا الزر المنصة من أي مكان.</p>
+      <div class="login-box panel">
+        <ol class="steps">
+          <li data-i18n="lg1">شغّل تطبيق EZIDINET Desktop على هذا الحاسوب وانتظر حتى تظهر نافذته.</li>
+          <li data-i18n="lg2">اضغط «افتح المنصة» أدناه، أو استخدم نافذة التطبيق نفسها.</li>
+          <li data-i18n="lg3">في شاشة الدخول اضغط اسماً من «حسابات تجريبية» مثل Omar، أو أنشئ حساباً جديداً.</li>
+        </ol>
+        <div class="login-actions">
+          <a class="btn primary" id="open-platform" href="http://127.0.0.1:47211/" target="_blank" rel="noopener" data-i18n="lgOpen">افتح المنصة</a>
+          <span class="login-status" id="login-status" role="status" aria-live="polite"></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <section id="get">
     <div class="wrap">
       <p class="eyebrow" data-i18n="getEyebrow">احصل على EZIDINET</p>
@@ -357,6 +387,7 @@ footer .wrap { display: flex; gap: 12px 24px; flex-wrap: wrap; justify-content: 
       g2h: 'Windows', g2p: 'تطبيق EZIDINET Desktop يعمل كاملاً على جهازك، بدون إنترنت، مع بيانات تجريبية.',
       g3h: 'Android', g3p: 'تطبيق للهاتف يتصل بخادم EZIDINET — حالياً عبر جهاز الكمبيوتر على نفس شبكة الواي فاي.',
       soon: 'قريباً', test: 'تجريبي',
+      navLogin: 'دخول', lgEyebrow: 'الدخول', lgH2: 'ادخل إلى منصة EZIDINET', lgIntro: 'في مرحلة الاختبار تعمل المنصة داخل تطبيق EZIDINET Desktop على حاسوبك. عندما يصبح خادم الاختبار على الإنترنت، سيفتح هذا الزر المنصة من أي مكان.', lg1: 'شغّل تطبيق EZIDINET Desktop على هذا الحاسوب وانتظر حتى تظهر نافذته.', lg2: 'اضغط «افتح المنصة» أدناه، أو استخدم نافذة التطبيق نفسها.', lg3: 'في شاشة الدخول اضغط اسماً من «حسابات تجريبية» مثل Omar، أو أنشئ حساباً جديداً.', lgOpen: 'افتح المنصة', lgOk: 'التطبيق يعمل على هذا الحاسوب — يمكنك الدخول.', lgOff: 'لم يُعثر على التطبيق على هذا الحاسوب. شغّل EZIDINET Desktop أولاً.',
       foot: 'نسخة تطوير. لا توجد بيانات حقيقية لأي شخص في النسخ التجريبية.'
     },
     en: {
@@ -395,6 +426,7 @@ footer .wrap { display: flex; gap: 12px 24px; flex-wrap: wrap; justify-content: 
       g2h: 'Windows', g2p: 'EZIDINET Desktop runs the complete platform on your computer, offline, with demo data.',
       g3h: 'Android', g3p: 'A phone app that connects to an EZIDINET server — for now through a computer on the same Wi-Fi.',
       soon: 'Soon', test: 'Test',
+      navLogin: 'Sign in', lgEyebrow: 'Sign in', lgH2: 'Sign in to EZIDINET', lgIntro: 'During testing, the platform runs inside the EZIDINET Desktop app on your computer. Once the test server is online, this button will open the platform from anywhere.', lg1: 'Start the EZIDINET Desktop app on this computer and wait for its window.', lg2: 'Press “Open the platform” below, or use the app window itself.', lg3: 'On the sign-in screen, choose a name under “Demo accounts”, such as Omar, or create a new account.', lgOpen: 'Open the platform', lgOk: 'The app is running on this computer — you can sign in.', lgOff: 'The app was not found on this computer. Start EZIDINET Desktop first.',
       foot: 'Development version. Test versions contain no real person’s data.'
     },
     de: {
@@ -433,6 +465,7 @@ footer .wrap { display: flex; gap: 12px 24px; flex-wrap: wrap; justify-content: 
       g2h: 'Windows', g2p: 'EZIDINET Desktop führt die ganze Plattform auf deinem Computer aus, offline, mit Demodaten.',
       g3h: 'Android', g3p: 'Eine Handy-App, die sich mit einem EZIDINET-Server verbindet — vorerst über einen Computer im selben WLAN.',
       soon: 'Bald', test: 'Test',
+      navLogin: 'Anmelden', lgEyebrow: 'Anmelden', lgH2: 'Bei EZIDINET anmelden', lgIntro: 'In der Testphase läuft die Plattform in der App EZIDINET Desktop auf deinem Computer. Sobald der Testserver online ist, öffnet diese Schaltfläche die Plattform von überall.', lg1: 'Starte die App EZIDINET Desktop auf diesem Computer und warte, bis ihr Fenster erscheint.', lg2: 'Klicke unten auf „Plattform öffnen“ oder nutze direkt das App-Fenster.', lg3: 'Wähle auf der Anmeldeseite einen Namen unter „Demo-Konten“, z. B. Omar, oder erstelle ein neues Konto.', lgOpen: 'Plattform öffnen', lgOk: 'Die App läuft auf diesem Computer — du kannst dich anmelden.', lgOff: 'Die App wurde auf diesem Computer nicht gefunden. Starte zuerst EZIDINET Desktop.',
       foot: 'Entwicklungsversion. Testversionen enthalten keine Daten realer Personen.'
     },
     ku: {
@@ -471,6 +504,7 @@ footer .wrap { display: flex; gap: 12px 24px; flex-wrap: wrap; justify-content: 
       g2h: 'Windows', g2p: 'EZIDINET Desktop hemû platformê li ser komputera te dixebitîne, bê înternet, bi daneyên mînak.',
       g3h: 'Android', g3p: 'Sepanek ji bo telefonê ku bi servera EZIDINET ve girêdide — niha bi rêya komputerekê li ser heman Wi-Fi.',
       soon: 'Zû', test: 'Ceribandin',
+      navLogin: 'Têkeve', lgEyebrow: 'Têketin', lgH2: 'Têkeve platforma EZIDINET', lgIntro: 'Di dema ceribandinê de platform di nav sepana EZIDINET Desktop de li ser komputera te dixebite. Dema ku servera ceribandinê serhêl be, ev bişkok dê platformê ji her derê veke.', lg1: 'Sepana EZIDINET Desktop li ser vê komputerê bide destpêkirin û li benda pencereya wê bimîne.', lg2: 'Li jêr «Platformê veke» bitikîne, an jî pencereya sepanê bi kar bîne.', lg3: 'Di ekrana têketinê de navekî ji «Hesabên mînak» hilbijêre, wek Omar, an hesabekî nû çêke.', lgOpen: 'Platformê veke', lgOk: 'Sepan li ser vê komputerê dixebite — tu dikarî têkevî.', lgOff: 'Sepan li ser vê komputerê nehat dîtin. Pêşî EZIDINET Desktop bide destpêkirin.',
       foot: 'Guhertoya pêşveçûnê. Di guhertoyên ceribandinê de daneyên tu kesê rastîn tune ne.'
     }
   };
@@ -643,6 +677,23 @@ footer .wrap { display: flex; gap: 12px 24px; flex-wrap: wrap; justify-content: 
 
   var DIR = { ar: 'rtl', en: 'ltr', de: 'ltr', ku: 'ltr' };
 
+  /* "Open the platform": check whether EZIDINET Desktop is running on this computer (127.0.0.1:47211). */
+  var loginState = null;
+  function showLoginState() {
+    var el = document.getElementById('login-status'); if (!el || !loginState) return;
+    var d = T[document.documentElement.lang] || T.ar;
+    el.className = 'login-status ' + loginState;
+    el.textContent = loginState === 'ok' ? d.lgOk : d.lgOff;
+  }
+  function checkDesktop() {
+    if (!/^(file|http):$/.test(location.protocol) || !window.fetch) return;   // previews and https pages cannot reach it
+    var done = false;
+    var timer = setTimeout(function () { if (!done) { done = true; loginState = 'off'; showLoginState(); } }, 2500);
+    fetch('http://127.0.0.1:47211/', { mode: 'no-cors', cache: 'no-store' })
+      .then(function () { if (!done) { done = true; clearTimeout(timer); loginState = 'ok'; showLoginState(); } })
+      .catch(function () { if (!done) { done = true; clearTimeout(timer); loginState = 'off'; showLoginState(); } });
+  }
+
   function apply(lang) {
     var dict = T[lang] || T.ar;
     document.documentElement.lang = lang;
@@ -654,6 +705,7 @@ footer .wrap { display: flex; gap: 12px 24px; flex-wrap: wrap; justify-content: 
     }
     var btns = document.querySelectorAll('.langs button');
     for (var j = 0; j < btns.length; j++) btns[j].setAttribute('aria-pressed', String(btns[j].getAttribute('data-lang') === lang));
+    showLoginState();
     try { localStorage.setItem('ezidinet-lang', lang); } catch (e) { /* storage unavailable */ }
   }
 
@@ -667,6 +719,9 @@ footer .wrap { display: flex; gap: 12px 24px; flex-wrap: wrap; justify-content: 
     }
   } catch (e) { /* storage unavailable */ }
   apply(initial);
+  checkDesktop();
+  var ob = document.getElementById('open-platform');
+  if (ob) ob.addEventListener('click', checkDesktop);
 
   document.querySelector('.langs').addEventListener('click', function (ev) {
     var b = ev.target.closest('button[data-lang]');

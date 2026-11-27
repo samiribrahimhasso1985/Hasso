@@ -14,6 +14,12 @@ testimonials. The language follows the visitor's browser and can be switched; th
   fallback `favicon.svg` animates on its own in Firefox).
 * Everything stops for visitors who prefer reduced motion; the animation also pauses when the page is not visible.
 
+## Sign in
+The header button **Sign in / دخول** leads to a section that opens the platform. During testing the platform runs in
+EZIDINET Desktop on the same computer (`http://127.0.0.1:47211`); the standalone page checks whether the app is
+running and says so (the API's own health route is not used: its `Cross-Origin-Resource-Policy` header correctly
+blocks cross-origin reads). When a public test server exists, only this link changes.
+
 ## Files
 `source.html` is the editable page (also published as the claude.ai preview); `python3 make_site.py source.html
 index.html` produces the standalone `index.html` with self-hosted fonts.
