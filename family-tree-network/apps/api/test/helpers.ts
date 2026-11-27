@@ -61,12 +61,15 @@ export async function teardown(ctx: Ctx) {
   await ctx.prisma.$disconnect();
 }
 
+/** The three consents registration requires. */
+export const CONSENTS = { acceptTerms: true, consentSensitiveData: true, confirmMinimumAge: true };
+
 /** Registers a brand-new user (a stranger to the demo network). */
 export async function register(ctx: Ctx, name: string) {
   const email = `${name.toLowerCase()}-${Date.now()}@example.test`;
   const res = await request(ctx.app.getHttpServer())
     .post('/api/auth/register')
-    .send({ email, password: DEMO_PASSWORD, displayName: name, gender: 'UNSPECIFIED' });
+    .send({ email, password: DEMO_PASSWORD, displayName: name, gender: 'UNSPECIFIED', ...CONSENTS });
   if (res.status !== 201) throw new Error(`register failed: ${res.status} ${JSON.stringify(res.body)}`);
   return { email, token: res.body.accessToken as string, profileId: res.body.profileId as string };
 }

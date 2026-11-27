@@ -87,7 +87,34 @@ export interface Session {
   profileId: string;
   displayName: string;
   email: string;
+  emailVerified?: boolean;
+  /** 'developer' when e-mails are shown in the local developer mailbox instead of being sent. */
+  mailbox?: 'developer' | null;
 }
+
+export interface RegisterBody {
+  email: string;
+  password: string;
+  displayName: string;
+  gender: Gender;
+  locale: Locale;
+  country?: string;
+  acceptTerms: boolean;
+  consentSensitiveData: boolean;
+  confirmMinimumAge: boolean;
+}
+
+export interface OutboxMessage {
+  id: number;
+  to: string;
+  subject: string;
+  text: string;
+  link: string;
+  createdAt: string;
+}
+
+/** Fired when the server says the session has ended (logout elsewhere, password reset, expiry). */
+export const SESSION_ENDED_EVENT = 'ezidinet:session-ended';
 
 export interface RelationshipTypeInfo {
   key: string;
@@ -140,15 +167,42 @@ export class Api {
       body: body === undefined ? undefined : JSON.stringify(body),
     });
     const json = await res.json().catch(() => ({}));
-    if (!res.ok) throw new ApiError(res.status, json.code ?? 'ERROR', json.message ?? res.statusText, json);
+    if (!res.ok) {
+      if (res.status === 401 && this.token && typeof window !== 'undefined') window.dispatchEvent(new Event(SESSION_ENDED_EVENT));
+      throw new ApiError(res.status, json.code ?? 'ERROR', json.message ?? res.statusText, json);
+    }
     return json as T;
   }
 
   login(email: string, password: string) {
     return this.req<Session>('POST', '/auth/login', { email, password });
   }
-  register(body: { email: string; password: string; displayName: string; gender: Gender; locale: Locale }) {
+  register(body: RegisterBody) {
     return this.req<Session>('POST', '/auth/register', body);
+  }
+  me() {
+    return this.req<Omit<Session, 'accessToken'>>('GET', '/auth/me');
+  }
+  logout() {
+    return this.req<void>('POST', '/auth/logout');
+  }
+  logoutAll() {
+    return this.req<{ endedSessions: number }>('POST', '/auth/logout-all');
+  }
+  verifyEmail(token: string) {
+    return this.req<{ verified: boolean }>('POST', '/auth/verify-email', { token });
+  }
+  resendVerification() {
+    return this.req<{ sent?: boolean; alreadyVerified?: boolean }>('POST', '/auth/resend-verification');
+  }
+  forgotPassword(email: string) {
+    return this.req<{ ok: boolean }>('POST', '/auth/forgot-password', { email, locale: this.locale });
+  }
+  resetPassword(token: string, password: string) {
+    return this.req<{ ok: boolean }>('POST', '/auth/reset-password', { token, password });
+  }
+  outbox() {
+    return this.req<{ messages: OutboxMessage[] }>('GET', '/dev/outbox');
   }
   ego(params: { center?: string; depth?: number; categories?: Category[]; relativeTo?: string }) {
     const q = new URLSearchParams();

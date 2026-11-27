@@ -3,6 +3,8 @@ import { createParamDecorator, ExecutionContext, SetMetadata } from '@nestjs/com
 export interface AuthUser {
   userId: string;
   profileId: string;
+  /** Server-side session behind the access token. */
+  sessionId: string;
 }
 
 export const AuthUserParam = createParamDecorator((_: unknown, ctx: ExecutionContext): AuthUser => {

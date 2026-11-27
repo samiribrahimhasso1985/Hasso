@@ -11,6 +11,7 @@ import IdentityPanel from './IdentityPanel';
 import InboxPanel from './InboxPanel';
 import LanguageSwitch from './LanguageSwitch';
 import Legend from './Legend';
+import AccountBanner from './AccountBanner';
 import { Logo } from './Logo';
 import PersonPanel from './PersonPanel';
 import PersonPicker from './PersonPicker';
@@ -182,6 +183,7 @@ export default function Dashboard({ session, onLogout }: { session: Session; onL
           </button>
         </div>
       </header>
+      <AccountBanner api={api} />
 
       <aside className="sidebar">
         <section>

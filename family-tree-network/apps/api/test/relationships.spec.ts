@@ -1,4 +1,4 @@
-import { Ctx, register, setup, teardown } from './helpers';
+import { CONSENTS, Ctx, register, setup, teardown } from './helpers';
 
 let ctx: Ctx;
 beforeAll(async () => {
@@ -19,7 +19,7 @@ describe('authentication', () => {
   it('registers one account = one profile, and refuses a duplicate email', async () => {
     const u = await register(ctx, 'Newcomer');
     expect(u.profileId).toBeTruthy();
-    const again = await ctx.api(null).post('/api/auth/register', { email: u.email, password: 'another-password-1', displayName: 'X' });
+    const again = await ctx.api(null).post('/api/auth/register', { email: u.email, password: 'another-password-1', displayName: 'X', ...CONSENTS });
     expect(again.status).toBe(409);
     expect(await ctx.prisma.profile.count({ where: { user: { email: u.email } } })).toBe(1);
   });

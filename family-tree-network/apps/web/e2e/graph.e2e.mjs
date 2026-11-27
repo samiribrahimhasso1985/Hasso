@@ -147,3 +147,78 @@ test('QR: owner shows EZID ID and code; a scanner sees the person and can only s
   await julia.page.waitForSelector('[data-testid=qr-invalid]');
   await julia.page.close();
 });
+
+test('account: 3-step registration with consents → verify e-mail → sign out → forgot password → reset → sign in', async () => {
+  const page = await browser.newPage({ viewport: { width: 390, height: 844 } }); // phone width
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  const email = `newcomer-${Date.now()}@example.test`;
+  await page.goto(`${WEB}/?mode=register`);
+  await page.click('[data-testid=lang-ar]');
+  await page.waitForSelector('[data-testid=register-form]');
+  assert.equal(await page.getAttribute('html', 'dir'), 'rtl');
+
+  // Step 1: next stays disabled until the passwords match and are long enough.
+  await page.fill('#reg-name', 'Layla');
+  await page.fill('#reg-email', email);
+  await page.fill('#reg-password', 'river-stone-garden-42');
+  await page.fill('#reg-password2', 'river-stone-garden-4');
+  assert.equal(await page.isDisabled('[data-testid=register-next]'), true);
+  await page.fill('#reg-password2', 'river-stone-garden-42');
+  assert.match(await page.getAttribute('.strength', 'class'), /s3/);
+  await page.click('[data-testid=register-next]');
+  // Step 2: country only.
+  await page.selectOption('#reg-country', 'DE');
+  await page.click('[data-testid=register-next]');
+  // Step 3: all three consents are required.
+  await page.check('#c-terms');
+  await page.check('#c-sensitive');
+  assert.equal(await page.isDisabled('[data-testid=register-next]'), true);
+  await page.check('#c-age');
+  await page.click('[data-testid=register-next]');
+
+  // Signed in, with the reminder to confirm the e-mail address.
+  await page.waitForSelector('[data-testid=verify-banner]');
+  assert.ok((await page.textContent('[data-testid=verify-banner]')).includes(email));
+  await page.click('[data-testid=open-mailbox]');
+  await page.waitForSelector('[data-testid=mail-link]');
+  await page.click('[data-testid=mail-link]');
+  await page.waitForSelector('[data-testid=verify-result].success');
+  assert.equal(new URL(page.url()).search, '', 'token removed from the address bar');
+
+  // Back in the app: banner gone; sign out ends the session.
+  await page.goto(WEB);
+  await page.waitForSelector('[data-testid=graph-canvas] canvas');
+  await page.waitForTimeout(800);
+  assert.equal(await page.$('[data-testid=verify-banner]'), null);
+  const token = await page.evaluate(() => JSON.parse(sessionStorage.getItem('ftn.session')).accessToken);
+  await page.click('.top-actions .btn.ghost');
+  await page.waitForSelector('[data-testid=login-form]');
+  const after = await page.evaluate(async (t) => (await fetch('http://localhost:4000/api/auth/me', { headers: { authorization: `Bearer ${t}` } })).status, token);
+  assert.equal(after, 401, 'the old token no longer works after signing out');
+
+  // Forgot password → developer mailbox → reset page.
+  await page.click('[data-testid=to-forgot]');
+  await page.fill('#forgot-email', email);
+  await page.click('[data-testid=forgot-form] button[type=submit]');
+  await page.waitForSelector('[data-testid=forgot-form] a[href="/dev/mailbox"]');
+  await page.click('[data-testid=forgot-form] a[href="/dev/mailbox"]');
+  await page.waitForSelector('[data-testid=mail-link]');
+  await page.click('[data-testid=mail-link] >> nth=0');
+  await page.waitForSelector('[data-testid=reset-form][data-ready=true]'); // interactive (after hydration)
+  await page.fill('#reset-pw', 'new-mountain-path-77');
+  await page.fill('#reset-pw2', 'new-mountain-path-77');
+  await page.click('[data-testid=reset-form] button[type=submit]');
+  await page.waitForSelector('[data-testid=reset-done]');
+
+  // Sign in with the new password.
+  await page.goto(WEB);
+  await page.fill('#login-email', email);
+  await page.fill('#login-password', 'new-mountain-path-77');
+  await page.click('[data-testid=login-form] button[type=submit]');
+  await page.waitForSelector('[data-testid=graph-canvas] canvas');
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+  assert.ok(overflow <= 0, `no horizontal scroll (${overflow})`);
+  assert.deepEqual(errors, []);
+  await page.close();
+});

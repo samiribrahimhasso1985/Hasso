@@ -1001,3 +1001,183 @@ label.check {
     opacity: 1;
   }
 }
+
+/* ── account: registration steps, password strength, consents, banner, account pages ── */
+.auth-card label.check.consent {
+  align-items: flex-start;
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.55;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+}
+.auth-card label.check.consent input {
+  margin-top: 3px;
+  flex: none;
+}
+.step-label {
+  margin: 0;
+}
+.steps-bar {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin: 8px 0 4px;
+}
+.steps-bar span {
+  height: 3px;
+  border-radius: 2px;
+  background: var(--border);
+  transition: background 0.3s ease;
+}
+.steps-bar span.on {
+  background: var(--deep-graphite);
+}
+.step-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+.step-actions .btn {
+  flex: 1;
+}
+.strength {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-2);
+  margin-top: -2px;
+}
+.strength .bar {
+  flex: 1;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--border);
+  overflow: hidden;
+}
+.strength .bar i {
+  display: block;
+  height: 100%;
+  width: 0;
+  transition: width 0.3s ease, background 0.3s ease;
+}
+.strength.s1 .bar i { width: 33%; background: var(--danger); }
+.strength.s2 .bar i { width: 66%; background: var(--soft-gold); }
+.strength.s3 .bar i { width: 100%; background: var(--success); }
+.consent-details summary {
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--accent-ink);
+}
+.auth-links {
+  margin: 10px 0 0;
+}
+.account-banner {
+  position: fixed;
+  inset-inline: 16px;
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  z-index: 40;
+  margin-inline: auto;
+  max-width: 760px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+  padding: 12px 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-inline-start: 3px solid var(--soft-gold);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  font-size: 14px;
+}
+.account-banner > span:first-child {
+  flex: 1 1 260px;
+}
+.account-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+  padding: 24px max(16px, env(safe-area-inset-left, 0px)) 48px max(16px, env(safe-area-inset-right, 0px));
+  background: var(--bg);
+}
+.account-top {
+  width: 100%;
+  max-width: 960px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.account-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: var(--text);
+  font-weight: 600;
+  letter-spacing: 0.28em;
+  font-size: 13px;
+}
+.account-card {
+  width: 100%;
+  max-width: 440px;
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.account-card.wide {
+  max-width: 760px;
+}
+.account-card .btn {
+  align-self: flex-start;
+  text-decoration: none;
+}
+.account-form {
+  display: flex;
+  flex-direction: column;
+}
+.account-form .btn {
+  margin-top: 14px;
+  align-self: stretch;
+}
+.mailbox {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 12px;
+}
+.mailbox li {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+.mail-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px 12px;
+}
+.mail-text {
+  margin: 0;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+fieldset.plain {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}

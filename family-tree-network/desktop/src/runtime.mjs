@@ -246,6 +246,9 @@ export class Runtime {
       HOST: '127.0.0.1', // the API is never reachable from the network; phones use the web server's /api proxy
       CORS_ORIGIN: `http://127.0.0.1:${PORTS.web}`,
       AUTH_RATE_LIMIT_PER_MINUTE: '30',
+      // No e-mail provider on a local computer: account e-mails appear in the developer mailbox (/dev/mailbox).
+      MAIL_TRANSPORT: 'outbox',
+      APP_URL: `http://127.0.0.1:${PORTS.web}`,
     }));
     this.children.api = child;
     this.recordPid('api', child.pid);

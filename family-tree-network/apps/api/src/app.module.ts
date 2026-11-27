@@ -5,6 +5,7 @@ import { AuditModule } from './audit/audit.module';
 import { AuthModule } from './auth/auth.module';
 import { HealthController } from './health.controller';
 import { IdentityModule } from './identity/identity.module';
+import { MailModule } from './mail/mail.module';
 import { GraphModule } from './graph/graph.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ProfilesModule } from './profiles/profiles.module';
@@ -15,6 +16,7 @@ import { RelationshipsModule } from './relationships/relationships.module';
     ThrottlerModule.forRoot([{ ttl: 60_000, limit: Number(process.env.RATE_LIMIT_PER_MINUTE ?? 300) }]),
     PrismaModule,
     AuditModule,
+    MailModule,
     AuthModule,
     ProfilesModule,
     RelationshipsModule,
