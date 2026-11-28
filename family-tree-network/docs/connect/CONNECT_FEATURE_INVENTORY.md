@@ -51,7 +51,7 @@ connect (17), dev outbox (1), health (1).
 |---|---|---|
 | Private, group, community messaging; text; replies; forwarding; editing; deleting; reactions; pins; search; read receipts; typing; message requests | ❌ | one Messaging Service planned (no second messenger) |
 | Voice messages, images, videos, files | ❌ | needs storage decision D-C3 |
-| Voice transcription, optional translation | ❌ | needs provider decision D-C5 (cost) |
+| Voice transcription, optional translation | ❌ | **no paid provider (owner decision 2026-11-28)** — not planned for now |
 | Conversation notifications | ❌ | needs Notification Service |
 
 ### C. CONNECT FRIENDS & PEOPLE
@@ -189,6 +189,11 @@ phone bottom bar keeps 5 items.
 
 ## 7. External services & costs (nothing is bought without approval)
 
+**Owner decision 2026-11-28:** no subscriptions for **translation**, **speech-to-text (transcription)** or an
+**identity-verification provider**. The translator, voice transcription and provider-based identity verification are
+therefore not planned with paid services; they stay open until the owner decides otherwise.
+
+
 | Service | Why | Estimated cost | Free alternative |
 |---|---|---|---|
 | Render web + PostgreSQL | hosting (current) | free now; free DB **expires after 30 days**; paid DB from ~$7/month | another host |
@@ -196,7 +201,6 @@ phone bottom bar keeps 5 items.
 | Object storage (Cloudflare R2) | images, videos, files, voice messages | 10 GB free, then ~€0.015/GB/month | PostgreSQL (small files only) |
 | TURN server | calls behind strict networks | ~€5–10/month (small VPS + coturn) | STUN only (some calls fail) |
 | Web Push | notifications on phones/browsers | €0 | — |
-| Translation / transcription | translator, voice-to-text | paid per use (DeepL/Google/Whisper API) | self-hosted (needs a server) |
 | E-mail provider | verification & password e-mails in production | free tiers exist (~3,000/month) | — |
 
 ## 8. Revised order (master phases) and status

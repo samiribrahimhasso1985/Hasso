@@ -52,7 +52,7 @@ Specification: [`specs/EZIDINET_CONNECT_SPEC.md`](specs/EZIDINET_CONNECT_SPEC.md
 | D-C2 | TURN server for calls (Phase 4) | Public STUN is free; TURN relays media for ~10–20 % of users behind strict NATs: self-hosted coturn on a small VPS (~€5–10/month) or a paid service (pay per GB). |
 | D-C3 | Storage for photos, videos, files, voice messages (Phase 2) | S3-compatible object storage (e.g. Cloudflare R2: 10 GB free, then ~€0.015/GB/month, no egress fees) vs PostgreSQL (free Render DB is 1 GB and expires after 30 days). |
 | D-C4 | Push notifications (Phase 2) | Web Push (VAPID, free) for browsers + Android app; iOS later. |
-| D-C5 | Translation provider (Phase 5) | DeepL / Google (paid per character; Kurmanji not supported by DeepL) or self-hosted LibreTranslate (free, weaker quality, needs a server). |
+| D-C5 | Translation provider (Phase 5) — **decided 2026-11-28: no paid translation or transcription service** | DeepL / Google (paid per character; Kurmanji not supported by DeepL) or self-hosted LibreTranslate (free, weaker quality, needs a server). |
 | D-C6 | Administrators | Who may hold the admin role; what they may see (never E2EE content; reports only). |
 | D-C7 | End-to-end encryption | Not claimed. Proposal: transport encryption now; E2EE for 1:1 chats as a separate, tested milestone (key management on devices). |
 | D-C8 | Mobile bottom navigation Home · Friends · Messenger · Discover · Profile | Replaces the current tab layout on phones; to be done with Phase 2 (when Messenger exists, so no button is a placeholder). |
