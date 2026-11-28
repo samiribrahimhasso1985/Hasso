@@ -17,7 +17,7 @@ export const de: Partial<Record<TKey, string>> = {
   'map.terrainMissing': 'Geländedaten konnten nicht geladen werden. 2D-Karte wird angezeigt.', 'map.webglMissing': 'Dein Gerät unterstützt kein WebGL. Vereinfachte Ansicht.',
   'map.rotate': 'Auto-Rotation',
   'planner.title': 'Routenplaner', 'planner.addStop': 'Zwischenstopp', 'planner.stop': 'Stopp', 'planner.routeType': 'Routentyp',
-  'planner.type.standard': 'Standard-Wanderroute', 'planner.type.easier': 'Leichtere Route (steile Wege meiden)', 'planner.type.mountain': 'Bergroute (alpine Wege erlauben)',
+  'planner.type.standard': 'Standard-Wanderroute', 'planner.type.shortest': 'Kürzeste Wanderroute', 'planner.type.easier': 'Leichtere Route (steile Wege meiden)', 'planner.type.mountain': 'Bergroute (alpine Wege erlauben)',
   'planner.roundTrip': 'Rundtour (zurück zum Start)', 'planner.calculate': 'Route berechnen', 'planner.calculating': 'Berechne mit Valhalla…',
   'planner.pickOnMap': 'Auf Karte wählen', 'planner.pickHint': 'Klicke auf die Karte, um den Punkt zu setzen', 'planner.alternatives': 'Routenvergleich',
   'planner.details': 'Routendetails', 'planner.saveJourney': 'Tour speichern', 'planner.saved': 'Tour gespeichert', 'planner.distance': 'Distanz',

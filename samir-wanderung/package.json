@@ -39,5 +39,8 @@
     "vite-plugin-pwa": "^0.20.5",
     "vite-plugin-static-copy": "^2.0.0",
     "vitest": "^2.1.4"
+  },
+  "overrides": {
+    "@zip.js/zip.js": "2.7.54"
   }
 }

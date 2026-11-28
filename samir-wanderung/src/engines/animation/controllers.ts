@@ -31,7 +31,7 @@ export class HikerMovementController {
   elevation: number | null = null;
   heading = 0;
 
-  constructor(private engine: MapEngine, private route: Route) {
+  constructor(engine: MapEngine, private route: Route) {
     this.el = document.createElement('div');
     this.el.className = 'sw-hiker';
     this.el.innerHTML = '<div class="sw-hiker-pulse"></div><div class="sw-hiker-dot"></div>';

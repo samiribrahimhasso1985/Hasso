@@ -17,7 +17,7 @@ export const ar: Partial<Record<TKey, string>> = {
   'map.terrainMissing': 'تعذر تحميل بيانات التضاريس لهذه المنطقة. يتم عرض خريطة ثنائية الأبعاد.', 'map.webglMissing': 'جهازك لا يدعم WebGL. يتم عرض نسخة مبسطة.',
   'map.rotate': 'دوران تلقائي',
   'planner.title': 'مخطط الرحلات', 'planner.addStop': 'إضافة محطة', 'planner.stop': 'محطة', 'planner.routeType': 'نوع المسار',
-  'planner.type.standard': 'مسار مشي قياسي', 'planner.type.easier': 'مسار أسهل (تجنب الطرق الصعبة)', 'planner.type.mountain': 'مسار جبلي (السماح بالمسارات الألبية)',
+  'planner.type.standard': 'مسار مشي قياسي', 'planner.type.shortest': 'أقصر مسار مشي', 'planner.type.easier': 'مسار أسهل (تجنب الطرق الصعبة)', 'planner.type.mountain': 'مسار جبلي (السماح بالمسارات الألبية)',
   'planner.roundTrip': 'رحلة دائرية (العودة إلى البداية)', 'planner.calculate': 'احسب المسار', 'planner.calculating': 'جارٍ الحساب عبر Valhalla…',
   'planner.pickOnMap': 'اختر على الخريطة', 'planner.pickHint': 'انقر على الخريطة لتحديد هذه النقطة', 'planner.alternatives': 'مقارنة المسارات',
   'planner.details': 'تفاصيل المسار', 'planner.saveJourney': 'حفظ الرحلة', 'planner.saved': 'تم حفظ الرحلة', 'planner.distance': 'المسافة',

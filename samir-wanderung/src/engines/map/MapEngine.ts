@@ -3,7 +3,7 @@
  * (AWS Terrain Tiles, Terrarium encoding), hillshade, DEM-derived contour lines,
  * optional Esri satellite imagery and route/marker layers.
  */
-import maplibregl, { type Map as MLMap, type StyleSpecification, type GeoJSONSource, type LngLatLike } from 'maplibre-gl';
+import maplibregl, { type Map as MLMap, type GeoJSONSource, type LngLatLike } from 'maplibre-gl';
 import mlcontour from 'maplibre-contour';
 import { MAP_STYLE_URL, PROVIDERS, SATELLITE_TILES, TERRAIN_TILES } from '../../config/providers';
 import type { LngLat } from '../route/geo';
@@ -21,6 +21,8 @@ export interface MapEngineOptions {
   /** Needed when the canvas is captured for video export. */
   preserveDrawingBuffer?: boolean;
   lowPower?: boolean;
+  /** Fixed device pixel ratio (video export renders at exactly the container size). */
+  pixelRatio?: number;
 }
 
 export function webglSupported(): boolean {
@@ -64,7 +66,8 @@ export class MapEngine {
       attributionControl: { compact: true },
       canvasContextAttributes: undefined,
       preserveDrawingBuffer: opts.preserveDrawingBuffer ?? false,
-      fadeDuration: opts.lowPower ? 0 : 300,
+      fadeDuration: opts.lowPower || opts.pixelRatio ? 0 : 300,
+      ...(opts.pixelRatio ? { pixelRatio: opts.pixelRatio } : {}),
     } as maplibregl.MapOptions);
     if (opts.lowPower) this.exaggeration = 1.0;
 

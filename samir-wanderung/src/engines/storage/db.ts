@@ -115,4 +115,4 @@ export async function storageEstimate(): Promise<{ usage: number | null; quota: 
 
 const listeners = new Set<() => void>();
 function notify() { listeners.forEach((l) => l()); }
-export function onJourneysChanged(fn: () => void) { listeners.add(fn); return () => listeners.delete(fn); }
+export function onJourneysChanged(fn: () => void): () => void { listeners.add(fn); return () => { listeners.delete(fn); }; }

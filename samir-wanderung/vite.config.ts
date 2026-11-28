@@ -40,6 +40,13 @@ export default defineConfig({
         globIgnores: ['cesium/**'],
         maximumFileSizeToCacheInBytes: 8 * 1024 * 1024,
         navigateFallbackDenylist: [/^\/api\//],
+        // Offline map tiles: network first, fall back to the offline cache populated by the
+        // Offline Maps download manager (same cache name). Only offline-permitted hosts.
+        runtimeCaching: [{
+          urlPattern: ({ url }: { url: URL }) => url.hostname === 'tiles.openfreemap.org' || (url.hostname === 's3.amazonaws.com' && url.pathname.startsWith('/elevation-tiles-prod/')),
+          handler: 'NetworkFirst',
+          options: { cacheName: 'sw-offline-tiles-v1', networkTimeoutSeconds: 6, cacheableResponse: { statuses: [0, 200] }, expiration: { maxEntries: 40000 } },
+        }],
       },
     }),
   ],

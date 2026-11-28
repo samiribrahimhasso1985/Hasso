@@ -138,7 +138,7 @@ export default function Planner() {
           <div>
             <label className="field-label" htmlFor="rtype">{t('planner.routeType')}</label>
             <select id="rtype" className="field" value={plan.type} onChange={(e) => setPlan({ type: e.target.value as typeof plan.type })}>
-              {ROUTE_TYPES.map((x) => <option key={x} value={x}>{x === 'shortest' ? `${t('planner.type.standard').split(' ')[0]} — shortest` : t(`planner.type.${x}` as TKey)}</option>)}
+              {ROUTE_TYPES.map((x) => <option key={x} value={x}>{t(`planner.type.${x}` as TKey)}</option>)}
             </select>
             <p className="text-[11px] text-slate-500 mt-1">Valhalla pedestrian costing (OSM sac_scale limit, hill avoidance, path preference). Scenic routing is not offered: the backend cannot compute it.</p>
           </div>
