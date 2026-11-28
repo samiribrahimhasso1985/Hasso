@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { COUNTRY_NAMES, PLACES, type WorldLocale, type WorldPlace } from '../../lib/world/places';
+import { COUNTRY_NAMES, COUNTRY_NOTES, PLACES, type WorldLocale, type WorldPlace } from '../../lib/world/places';
+import { loadCountries, sortedCountries, type WorldCountry } from '../../lib/world/countries';
 import { WT } from '../../lib/world/texts';
 import { hasWebGL, WorldScene } from './WorldScene';
 
@@ -18,6 +19,9 @@ export default function WorldExperience() {
   const scene = useRef<WorldScene | null>(null);
   const [lang, setLang] = useState<WorldLocale>('ar');
   const [place, setPlace] = useState<WorldPlace | null>(null);
+  const [country, setCountry] = useState<WorldCountry | null>(null);
+  const [allCountries, setAllCountries] = useState<WorldCountry[]>([]);
+  const [query, setQuery] = useState('');
   const [panel, setPanel] = useState<'communities' | 'heritage' | null>(null);
   const [webgl, setWebgl] = useState(true);
   const [ready, setReady] = useState(false);
@@ -31,13 +35,23 @@ export default function WorldExperience() {
   }, []);
 
   useEffect(() => {
+    loadCountries().then((idx) => setAllCountries(idx.countries)).catch(() => undefined);
+  }, []);
+
+  useEffect(() => {
     if (!canvas.current) return;
     if (!hasWebGL()) return setWebgl(false);
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const lowDetail = window.innerWidth < 700 || (navigator.hardwareConcurrency ?? 8) <= 4;
     let s: WorldScene;
     try {
-      s = new WorldScene(canvas.current, { lowDetail, reduceMotion, onSelect: setPlace, onReady: () => setReady(true) });
+      s = new WorldScene(canvas.current, {
+        lowDetail,
+        reduceMotion,
+        onSelect: (p) => { setPlace(p); if (p) setCountry(null); },
+        onCountry: (c) => { setCountry(c); if (c) setPanel(null); },
+        onReady: () => setReady(true),
+      });
     } catch {
       return setWebgl(false);
     }
@@ -69,9 +83,25 @@ export default function WorldExperience() {
 
   const choose = (id: string) => {
     setPanel(null);
+    setCountry(null);
     if (scene.current) scene.current.select(id);
     else setPlace(PLACES.find((p) => p.id === id) ?? null);
   };
+
+  const chooseCountry = (code: string) => {
+    setPanel(null);
+    setPlace(null);
+    if (scene.current) scene.current.selectCountry(code);
+    else setCountry(allCountries.find((c) => c.code === code) ?? null);
+  };
+
+  const countryName = (code: string) => allCountries.find((c) => c.code === code)?.name[lang] ?? COUNTRY_NAMES[code]?.[lang] ?? code;
+  const filtered = useMemo(() => {
+    const q = query.trim().toLocaleLowerCase();
+    const list = sortedCountries(allCountries, lang);
+    return q ? list.filter((c) => Object.values(c.name).some((v) => v.toLocaleLowerCase().includes(q))) : list;
+  }, [allCountries, lang, query]);
+  const countryPlaces = country ? PLACES.filter((p) => p.country === country.code) : [];
 
   return (
     <div className="world" dir={lang === 'ar' ? 'rtl' : 'ltr'} lang={lang}>
@@ -80,7 +110,7 @@ export default function WorldExperience() {
       ) : (
         <div className="world-fallback" data-testid="world-fallback">
           <p>{t('noWebgl')}</p>
-          <ul>{PLACES.map((p) => <li key={p.id}><button type="button" onClick={() => choose(p.id)}>{p.name[lang]}</button></li>)}</ul>
+          <ul>{PLACES.map((p) => <li key={p.id}><button type="button" onClick={() => choose(p.id)}>{p.name[lang]} — {countryName(p.country)}</button></li>)}</ul>
         </div>
       )}
 
@@ -93,7 +123,7 @@ export default function WorldExperience() {
         </div>
       </header>
 
-      <section className={`world-hero ${place || panel ? 'dim' : ''}`}>
+      <section className={`world-hero ${place || panel || country ? 'dim' : ''}`}>
         <p className="world-kicker">{t('kicker')}</p>
         <h1>{t('title')}</h1>
         <p className="world-tagline">«{t('tagline')}»</p>
@@ -130,16 +160,25 @@ export default function WorldExperience() {
             </ul>
           ) : (
             <>
+              <h3 className="w-sub">{t('withYazidi')}</h3>
               <ul className="w-list">
                 {byCountry.map(([cc, ps]) => (
                   <li key={cc}>
-                    <button type="button" onClick={() => choose(ps[0].id)}>
-                      <b>EZIDINET {COUNTRY_NAMES[cc]?.en}</b> <small>{COUNTRY_NAMES[cc]?.[lang]}</small>
+                    <button type="button" onClick={() => chooseCountry(cc)} data-testid={`w-country-${cc}`}>
+                      <i className={ps.some((p) => p.kind === 'homeland') ? 'homeland' : ''} /> {countryName(cc)} <small>{ps.length} · {t('placesShort')}</small>
                     </button>
                   </li>
                 ))}
               </ul>
-              <p className="w-note">{t('noCommunities')}</p>
+              <h3 className="w-sub">{t('allCountries')} ({allCountries.length})</h3>
+              <input className="w-search" type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder={t('searchCountry')} aria-label={t('searchCountry')} data-testid="w-country-search" />
+              <ul className="w-list w-all">
+                {filtered.map((c) => (
+                  <li key={c.code}>
+                    <button type="button" onClick={() => chooseCountry(c.code)} data-testid={`w-any-${c.code}`}>{c.name[lang]}</button>
+                  </li>
+                ))}
+              </ul>
             </>
           )}
           <p className="w-note">{t('privacy')}</p>
@@ -152,14 +191,44 @@ export default function WorldExperience() {
             <div>
               <span className={`w-kind ${place.kind}`}>{place.kind === 'homeland' ? t('homeland') : t('diaspora')}</span>
               <h2 id="w-card-title">{place.name[lang]}</h2>
-              <p className="w-country">{COUNTRY_NAMES[place.country]?.[lang]}</p>
+              <button type="button" className="w-country" onClick={() => chooseCountry(place.country)}>{countryName(place.country)} ›</button>
             </div>
-            <button type="button" className="w-close" onClick={() => { scene.current?.select(null, false); setPlace(null); }} aria-label={t('close')}>×</button>
+            <button type="button" className="w-close" onClick={() => { scene.current?.clearSelection(); setPlace(null); }} aria-label={t('close')}>×</button>
           </div>
           <p>{place.note[lang]}</p>
           <h3>{t('story')}</h3>
           <p className="w-note">{t('storySoon')}</p>
-          <h3>{t('onEzidinet')} — EZIDINET {COUNTRY_NAMES[place.country]?.en}</h3>
+          <h3>{t('onEzidinet')} — EZIDINET {COUNTRY_NAMES[place.country]?.en ?? countryName(place.country)}</h3>
+          <p className="w-note">{t('noCommunities')}</p>
+          <p className="w-draft">{t('draft')}</p>
+        </aside>
+      )}
+
+      {country && !place && (
+        <aside className="world-card" data-testid="w-country-card" role="dialog" aria-labelledby="w-country-title">
+          <div className="w-panel-head">
+            <div>
+              <span className="w-kind">{t('country')}</span>
+              <h2 id="w-country-title">{country.name[lang]}</h2>
+            </div>
+            <button type="button" className="w-close" onClick={() => { scene.current?.clearSelection(); setCountry(null); }} aria-label={t('close')}>×</button>
+          </div>
+          {COUNTRY_NOTES[country.code] && <p>{COUNTRY_NOTES[country.code][lang]}</p>}
+          <h3>{t('yazidiPlaces')}</h3>
+          {countryPlaces.length ? (
+            <ul className="w-list">
+              {countryPlaces.map((p) => (
+                <li key={p.id}>
+                  <button type="button" onClick={() => choose(p.id)} data-testid={`w-cplace-${p.id}`}>
+                    <i className={p.kind} /> {p.name[lang]}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="w-note">{t('noPlacesYet')}</p>
+          )}
+          <h3>{t('onEzidinet')}</h3>
           <p className="w-note">{t('noCommunities')}</p>
           <p className="w-draft">{t('draft')}</p>
         </aside>

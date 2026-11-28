@@ -99,6 +99,7 @@
 }
 .world-hero.dim {
   opacity: 0.25;
+  animation: none; /* the entrance animation's end state would otherwise keep it fully visible */
 }
 .world-hero > * {
   pointer-events: auto;
@@ -393,5 +394,57 @@
   .world-card,
   .world-loading {
     animation: none;
+  }
+}
+
+/* Country layer (all countries of the world) */
+.w-sub {
+  margin: 14px 0 2px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--w-cyan);
+  letter-spacing: 0.04em;
+}
+.w-search {
+  width: 100%;
+  margin: 8px 0 4px;
+  padding: 9px 12px;
+  font: inherit;
+  font-size: 14px;
+  color: var(--w-glow);
+  background: rgba(234, 247, 255, 0.06);
+  border: 1px solid var(--w-line);
+  border-radius: 10px;
+}
+.w-search:focus {
+  outline: none;
+  border-color: var(--w-cyan);
+}
+.w-all {
+  max-height: 260px;
+  overflow: auto;
+}
+.world-card .w-country {
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+}
+.world-card .w-country:hover {
+  color: var(--w-cyan);
+}
+@media (max-width: 700px) {
+  /* On phones the open card needs the space: the title steps aside completely. */
+  .world-hero.dim {
+    opacity: 0;
+    pointer-events: none;
+  }
+  .world-hero.dim * {
+    pointer-events: none;
+  }
+  .world-panel,
+  .world-card {
+    max-height: 50%;
   }
 }

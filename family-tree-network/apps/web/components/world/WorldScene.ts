@@ -1,11 +1,13 @@
 /**
- * EZIDINET WORLD — 3D scene (three.js, no React): Sinjar mountains, a procedural Tree of Life growing from them,
- * and a Digital Earth made of light threads above, joined by branches and connection arcs.
+ * EZIDINET WORLD — 3D scene (three.js, no React): a Digital Earth made of light threads above the Sinjar mountains,
+ * with every country of the world (borders, tap to select) and the places of Yazidi life joined by connection arcs.
+ * Tapping a place or a country turns the Earth and flies the camera to it.
  * Everything is generated in code (no video, no static globe picture).
  */
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { PLACES, SINJAR, type WorldPlace } from '../../lib/world/places';
+import { loadCountries, type CountryIndex, type WorldCountry } from '../../lib/world/countries';
 
 export const PALETTE = {
   navy: 0x061426,
@@ -20,10 +22,12 @@ export interface SceneOptions {
   lowDetail: boolean;
   reduceMotion: boolean;
   onSelect: (place: WorldPlace | null) => void;
+  /** A country was chosen on the globe (null: tapped the sea / closed). */
+  onCountry?: (country: WorldCountry | null) => void;
   onReady?: () => void;
 }
 
-const GLOBE_Y = 4.6;
+const GLOBE_Y = 0.75;
 const R = 2.35;
 const deg = Math.PI / 180;
 
@@ -34,7 +38,7 @@ function sph(lat: number, lon: number, r: number) {
   return new THREE.Vector3(r * Math.cos(a) * Math.cos(b), r * Math.sin(a), -r * Math.cos(a) * Math.sin(b));
 }
 
-/** Small deterministic random generator, so the tree looks the same for everyone. */
+/** Small deterministic random generator, so the scene looks the same for everyone. */
 function rng(seed: number) {
   let s = seed >>> 0;
   return () => ((s = (s * 1664525 + 1013904223) >>> 0) / 4294967296);
@@ -108,8 +112,6 @@ function dotTexture(soft = 0.5) {
   return t;
 }
 
-type Seg = { a: THREE.Vector3; b: THREE.Vector3; birth: number; dist0: number; dist1: number; depth: number };
-
 export class WorldScene {
   private renderer: THREE.WebGLRenderer;
   private scene = new THREE.Scene();
@@ -133,9 +135,12 @@ export class WorldScene {
   private orbitDots: { mesh: THREE.Mesh; ring: number; speed: number; phase: number; radius: number; tiltX: number; tiltZ: number }[] = [];
   private arcPulses: { mesh: THREE.Mesh; curve: THREE.QuadraticBezierCurve3; speed: number; phase: number }[] = [];
   private placeTargets: THREE.Mesh[] = [];
-  private leafPoints?: THREE.Points;
-  private leafPlaces: WorldPlace[] = [];
   private selected?: THREE.Mesh;
+  private core?: THREE.Mesh;
+  private countries?: CountryIndex;
+  private borders?: THREE.LineSegments;
+  private highlight?: THREE.LineSegments;
+  private selectedCountry: string | null = null;
   private targetSpin: number | null = null;
   private targetTilt: number | null = null;
   private targetCam: { pos: THREE.Vector3; look: THREE.Vector3 } | null = null;
@@ -156,8 +161,8 @@ export class WorldScene {
     this.controls.enablePan = false;
     this.controls.enableDamping = true;
     this.controls.dampingFactor = 0.08;
-    this.controls.minDistance = 5.5;
-    this.controls.maxDistance = 26;
+    this.controls.minDistance = 3.1;
+    this.controls.maxDistance = 22;
     this.controls.target.set(0, -2.6, 0);
     this.controls.addEventListener('start', () => { this.userMoved = true; this.targetCam = null; });
     // Without the animation loop (reduced motion, paused tab) every interaction redraws once.
@@ -168,7 +173,6 @@ export class WorldScene {
     this.buildLights();
     this.buildMountains();
     this.buildMist();
-    this.buildTree();
     this.buildGlobeShell();
     this.buildPlaces();
     this.buildOrbits();
@@ -179,7 +183,7 @@ export class WorldScene {
     this.resizeObs.observe(canvas.parentElement ?? canvas);
     this.resize();
     if (opts.reduceMotion) this.t = 14; // the finished picture, without movement
-    this.loadLand().then(() => !this.disposed && opts.onReady?.());
+    Promise.all([this.loadLand(), this.loadCountryLayer()]).then(() => !this.disposed && opts.onReady?.());
   }
 
   // ── building the scene ───────────────────────────────────────────────────────────────────────────────
@@ -192,9 +196,9 @@ export class WorldScene {
     const gold = new THREE.DirectionalLight(PALETTE.gold, 0.9);
     gold.position.set(7, 1, -4);
     this.scene.add(gold);
-    const fromTree = new THREE.PointLight(PALETTE.cyan, 6, 9, 1.6);
-    fromTree.position.set(0, -2.2, 1.2);
-    this.root.add(fromTree);
+    const fromEarth = new THREE.PointLight(PALETTE.cyan, 5, 9, 1.6);
+    fromEarth.position.set(0, -1.6, 1.4);
+    this.root.add(fromEarth);
   }
 
   private buildMountains() {
@@ -234,127 +238,6 @@ export class WorldScene {
     }
   }
 
-  /** Recursive branching from the ridge top; roots go down into the mountain. */
-  private buildTree() {
-    const rand = rng(2026);
-    const top = new THREE.Vector3(0, MOUNT_BASE + ridgeHeight(0, 0) - 0.05, 0.1);
-    const segs: Seg[] = [];
-    const tips: THREE.Vector3[] = [];
-    const maxDepth = this.opts.lowDetail ? 6 : 7;
-    const globeBottom = new THREE.Vector3(0, GLOBE_Y - R, 0);
-
-    const grow = (start: THREE.Vector3, dir: THREE.Vector3, len: number, depth: number, dist: number, birth: number, up: boolean) => {
-      const end = start.clone().addScaledVector(dir, len);
-      segs.push({ a: start, b: end, birth, dist0: dist, dist1: dist + len, depth });
-      if (depth >= (up ? maxDepth : maxDepth - 2)) { if (up) tips.push(end); return; }
-      const kids = 2 + (rand() < (up ? 0.45 : 0.3) ? 1 : 0);
-      for (let k = 0; k < kids; k++) {
-        const d = dir.clone();
-        const spread = up ? 0.62 : 0.75;
-        d.x += (rand() - 0.5) * spread * 2;
-        d.z += (rand() - 0.5) * spread * 1.2;
-        d.y += (rand() - 0.5) * spread * 0.8;
-        if (up) d.y += 0.12; // crowns lean gently upwards, towards the Earth
-        else d.y = -Math.abs(d.y) - 0.25; // roots spread down and out
-        d.normalize();
-        grow(end, d, len * (0.74 + rand() * 0.1), depth + 1, dist + len, birth + (up ? 0.5 : 0.38), up);
-      }
-    };
-    // Trunk, then 5 main limbs in a wide crown; roots start at the same point.
-    const trunkTop = top.clone().add(new THREE.Vector3(0, 1.35, 0));
-    segs.push({ a: top, b: top.clone().add(new THREE.Vector3(0.05, 0.7, 0)), birth: 3.3, dist0: 0, dist1: 0.7, depth: 0 });
-    segs.push({ a: top.clone().add(new THREE.Vector3(0.05, 0.7, 0)), b: trunkTop, birth: 3.6, dist0: 0.7, dist1: 1.35, depth: 0 });
-    const limbs = 5;
-    for (let i = 0; i < limbs; i++) {
-      const ang = (i / (limbs - 1)) * Math.PI * 0.84 + Math.PI * 0.08; // fan from left to right
-      const dir = new THREE.Vector3(Math.cos(ang) * 1.05, 0.62 + Math.sin(ang) * 0.45, (rand() - 0.5) * 0.5).normalize();
-      grow(trunkTop, dir, 1.05, 1, 1.35, 4.0, true);
-    }
-    for (let i = 0; i < 4; i++) {
-      const ang = (i / 3) * Math.PI * 0.8 + Math.PI * 0.1;
-      grow(top, new THREE.Vector3(Math.cos(ang), -0.7, (rand() - 0.5) * 0.6).normalize(), 0.8, 1, 0, 1.5, false);
-    }
-
-    // Lines (trunk, crown, roots) with growth + flowing light.
-    const n = segs.length;
-    const position = new Float32Array(n * 6);
-    const birth = new Float32Array(n * 2);
-    const dist = new Float32Array(n * 2);
-    const tint = new Float32Array(n * 6);
-    const cyan = new THREE.Color(PALETTE.cyan), gold = new THREE.Color(PALETTE.gold), blue = new THREE.Color(PALETTE.blue);
-    segs.forEach((s, i) => {
-      position.set([s.a.x, s.a.y, s.a.z, s.b.x, s.b.y, s.b.z], i * 6);
-      birth.set([s.birth, s.birth + 0.25], i * 2);
-      dist.set([s.dist0, s.dist1], i * 2);
-      const c = s.depth <= 1 ? gold : s.b.y < top.y ? blue : cyan.clone().lerp(gold, Math.min(1, s.depth / 12));
-      tint.set([c.r, c.g, c.b, c.r, c.g, c.b], i * 6);
-    });
-    const geo = new THREE.BufferGeometry();
-    geo.setAttribute('position', new THREE.BufferAttribute(position, 3));
-    geo.setAttribute('birth', new THREE.BufferAttribute(birth, 1));
-    geo.setAttribute('dist', new THREE.BufferAttribute(dist, 1));
-    geo.setAttribute('tint', new THREE.BufferAttribute(tint, 3));
-    const mat = glowMaterial(0.85, PALETTE.glow);
-    this.glowMats.push(mat);
-    this.root.add(new THREE.LineSegments(geo, mat));
-
-    // Roots glow faintly through the rock (drawn again without depth test, softer).
-    const rootIdx: number[] = [];
-    segs.forEach((sg, i) => { if (sg.b.y < top.y - 0.01) rootIdx.push(i * 2, i * 2 + 1); });
-    const rootsGeo = geo.clone();
-    rootsGeo.setIndex(rootIdx);
-    const rootMat = glowMaterial(0.32, PALETTE.gold);
-    rootMat.depthTest = false;
-    this.glowMats.push(rootMat);
-    const rootsLines = new THREE.LineSegments(rootsGeo, rootMat);
-    rootsLines.renderOrder = 2;
-    this.root.add(rootsLines);
-
-    // Leaves: small points at every tip; some of them carry the stories of places (interactive, gold).
-    const leafGeo = new THREE.BufferGeometry();
-    const lp = new Float32Array(tips.length * 3);
-    tips.forEach((p, i) => lp.set([p.x, p.y, p.z], i * 3));
-    leafGeo.setAttribute('position', new THREE.BufferAttribute(lp, 3));
-    const leaves = new THREE.Points(leafGeo, new THREE.PointsMaterial({ size: 0.09, map: this.dots, color: PALETTE.cyan, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending }));
-    this.root.add(leaves);
-    leaves.userData.fade = [7.2, 8.6];
-
-    // Story leaves: the highest tips, spread out, one per place.
-    const sorted = [...tips].sort((a, b) => b.y - a.y);
-    const step = Math.max(1, Math.floor(sorted.length / PLACES.length));
-    const chosen = PLACES.map((_, i) => sorted[Math.min(sorted.length - 1, i * step)]);
-    this.leafPlaces = PLACES;
-    const sg = new THREE.BufferGeometry();
-    const sp = new Float32Array(chosen.length * 3);
-    chosen.forEach((p, i) => sp.set([p.x, p.y, p.z], i * 3));
-    sg.setAttribute('position', new THREE.BufferAttribute(sp, 3));
-    this.leafPoints = new THREE.Points(sg, new THREE.PointsMaterial({ size: 0.2, map: this.dots, color: PALETTE.gold, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending }));
-    this.leafPoints.userData.fade = [7.8, 9.2];
-    this.root.add(this.leafPoints);
-
-    // Branch-to-Earth links: from the highest tips to a ring under the globe (fixed while the globe spins).
-    const links: number[] = [];
-    const lb: number[] = [];
-    const ld: number[] = [];
-    const lt: number[] = [];
-    sorted.slice(0, this.opts.lowDetail ? 10 : 18).forEach((p, i) => {
-      const ang = (i / 18) * Math.PI * 2;
-      const q = new THREE.Vector3(Math.cos(ang) * R * 0.45, GLOBE_Y - R * 0.9, Math.sin(ang) * R * 0.45);
-      links.push(p.x, p.y, p.z, q.x, q.y, q.z);
-      lb.push(8.4, 8.9);
-      ld.push(0, p.distanceTo(q) + 8);
-      lt.push(0.21, 0.81, 1, 0.84, 0.69, 0.36);
-    });
-    const lg = new THREE.BufferGeometry();
-    lg.setAttribute('position', new THREE.Float32BufferAttribute(links, 3));
-    lg.setAttribute('birth', new THREE.Float32BufferAttribute(lb, 1));
-    lg.setAttribute('dist', new THREE.Float32BufferAttribute(ld, 1));
-    lg.setAttribute('tint', new THREE.Float32BufferAttribute(lt, 3));
-    const lm = glowMaterial(0.35, PALETTE.gold);
-    this.glowMats.push(lm);
-    this.root.add(new THREE.LineSegments(lg, lm));
-  }
-
   private buildGlobeShell() {
     this.tilt.position.set(0, GLOBE_Y, 0);
     this.tilt.rotation.x = 0.4;
@@ -363,7 +246,8 @@ export class WorldScene {
     this.root.add(this.tilt);
     this.tilt.scale.setScalar(0.001);
     // Dark core hides the far side so the threads read clearly.
-    this.globe.add(new THREE.Mesh(new THREE.SphereGeometry(R * 0.985, 48, 32), new THREE.MeshBasicMaterial({ color: PALETTE.navy, transparent: true, opacity: 0.92 })));
+    this.core = new THREE.Mesh(new THREE.SphereGeometry(R * 0.985, 48, 32), new THREE.MeshBasicMaterial({ color: PALETTE.navy, transparent: true, opacity: 0.92 }));
+    this.globe.add(this.core);
     // Atmosphere: soft fresnel glow.
     const atmo = new THREE.Mesh(
       new THREE.SphereGeometry(R * 1.12, 48, 32),
@@ -420,11 +304,11 @@ export class WorldScene {
     const ab: number[] = [];
     const ad: number[] = [];
     const at: number[] = [];
-    const pulseGeo = new THREE.SphereGeometry(0.028, 8, 8);
+    const pulseGeo = new THREE.SphereGeometry(0.018, 8, 8);
     PLACES.forEach((p, i) => {
       const v = sph(p.lat, p.lon, R * 1.012);
       const color = p.kind === 'homeland' ? PALETTE.gold : PALETTE.cyan;
-      const dot = new THREE.Mesh(new THREE.SphereGeometry(p.id === 'sinjar' ? 0.055 : 0.034, 12, 12), new THREE.MeshBasicMaterial({ color }));
+      const dot = new THREE.Mesh(new THREE.SphereGeometry(p.id === 'sinjar' ? 0.042 : 0.024, 12, 12), new THREE.MeshBasicMaterial({ color }));
       dot.position.copy(v);
       this.globe.add(dot);
       // Larger invisible target makes tapping easy on phones.
@@ -444,7 +328,7 @@ export class WorldScene {
       for (let k = 1; k < pts.length; k++) {
         const a = pts[k - 1], b = pts[k];
         arcPts.push(a.x, a.y, a.z, b.x, b.y, b.z);
-        ab.push(9 + i * 0.05, 9 + i * 0.05);
+        ab.push(4.2 + i * 0.04, 4.2 + i * 0.04);
         ad.push(len, (len += a.distanceTo(b)));
         const c = new THREE.Color(color);
         at.push(c.r, c.g, c.b, c.r, c.g, c.b);
@@ -476,7 +360,7 @@ export class WorldScene {
       const line = new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({ color: o.color, transparent: true, opacity: 0.22, blending: THREE.AdditiveBlending, depthWrite: false }));
       line.rotation.set(o.x, 0, o.z);
       line.position.y = GLOBE_Y;
-      line.userData.fade = [9.5 + idx * 0.4, 11];
+      line.userData.fade = [4.8 + idx * 0.4, 6.4];
       line.userData.maxOpacity = 0.22;
       line.scale.setScalar(0.001);
       this.root.add(line);
@@ -498,14 +382,25 @@ export class WorldScene {
     const rect = this.canvas.getBoundingClientRect();
     const ndc = new THREE.Vector2(((e.clientX - rect.left) / rect.width) * 2 - 1, -((e.clientY - rect.top) / rect.height) * 2 + 1);
     this.raycaster.setFromCamera(ndc, this.camera);
-    this.raycaster.params.Points = { threshold: 0.18 };
-    const hits = this.raycaster.intersectObjects([...this.placeTargets, ...(this.leafPoints ? [this.leafPoints] : [])], false);
-    for (const h of hits) {
-      if (h.object === this.leafPoints && h.index !== undefined) return this.select(this.leafPlaces[h.index]?.id ?? null, false);
-      if (h.object.userData.place && this.isFacing(h.object as THREE.Mesh)) return this.select((h.object.userData.place as WorldPlace).id, false);
+    // 1. A place light (cities and regions) wins over the country under it.
+    for (const h of this.raycaster.intersectObjects(this.placeTargets, false)) {
+      if (h.object.userData.place && this.isFacing(h.object as THREE.Mesh)) return this.select((h.object.userData.place as WorldPlace).id);
     }
-    this.select(null, false);
+    // 2. Otherwise the country at the tapped point of the Earth.
+    const hit = this.core ? this.raycaster.intersectObject(this.core, false)[0] : undefined;
+    if (hit && this.countries) {
+      const { lat, lon } = this.latLonOf(hit.point);
+      const c = this.countries.at(lat, lon);
+      if (c) return this.selectCountry(c.code);
+    }
+    this.clearSelection();
   };
+
+  /** World point on the Earth → latitude/longitude (inverse of sph, through the globe's turning). */
+  private latLonOf(world: THREE.Vector3) {
+    const v = this.globe.worldToLocal(world.clone()).normalize();
+    return { lat: Math.asin(THREE.MathUtils.clamp(v.y, -1, 1)) / deg, lon: Math.atan2(-v.z, v.x) / deg };
+  }
 
   /** Only places on the visible side of the globe can be tapped. */
   private isFacing(m: THREE.Mesh) {
@@ -514,40 +409,138 @@ export class WorldScene {
     return p.clone().sub(centre).dot(this.camera.position.clone().sub(p)) > 0;
   }
 
-  /** Highlights a place, turns the globe so it faces the viewer (optionally flying the camera to it). */
-  select(id: string | null, fly = true) {
+  private unmarkPlace() {
     if (this.selected) (this.selected.material as THREE.MeshBasicMaterial).color.setHex(this.selected.userData.baseColor);
     this.selected = undefined;
+  }
+
+  /** Removes any highlight and lets the Earth turn again. */
+  clearSelection() {
+    this.unmarkPlace();
+    this.setHighlight(null);
+    this.kick();
+    this.opts.onSelect(null);
+    this.opts.onCountry?.(null);
+  }
+
+  /** Highlights a place, turns the Earth so it faces the viewer and flies the camera close to it. */
+  select(id: string | null, fly = true) {
+    this.unmarkPlace();
     const target = this.placeTargets.find((m) => (m.userData.place as WorldPlace).id === id);
-    if (!target) return this.opts.onSelect(null);
+    if (!target) return this.clearSelection();
     const place = target.userData.place as WorldPlace;
     const dot = target.userData.dot as THREE.Mesh;
     dot.userData.baseColor = (dot.material as THREE.MeshBasicMaterial).color.getHex();
     (dot.material as THREE.MeshBasicMaterial).color.setHex(PALETTE.glow);
     this.selected = dot;
-    this.targetSpin = this.nearestAngle(this.spin.rotation.y, -place.lon * deg - Math.PI / 2);
-    this.targetTilt = place.lat * deg;
-    if (fly) this.flyTo('globe');
-    this.kick();
+    this.setHighlight(place.country);
+    this.focus(place.lat, place.lon, fly ? R + 2.3 : null);
     this.opts.onSelect(place);
   }
 
-  /** Camera presets: the whole scene, the Earth, or the Sinjar mountains and the tree. */
+  /** Highlights a country's outline, turns the Earth to it and flies the camera there (distance by its size). */
+  selectCountry(code: string, fly = true) {
+    const c = this.countries?.byCode.get(code);
+    if (!c) return;
+    this.unmarkPlace();
+    this.setHighlight(code);
+    let span = 4;
+    for (const ring of c.rings) {
+      let la0 = 90, la1 = -90, lo0 = 180, lo1 = -180;
+      for (let i = 0; i < ring.length; i += 2) {
+        la0 = Math.min(la0, ring[i]); la1 = Math.max(la1, ring[i]);
+        lo0 = Math.min(lo0, ring[i + 1]); lo1 = Math.max(lo1, ring[i + 1]);
+      }
+      // Only parts near the focus point count (France without French Guiana, USA without Alaska).
+      if (Math.abs((la0 + la1) / 2 - c.lat) < 25 && Math.abs((lo0 + lo1) / 2 - c.lon) < 40) span = Math.max(span, la1 - la0, (lo1 - lo0) * Math.cos(c.lat * deg));
+    }
+    this.focus(c.lat, c.lon, fly ? THREE.MathUtils.clamp(R + 1.6 + span * 0.06, R + 2.4, R + 6) : null);
+    this.opts.onSelect(null);
+    this.opts.onCountry?.(c);
+  }
+
+  /** Turns the Earth so lat/lon faces the camera; with a distance, the camera flies straight towards it. */
+  private focus(lat: number, lon: number, distance: number | null) {
+    this.targetSpin = this.nearestAngle(this.spin.rotation.y, -lon * deg - Math.PI / 2);
+    this.targetTilt = lat * deg;
+    if (distance !== null) {
+      this.userMoved = true;
+      const cx = this.root.position.x, cy = this.root.position.y + GLOBE_Y;
+      // Portrait phones: the info card covers the lower half, so the Earth is shown higher up.
+      const lift = (this.camera.aspect || 1) < 0.8 ? (distance - R) * 0.19 : 0;
+      this.targetCam = { pos: new THREE.Vector3(cx, cy - lift, distance), look: new THREE.Vector3(cx, cy - lift, 0) };
+      if (this.opts.reduceMotion) this.jumpCamera();
+    }
+    if (this.opts.reduceMotion) {
+      this.spin.rotation.y = this.targetSpin;
+      this.tilt.rotation.x = this.targetTilt;
+      this.targetSpin = this.targetTilt = null;
+    }
+    this.kick();
+  }
+
+  /** Gold outline around one country (null removes it). */
+  private setHighlight(code: string | null) {
+    this.selectedCountry = code;
+    if (this.highlight) {
+      this.globe.remove(this.highlight);
+      this.highlight.geometry.dispose();
+      this.highlight = undefined;
+    }
+    const c = code ? this.countries?.byCode.get(code) : undefined;
+    if (!c) return;
+    this.highlight = new THREE.LineSegments(this.ringGeometry(c.rings, R * 1.007), new THREE.LineBasicMaterial({ color: PALETTE.gold, transparent: true, opacity: 0.95, depthWrite: false }));
+    this.highlight.renderOrder = 3;
+    this.globe.add(this.highlight);
+  }
+
+  private ringGeometry(rings: number[][], radius: number) {
+    const pts: number[] = [];
+    for (const ring of rings) {
+      for (let i = 2; i < ring.length; i += 2) {
+        if (Math.abs(ring[i + 1] - ring[i - 1]) > 180) continue; // do not draw across the date line
+        const a = sph(ring[i - 2], ring[i - 1], radius), b = sph(ring[i], ring[i + 1], radius);
+        pts.push(a.x, a.y, a.z, b.x, b.y, b.z);
+      }
+    }
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
+    return g;
+  }
+
+  /** Every country of the world: thin borders on the Earth, and the lookup used when the Earth is tapped. */
+  private async loadCountryLayer() {
+    try {
+      this.countries = await loadCountries();
+      if (this.disposed) return;
+      this.borders = new THREE.LineSegments(
+        this.ringGeometry(this.countries.countries.map((c) => c.rings).flat(), R * 1.005),
+        new THREE.LineBasicMaterial({ color: PALETTE.cyan, transparent: true, opacity: 0.28, depthWrite: false, blending: THREE.AdditiveBlending }),
+      );
+      this.globe.add(this.borders);
+      if (this.selectedCountry) this.setHighlight(this.selectedCountry);
+      this.kick();
+    } catch {
+      /* without the country file the Earth still works with its places */
+    }
+  }
+
+  /** Camera presets: the whole scene, the Earth, or the Sinjar mountains. */
   flyTo(where: 'overview' | 'globe' | 'sinjar') {
     this.userMoved = true;
     const presets = {
-      overview: { pos: new THREE.Vector3(0, 1.6, this.fitDistance()), look: new THREE.Vector3(0, 1.3, 0) },
-      globe: { pos: new THREE.Vector3(0, GLOBE_Y + 0.4, 8.2), look: new THREE.Vector3(0, GLOBE_Y, 0) },
+      overview: { pos: new THREE.Vector3(0, 0.4, this.fitDistance()), look: new THREE.Vector3(0, -0.3, 0) },
+      globe: { pos: new THREE.Vector3(0, GLOBE_Y + 0.3, 7.4), look: new THREE.Vector3(0, GLOBE_Y, 0) },
       sinjar: { pos: new THREE.Vector3(2.2, -1.6, 7.2), look: new THREE.Vector3(0, -2.4, 0) },
     };
-    const shift = this.root.position.x;
-    presets[where].pos.x += shift;
-    presets[where].look.x += shift;
+    // The overview keeps the scene beside the title; the other views centre their subject.
+    const { x: sx, y: sy } = where === 'overview' ? { x: 0, y: 0 } : this.root.position;
+    presets[where].pos.x += sx;
+    presets[where].look.x += sx;
+    presets[where].pos.y += sy;
+    presets[where].look.y += sy;
     this.targetCam = presets[where];
-    if (where === 'sinjar') {
-      this.targetSpin = this.nearestAngle(this.spin.rotation.y, -SINJAR.lon * deg - Math.PI / 2);
-      this.targetTilt = SINJAR.lat * deg;
-    }
+    if (where === 'sinjar') this.focus(SINJAR.lat, SINJAR.lon, null);
     if (this.opts.reduceMotion) this.jumpCamera();
     this.kick();
   }
@@ -575,7 +568,7 @@ export class WorldScene {
 
   private fitDistance() {
     const aspect = this.camera.aspect || 1;
-    return aspect < 0.6 ? 27 : aspect < 0.8 ? 23 : aspect < 1.2 ? 19 : 17.5;
+    return aspect < 0.6 ? 17 : aspect < 0.8 ? 14.5 : aspect < 1.2 ? 12 : 10.5;
   }
 
   /** On wide screens the scene moves away from the side where the title is (RTL: title on the right). */
@@ -586,9 +579,9 @@ export class WorldScene {
 
   private applySide() {
     const aspect = this.camera.aspect || 1;
-    this.root.position.x = aspect > 1.25 ? this.side * 3.4 : 0;
+    this.root.position.x = aspect > 1.25 ? this.side * 2.3 : 0;
     // Portrait phones: the title takes the top of the screen, so the scene sits lower.
-    this.root.position.y = aspect < 0.8 ? -3.4 : 0;
+    this.root.position.y = aspect < 0.8 ? -2.4 : 0;
   }
 
   /** For tests: where a place appears on screen (CSS px), and whether it faces the viewer. */
@@ -598,6 +591,13 @@ export class WorldScene {
     const p = target.getWorldPosition(new THREE.Vector3()).project(this.camera);
     const rect = this.canvas.getBoundingClientRect();
     return { x: rect.left + ((p.x + 1) / 2) * rect.width, y: rect.top + ((1 - p.y) / 2) * rect.height, facing: this.isFacing(target) };
+  }
+
+  /** For tests: where a latitude/longitude on the Earth appears on screen (CSS px). */
+  screenPositionOf(lat: number, lon: number) {
+    const p = this.globe.localToWorld(sph(lat, lon, R)).project(this.camera);
+    const rect = this.canvas.getBoundingClientRect();
+    return { x: rect.left + ((p.x + 1) / 2) * rect.width, y: rect.top + ((1 - p.y) / 2) * rect.height };
   }
 
   /** For tests: what the last frame drew. */
@@ -653,19 +653,19 @@ export class WorldScene {
     });
 
     // Earth: appears above the mountains, then turns slowly (or towards a chosen place).
-    this.tilt.scale.setScalar(Math.max(0.001, 0.55 + 0.45 * ease(5.6, 8)) * (ease(5.6, 6.4) > 0 ? 1 : 0.001));
+    this.tilt.scale.setScalar(Math.max(0.001, 0.55 + 0.45 * ease(1.4, 3.8)) * (ease(1.4, 2.2) > 0 ? 1 : 0.001));
     if (this.targetSpin !== null) {
       this.spin.rotation.y += (this.targetSpin - this.spin.rotation.y) * Math.min(1, dt * 2.5 || 1);
       if (Math.abs(this.targetSpin - this.spin.rotation.y) < 0.002) this.targetSpin = null;
     } else if (!still) {
-      this.spin.rotation.y += dt * 0.07 * ease(7, 9);
+      this.spin.rotation.y += dt * 0.07 * ease(3, 5) * (this.selectedCountry || this.selected ? 0 : 1);
     }
     if (this.targetTilt !== null) {
       this.tilt.rotation.x += (this.targetTilt - this.tilt.rotation.x) * Math.min(1, dt * 2.5 || 1);
     }
 
     // Moving lights.
-    const pulseK = ease(9.5, 11);
+    const pulseK = ease(4.8, 6.4);
     for (const p of this.arcPulses) {
       const u = (t * p.speed + p.phase) % 1;
       p.mesh.position.copy(p.curve.getPoint(u));
@@ -685,10 +685,10 @@ export class WorldScene {
       this.controls.target.lerp(this.targetCam.look, k);
       if (this.camera.position.distanceTo(this.targetCam.pos) < 0.02) this.targetCam = null;
     } else if (!this.userMoved) {
-      const k = ease(1, 9.5);
-      const end = new THREE.Vector3(0, 1.6, this.fitDistance());
+      const k = ease(0.5, 5.5);
+      const end = new THREE.Vector3(0, 0.4, this.fitDistance());
       this.camera.position.lerpVectors(new THREE.Vector3(0, -1.4, 10.5), end, k);
-      this.controls.target.lerpVectors(new THREE.Vector3(0, -2.6, 0), new THREE.Vector3(0, 1.3, 0), k);
+      this.controls.target.lerpVectors(new THREE.Vector3(0, -2.6, 0), new THREE.Vector3(0, -0.3, 0), k);
     }
     this.controls.update();
     this.renderer.render(this.scene, this.camera);

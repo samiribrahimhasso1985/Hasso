@@ -292,7 +292,7 @@ test('profile photo: choose → adjust → save → shown in the top bar and to 
   await page.close();
 });
 
-test('EZIDINET WORLD: 3D scene renders, places open their card, works with reduced motion, no page errors', async () => {
+test('EZIDINET WORLD: globe renders, places and all countries open their card and fly there, reduced motion, no page errors', async () => {
   const run = async (opts) => {
     const page = await browser.newPage({ viewport: { width: 1280, height: 800 }, ...opts });
     const errors = [];
@@ -314,6 +314,22 @@ test('EZIDINET WORLD: 3D scene renders, places open their card, works with reduc
     const sp = await page.evaluate(() => window.__ezWorld.screenPosition('sinjar'));
     await page.mouse.click(sp.x, sp.y);
     await page.waitForSelector('[data-testid=w-card]');
+    await page.click('[data-testid=w-card] .w-close');
+    // Every country of the world: searchable list → Germany card with its Yazidi places.
+    await page.click('[data-testid=w-communities]');
+    await page.fill('[data-testid=w-country-search]', 'Deutschland');
+    await page.click('[data-testid=w-any-DE]');
+    await page.waitForSelector('[data-testid=w-country-card]');
+    const de = await page.textContent('[data-testid=w-country-card]');
+    assert.match(de, /Germany|Deutschland|ألمانيا|Almanya/);
+    assert.match(de, /Celle|تسيله/);
+    await page.click('[data-testid=w-country-card] .w-close');
+    // Tapping a country on the Earth (Spain: no recorded places) opens that country.
+    await page.waitForTimeout(1500);
+    const es = await page.evaluate(() => window.__ezWorld.screenPositionOf(40.2, -3.7));
+    await page.mouse.click(es.x, es.y);
+    await page.waitForSelector('[data-testid=w-country-card]');
+    assert.match(await page.textContent('[data-testid=w-country-card]'), /Spain|Spanien|إسبانيا|Spanya|Îspanya/);
     assert.deepEqual(errors, []);
     await page.close();
   };
