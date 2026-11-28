@@ -1,4 +1,4 @@
-// SAMIR WANDERUNG server: provider proxies (keys stay here), AI, social API, static hosting.
+// SSBN server: provider proxies (keys stay here), AI, social API, static hosting.
 import { createServer } from 'node:http';
 import { readFileSync, existsSync, statSync } from 'node:fs';
 import { join, extname, normalize } from 'node:path';
@@ -110,6 +110,6 @@ const HOST = process.env.HOST || undefined; // desktop app binds to 127.0.0.1 on
 /** Resolves with the bound port (PORT=0 picks a free port — used by the desktop app). */
 export const ready = new Promise((resolve) => server.listen(PORT, HOST, () => {
   const port = server.address().port;
-  console.log(`SAMIR WANDERUNG server on http://${HOST ?? 'localhost'}:${port}`);
+  console.log(`SSBN server on http://${HOST ?? 'localhost'}:${port}`);
   resolve(port);
 }));

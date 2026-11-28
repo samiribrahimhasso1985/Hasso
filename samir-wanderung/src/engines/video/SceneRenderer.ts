@@ -16,7 +16,7 @@ const lerp = (a: number, b: number, k: number) => a + (b - a) * k;
 
 export function effectiveScenes(p: VideoProjectData): Scene[] {
   const out: Scene[] = [];
-  if (p.branding.intro) out.push({ id: '__intro', type: 'title', duration: 2.5, text: 'SAMIR WANDERUNG', subtitle: 'EXPLORE THE WORLD. EXPERIENCE THE JOURNEY.', transition: 'fade' });
+  if (p.branding.intro) out.push({ id: '__intro', type: 'title', duration: 2.5, text: 'SSBN', subtitle: 'EXPLORE THE WORLD. EXPERIENCE THE JOURNEY.', transition: 'fade' });
   out.push(...p.scenes);
   if (p.branding.endScreen) out.push({ id: '__end', type: 'end', duration: 3, text: p.title, transition: 'fade' });
   return out;
@@ -173,7 +173,7 @@ export class SceneRenderer {
   private watermark() {
     const g = this.ctx, u = Math.min(this.W, this.H) / 1080;
     g.globalAlpha = 0.75; g.font = `700 ${Math.round(22 * u)}px "Space Grotesk", sans-serif`; g.fillStyle = '#fff'; g.textAlign = 'right'; g.direction = 'ltr'; g.textBaseline = 'bottom';
-    g.fillText('SAMIR WANDERUNG', this.W - 28 * u, this.H - 24 * u); g.globalAlpha = 1;
+    g.fillText('SSBN', this.W - 28 * u, this.H - 24 * u); g.globalAlpha = 1;
   }
 
   destroy() { this.journey?.destroy(); this.journey = null; }

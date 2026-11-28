@@ -42,7 +42,7 @@ export default function Home() {
         <div className="vignette" />
         <div className="pointer-events-none absolute inset-x-0 top-0 h-56 bg-gradient-to-b from-ink-950/90 via-ink-950/50 to-transparent" />
         <div className="absolute inset-x-0 top-0 p-4 md:p-8 pointer-events-none">
-          <h1 className="font-display text-3xl md:text-6xl font-bold tracking-[0.15em] text-white drop-shadow-lg">SAMIR <span className="text-aqua-400">WANDERUNG</span></h1>
+          <h1 className="font-display text-3xl md:text-6xl font-bold tracking-[0.15em] text-white drop-shadow-lg">SS<span className="text-aqua-400">BN</span></h1>
           <p className="mt-2 text-xs md:text-sm tracking-[0.3em] text-slate-200/90">{t('brand.tagline')}</p>
           <p className="mt-4 max-w-md text-sm md:text-base text-slate-300">{t('home.hero')}</p>
         </div>

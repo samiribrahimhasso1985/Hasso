@@ -1,4 +1,4 @@
-# SAMIR WANDERUNG
+# SSBN
 **3D Hiking & Journey Animation — EXPLORE THE WORLD. EXPERIENCE THE JOURNEY.**
 
 An independent hiking and cinematic navigation web app (installable PWA): real 3D terrain, a CesiumJS digital
@@ -51,4 +51,4 @@ samir-wanderung/
 
 ## Important
 Cinematic Journey is a **simulation** of a planned route, not GPS navigation. Route data comes from OpenStreetMap and
-may be outdated; SAMIR WANDERUNG never claims a trail is open or safe and is not a rescue service.
+may be outdated; SSBN never claims a trail is open or safe and is not a rescue service.

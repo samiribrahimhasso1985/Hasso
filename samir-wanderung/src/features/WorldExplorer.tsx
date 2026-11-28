@@ -123,7 +123,7 @@ export default function WorldExplorer() {
 
       <div className="absolute top-3 start-3 end-3 md:end-auto md:w-[380px] z-20 space-y-2">
         <Glass className="p-3">
-          <div className="font-display text-xs tracking-[0.3em] text-aqua-300 mb-2">SAMIR WANDERUNG · {t('nav.world')}</div>
+          <div className="font-display text-xs tracking-[0.3em] text-aqua-300 mb-2">SSBN · {t('nav.world')}</div>
           <PlaceSearch id="world-search" label={t('common.search')} value={target} onChange={(p) => p && flyTo(p)} allowGps={false} />
           <div className="flex flex-wrap gap-1 mt-2" role="group" aria-label={t('atlas.continent')}>
             {CONTINENTS.map((c) => (

@@ -1,4 +1,4 @@
-# SAMIR WANDERUNG — Test Report (2026-11-28)
+# SSBN — Test Report (2026-11-28)
 
 Environment: Linux container, Node 22.23, Chromium (Playwright) with **software WebGL (SwiftShader), no GPU**,
 network through an egress proxy. Every result below was produced by actually running the tests. Nothing is

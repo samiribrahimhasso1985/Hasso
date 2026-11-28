@@ -102,7 +102,7 @@ export default function LiveNavigation() {
     await Journeys.put({ id: uid('j'), kind: g.track.length ? 'recorded' : 'planned', name: g.name ?? f.name, createdAt: new Date().toISOString(), track: g.track.length ? g.track : undefined, route: g.track.length ? undefined : r });
   };
 
-  const exportGpx = () => download(`samir-wanderung-${Date.now()}.gpx`, toGPX({ name: activeJourney?.name ?? 'Track', track: st.track, route: planned?.coords }), 'application/gpx+xml');
+  const exportGpx = () => download(`ssbn-${Date.now()}.gpx`, toGPX({ name: activeJourney?.name ?? 'Track', track: st.track, route: planned?.coords }), 'application/gpx+xml');
 
   const remaining = planned && deviation ? (planned.cum.at(-1)! - deviation.along) / 1000 : null;
   const tracking = st.status === 'tracking' || st.status === 'requesting';

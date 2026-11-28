@@ -1,4 +1,4 @@
-// SAMIR WANDERUNG desktop app: runs the full server (API + built PWA) inside Electron on a private
+// SSBN desktop app: runs the full server (API + built PWA) inside Electron on a private
 // 127.0.0.1 port and shows it in a sandboxed window. Data (SQLite, media) lives in the user profile.
 const { app, BrowserWindow, session, shell, Menu, net } = require('electron');
 const path = require('node:path');
@@ -27,7 +27,7 @@ async function createWindow() {
   });
 
   win = new BrowserWindow({
-    width: 1440, height: 900, minWidth: 380, minHeight: 600, backgroundColor: '#0b0f12', title: 'SAMIR WANDERUNG',
+    width: 1440, height: 900, minWidth: 380, minHeight: 600, backgroundColor: '#0b0f12', title: 'SSBN',
     icon: path.join(ROOT, 'build', 'icon.png'),
     webPreferences: { preload: path.join(__dirname, 'preload.cjs'), contextIsolation: true, nodeIntegration: false, sandbox: true },
   });

@@ -1,8 +1,8 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.samirwanderung.app',
-  appName: 'SAMIR WANDERUNG',
+  appId: 'com.ssbn.app',
+  appName: 'SSBN',
   webDir: 'dist',
   android: { allowMixedContent: false, backgroundColor: '#0b0f12' },
   plugins: {

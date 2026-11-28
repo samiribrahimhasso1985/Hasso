@@ -29,7 +29,7 @@ export default function Community() {
         {me && <div className="text-sm text-slate-300">{me.displayName} <Btn variant="chip" onClick={() => api('/api/auth/logout', { method: 'POST' }).then(refreshMe)}>{t('community.logout')}</Btn></div>}
       </header>
       <p className="text-xs text-slate-400 mb-3">{t('community.noSafety')}</p>
-      {isStandalone() && <p className="text-sm text-amber-200 glass p-3 mb-3" role="status">The community needs a SAMIR WANDERUNG server. Set its address in Settings → Server.</p>}
+      {isStandalone() && <p className="text-sm text-amber-200 glass p-3 mb-3" role="status">The community needs a SSBN server. Set its address in Settings → Server.</p>}
       <nav className="flex flex-wrap gap-1 mb-4" role="tablist">
         {(['feed', 'events', 'groups', 'map', 'profile', 'notifications', 'guidelines'] as Tab[]).map((x) => (
           <button key={x} role="tab" aria-selected={tab === x} className={`btn btn-chip text-xs ${tab === x ? 'is-active' : ''}`} onClick={() => setTab(x)}>
@@ -458,7 +458,7 @@ function Guidelines() {
         <li>Only share photos, videos and music you own or are allowed to share.</li>
         <li>Never post other people's location, contact details or private information.</li>
         <li>Do not claim that a trail is safe or open without an official source.</li>
-        <li>Organizers are not verified by SAMIR WANDERUNG. Participants are responsible for their own safety and for checking conditions.</li>
+        <li>Organizers are not verified by SSBN. Participants are responsible for their own safety and for checking conditions.</li>
         <li>Events with minors: users under 18 cannot join adults-only events and cannot organise events; guardians should accompany minors.</li>
         <li>Report content that breaks these rules. Reports are reviewed by moderators; repeated abuse leads to removal.</li>
       </ul>

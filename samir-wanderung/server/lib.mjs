@@ -1,5 +1,5 @@
-// Small shared helpers for the SAMIR WANDERUNG server (no framework).
-export const UA = globalThis.process?.env?.UPSTREAM_USER_AGENT || 'SamirWanderung/0.1 (+https://github.com/samiribrahimhasso1985/Hasso)';
+// Small shared helpers for the SSBN server (no framework).
+export const UA = globalThis.process?.env?.UPSTREAM_USER_AGENT || 'SSBN/0.1 (+https://github.com/samiribrahimhasso1985/Hasso)';
 
 // In browsers the User-Agent cannot be set reliably (and would trigger CORS preflights); native HTTP adds its own.
 const IS_NODE = typeof window === 'undefined';

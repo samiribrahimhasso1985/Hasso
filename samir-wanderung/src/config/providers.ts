@@ -1,5 +1,5 @@
 /**
- * Central provider registry. Every external data source used by SAMIR WANDERUNG
+ * Central provider registry. Every external data source used by SSBN
  * is declared here with its attribution and caching/offline policy so the UI
  * and the offline engine can respect licences.
  */

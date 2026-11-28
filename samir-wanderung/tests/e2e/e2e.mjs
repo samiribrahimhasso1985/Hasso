@@ -1,4 +1,4 @@
-// End-to-end tests in real Chromium against the production build served by the SAMIR WANDERUNG
+// End-to-end tests in real Chromium against the production build served by the SSBN
 // server, using live providers (OpenFreeMap, AWS terrain, Valhalla, Nominatim, Wikidata).
 // Usage: node tests/e2e/e2e.mjs [stage...]   (stages: core planner cinematic world atlas live community studio offline mobile)
 import { createRequire } from 'node:module';
@@ -147,7 +147,7 @@ if (want('cinematic')) {
     // Compare displayed position with the stored route geometry via IndexedDB.
     const pos = (await page.locator('[data-testid=position]').innerText()).split(',').map(Number);
     const dist = await page.evaluate(([lat, lon]) => new Promise((res) => {
-      const r = indexedDB.open('samir-wanderung');
+      const r = indexedDB.open('ssbn');
       r.onsuccess = () => { const tx = r.result.transaction('journeys'); const q = tx.objectStore('journeys').getAll(); q.onsuccess = () => {
         const j = q.result.find((x) => x.route); const c = j.route.coords; let best = Infinity;
         for (let i = 0; i < c.length - 1; i++) { const [ax, ay] = c[i], [bx, by] = c[i + 1]; const kx = Math.cos(lat * Math.PI / 180) * 111320, ky = 110540;

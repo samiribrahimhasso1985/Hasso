@@ -1,4 +1,4 @@
-# SAMIR WANDERUNG 0.1.0 — Release Notes (2026-11-28)
+# SSBN 0.1.0 — Release Notes (2026-11-28)
 
 **Status: release candidate for a web/PWA beta. Not production-ready.** See FINAL_PROJECT_AUDIT.md §Release decision.
 

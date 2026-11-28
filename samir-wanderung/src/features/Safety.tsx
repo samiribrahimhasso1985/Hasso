@@ -119,7 +119,7 @@ export default function Safety() {
             <li>Avalanche bulletins (Europe): <a className="text-aqua-300 underline" href="https://www.avalanches.org/" target="_blank" rel="noreferrer">EAWS — avalanches.org</a></li>
             <li>Weather warnings (Europe): <a className="text-aqua-300 underline" href="https://www.meteoalarm.org/" target="_blank" rel="noreferrer">MeteoAlarm</a></li>
           </ul>
-          <p className="text-[11px] text-slate-500">These are links to authoritative services; SAMIR WANDERUNG does not import or summarise their warnings yet, and absence of a warning here never means absence of danger.</p>
+          <p className="text-[11px] text-slate-500">These are links to authoritative services; SSBN does not import or summarise their warnings yet, and absence of a warning here never means absence of danger.</p>
         </Glass>
         {weatherCoord ? <WeatherPanel coord={weatherCoord} hours={activeJourney?.route?.hikingHours ?? 6} /> : <Glass className="p-4 text-sm text-slate-400">{t('weather.title')}: plan a route or locate yourself.</Glass>}
       </div>

@@ -1,7 +1,7 @@
-# SAMIR WANDERUNG — Final Project Audit (2026-11-28)
+# SSBN — Final Project Audit (2026-11-28)
 
 ## Scope & history
-The repository contained no previous SAMIR WANDERUNG code: earlier phase work had been lost when its session
+The repository contained no previous SSBN code: earlier phase work had been lost when its session
 restarted without committing. The project was therefore built in one pass covering Phases 1–11 in
 `samir-wanderung/`, committed incrementally to branch `ccr-ea8dcbdb-gmxjqk`. (Phase 5, live GPS, was not
 specified separately, so it was implemented from the requirements repeated in Phases 6 and 10.)

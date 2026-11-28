@@ -22,8 +22,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['icon.svg'],
       manifest: {
-        name: 'SAMIR WANDERUNG',
-        short_name: 'Wanderung',
+        name: 'SSBN',
+        short_name: 'SSBN',
         description: '3D Hiking & Journey Animation',
         theme_color: '#0b0f12',
         background_color: '#0b0f12',

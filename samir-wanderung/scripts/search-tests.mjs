@@ -24,7 +24,7 @@ const coord = ['47.4212, 10.9863', '-13.1631, -72.5450', '36.6366, 44.8846'];
 const coordRows = coord.map((c) => `| \`${c}\` | parsed client-side by \`parseCoordinates\` (unit-tested) → [lon, lat] |`);
 writeFileSync('docs/GLOBAL_SEARCH_TESTS.md', `# Global Search Tests
 
-Real queries executed on ${new Date().toISOString()} against Nominatim through the SAMIR WANDERUNG server
+Real queries executed on ${new Date().toISOString()} against Nominatim through the SSBN server
 (\`/api/geocode\`, results cached 24 h, max 1 upstream request/s). Results are reported exactly as returned.
 
 | Category | Query | UI language | Top result | Coordinates (lat, lon) | Country | Time |

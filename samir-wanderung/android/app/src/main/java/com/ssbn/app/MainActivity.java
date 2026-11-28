@@ -1,4 +1,4 @@
-package com.samirwanderung.app;
+package com.ssbn.app;
 
 import com.getcapacitor.BridgeActivity;
 

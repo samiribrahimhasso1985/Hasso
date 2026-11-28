@@ -1,6 +1,6 @@
 # Global Search Tests
 
-Real queries executed on 2026-11-28T16:36:10.240Z against Nominatim through the SAMIR WANDERUNG server
+Real queries executed on 2026-11-28T16:36:10.240Z against Nominatim through the SSBN server
 (`/api/geocode`, results cached 24 h, max 1 upstream request/s). Results are reported exactly as returned.
 
 | Category | Query | UI language | Top result | Coordinates (lat, lon) | Country | Time |

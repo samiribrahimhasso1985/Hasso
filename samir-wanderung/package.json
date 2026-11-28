@@ -1,5 +1,5 @@
 {
-  "name": "samir-wanderung",
+  "name": "ssbn",
   "private": true,
   "version": "0.1.0",
   "type": "module",
@@ -60,13 +60,13 @@
     "node": ">=22.12"
   },
   "main": "electron/main.cjs",
-  "description": "SAMIR WANDERUNG \u2014 3D Hiking & Journey Animation",
-  "author": "SAMIR WANDERUNG",
+  "description": "SSBN \u2014 3D Hiking & Journey Animation",
+  "author": "SSBN",
   "homepage": "https://github.com/samiribrahimhasso1985/Hasso",
   "build": {
-    "appId": "com.samirwanderung.desktop",
-    "productName": "SAMIR WANDERUNG",
-    "copyright": "SAMIR WANDERUNG",
+    "appId": "com.ssbn.desktop",
+    "productName": "SSBN",
+    "copyright": "SSBN",
     "directories": {
       "output": "release",
       "buildResources": "build"
@@ -101,10 +101,10 @@
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
-      "artifactName": "SAMIR-WANDERUNG-Setup-${version}.${ext}"
+      "artifactName": "SSBN-Setup-${version}.${ext}"
     },
     "portable": {
-      "artifactName": "SAMIR-WANDERUNG-Portable-${version}.${ext}"
+      "artifactName": "SSBN-Portable-${version}.${ext}"
     }
   }
 }

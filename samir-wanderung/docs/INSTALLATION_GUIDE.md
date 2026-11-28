@@ -1,4 +1,4 @@
-# SAMIR WANDERUNG — Installation Guide
+# SSBN — Installation Guide
 
 ## Requirements
 - Node.js **22.12 or newer** (uses the built-in `node:sqlite` module and `--env-file-if-exists`)

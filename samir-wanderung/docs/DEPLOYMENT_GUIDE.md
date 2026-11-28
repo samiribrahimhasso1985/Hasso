@@ -1,6 +1,6 @@
-# SAMIR WANDERUNG — Deployment Guide
+# SSBN — Deployment Guide
 
-SAMIR WANDERUNG is one Node.js process (`server/index.mjs`) that serves the built PWA (`dist/`) and the API
+SSBN is one Node.js process (`server/index.mjs`) that serves the built PWA (`dist/`) and the API
 (`/api/*`: provider proxies, AI assistant, community). State lives in SQLite + a media folder (`DATA_DIR`).
 
 ## 1. Build
@@ -12,7 +12,7 @@ npm run build
 ## 2. Run
 ```bash
 NODE_ENV=production PORT=8787 DATA_DIR=/var/lib/samir-wanderung \
-UPSTREAM_USER_AGENT="SamirWanderung/0.1 (+https://your-domain; you@your-domain)" \
+UPSTREAM_USER_AGENT="SSBN/0.1 (+https://your-domain; you@your-domain)" \
 ANTHROPIC_API_KEY=... node server/index.mjs
 ```
 Use a process manager (systemd, pm2, Docker). Example systemd unit:

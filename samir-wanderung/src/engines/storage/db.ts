@@ -27,7 +27,7 @@ interface SWDB extends DBSchema {
 
 let dbp: Promise<IDBPDatabase<SWDB>> | null = null;
 export function db() {
-  dbp ??= openDB<SWDB>('samir-wanderung', 1, {
+  dbp ??= openDB<SWDB>('ssbn', 1, {
     upgrade(d) {
       d.createObjectStore('journeys', { keyPath: 'id' }).createIndex('byCreated', 'createdAt');
       d.createObjectStore('activeTrack', { keyPath: 'id' });

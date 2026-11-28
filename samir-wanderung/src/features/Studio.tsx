@@ -206,7 +206,7 @@ function Editor({ project, journeys, onClose }: { project: VideoProject; journey
             </div>
             <p className={`text-xs ${codecInfo ? 'text-aqua-300' : 'text-red-300'}`} data-testid="codec">{typeof VideoEncoder === 'undefined' ? t('studio.noWebCodecs') : codecInfo ? `Encoder: ${codecInfo} @ ${f.width}×${f.height} ${d.fps} fps` : t('studio.unsupported')}</p>
             <Toggle checked={d.showStats} onChange={(v) => setD({ ...d, showStats: v })} label="Distance / elevation overlay" />
-            <Toggle checked={d.branding.intro} onChange={(v) => setD({ ...d, branding: { ...d.branding, intro: v } })} label="SAMIR WANDERUNG intro" />
+            <Toggle checked={d.branding.intro} onChange={(v) => setD({ ...d, branding: { ...d.branding, intro: v } })} label="SSBN intro" />
             <Toggle checked={d.branding.watermark} onChange={(v) => setD({ ...d, branding: { ...d.branding, watermark: v } })} label="Watermark" />
             <Toggle checked={d.branding.endScreen} onChange={(v) => setD({ ...d, branding: { ...d.branding, endScreen: v } })} label="End screen & credits" />
             <input className="field text-xs" dir="auto" placeholder="Creator credit (optional)" value={d.branding.creditText} onChange={(e) => setD({ ...d, branding: { ...d.branding, creditText: e.target.value } })} />

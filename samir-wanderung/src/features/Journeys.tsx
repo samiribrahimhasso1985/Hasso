@@ -77,7 +77,7 @@ function Memories({ journey }: { journey: Journey }) {
 <h1>${escapeHtml(journey.name)}</h1><p>${new Date(journey.createdAt).toLocaleString()}</p>
 ${r ? `<p>${fmt(r.distanceKm, 2)} km · ↑${r.ascent} m · ↓${r.descent} m · max ${r.maxEle ?? '?'} m · ${formatDuration(r.hikingHours)} (estimate)</p>` : ''}
 <p style="white-space:pre-wrap">${escapeHtml(notes)}</p>${imgs.map((s) => `<img src="${s}">`).join('')}
-<p style="font-size:11px;color:#64748b">SAMIR WANDERUNG · Map data © OpenStreetMap contributors</p>`;
+<p style="font-size:11px;color:#64748b">SSBN · Map data © OpenStreetMap contributors</p>`;
     download(`${journey.name.replace(/[^\w-]+/g, '_')}-memories.html`, html, 'text/html');
   };
 

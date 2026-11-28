@@ -150,7 +150,7 @@ function DestinationDetail({ item, onBack, onSaved }: { item: AtlasItem; onBack:
   const save = async () => { await Destinations.put({ id: item.id, name: item.name, lon: item.lon, lat: item.lat, category: item.category, source: item.source, savedAt: new Date().toISOString() }); onSaved((await Destinations.list()).map((x) => ({ id: x.id, name: x.name }))); };
   const share = async () => {
     const url = `https://www.openstreetmap.org/?mlat=${item.lat}&mlon=${item.lon}#map=13/${item.lat}/${item.lon}`;
-    if (navigator.share) { try { await navigator.share({ title: item.name, text: `${item.name} — SAMIR WANDERUNG`, url }); return; } catch { /* cancelled */ } }
+    if (navigator.share) { try { await navigator.share({ title: item.name, text: `${item.name} — SSBN`, url }); return; } catch { /* cancelled */ } }
     await navigator.clipboard?.writeText(`${item.name} ${url}`); setCopied(true);
   };
 

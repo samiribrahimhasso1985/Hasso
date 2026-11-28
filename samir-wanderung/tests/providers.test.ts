@@ -57,7 +57,7 @@ net('real providers', () => {
   it('Wikidata country IDs match their labels', async () => {
     const ids = COUNTRIES.map((c) => `wd:${c.q}`).join(' ');
     const q = `SELECT ?c ?l WHERE { VALUES ?c { ${ids} } ?c rdfs:label ?l. FILTER(LANG(?l)="en") }`;
-    const r = await fetch(`https://query.wikidata.org/sparql?format=json&query=${encodeURIComponent(q)}`, { headers: { 'user-agent': 'SamirWanderung-tests/0.1', accept: 'application/sparql-results+json' } }).then((x) => x.json());
+    const r = await fetch(`https://query.wikidata.org/sparql?format=json&query=${encodeURIComponent(q)}`, { headers: { 'user-agent': 'SSBN-tests/0.1', accept: 'application/sparql-results+json' } }).then((x) => x.json());
     const labels = Object.fromEntries(r.results.bindings.map((b: { c: { value: string }; l: { value: string } }) => [b.c.value.split('/').pop(), b.l.value]));
     const aliases: Record<string, string[]> = { Q30: ['United States of America'], Q148: ["People's Republic of China"], Q884: ['South Korea'], Q213: ['Czech Republic', 'Czechia'], Q43: ['Turkey', 'Türkiye'], Q55: ['Netherlands', 'Kingdom of the Netherlands'] };
     for (const c of COUNTRIES) expect([c.name, ...(aliases[c.q] ?? [])], `${c.q} → ${labels[c.q]}`).toContain(labels[c.q]);

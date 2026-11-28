@@ -1,4 +1,4 @@
-# SAMIR WANDERUNG — Privacy & Location Guide
+# SSBN — Privacy & Location Guide
 
 ## Principles
 1. **Local first.** Journeys, recorded GPS tracks, photos, notes, offline maps, the safety checklist and emergency
@@ -6,7 +6,7 @@
 2. **Location only with permission.** The device position is read only after you grant the browser's location
    permission, and only while a feature that needs it is active (Live Navigation, "use my location", Safety Center,
    opt-in event sharing).
-3. **No silent transmission.** Your live position is never sent to the SAMIR WANDERUNG server, except when you
+3. **No silent transmission.** Your live position is never sent to the SSBN server, except when you
    explicitly turn on live sharing inside a community event (see below).
 4. **You can delete everything.** Settings → "Delete all local data" removes all local records. Community accounts can be
    deleted from Community → Profile → "Delete account" (removes profile, posts, comments, events and media references).
@@ -48,8 +48,8 @@ The server does not log request bodies or coordinates (errors are logged without
 
 ## Emergency features
 - The emergency screen shows your last known coordinates, accuracy and time; it can open your SMS app with a prepared
-  message or the share sheet. **Nothing is ever sent automatically**, and SAMIR WANDERUNG cannot confirm delivery.
-- SAMIR WANDERUNG is not a rescue service and has no satellite communication.
+  message or the share sheet. **Nothing is ever sent automatically**, and SSBN cannot confirm delivery.
+- SSBN is not a rescue service and has no satellite communication.
 
 ## Security notes
 - Passwords are hashed with scrypt (random salt); sessions are random 256-bit tokens stored hashed; cookies are

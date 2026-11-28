@@ -1,5 +1,5 @@
 /**
- * Route engine: talks to the SAMIR WANDERUNG server, which proxies Valhalla
+ * Route engine: talks to the SSBN server, which proxies Valhalla
  * (pedestrian costing on OpenStreetMap data). No route is ever invented here:
  * if the backend fails, an error is thrown and shown to the user.
  */

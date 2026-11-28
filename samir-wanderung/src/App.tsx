@@ -53,8 +53,8 @@ export default function App() {
       {/* Sidebar (desktop) / top bar (mobile) */}
       <aside className="md:w-64 md:h-screen md:sticky md:top-0 flex md:flex-col border-b md:border-b-0 md:border-e border-white/5 bg-ink-950/80 backdrop-blur-xl z-40">
         <div className="flex items-center justify-between w-full md:block p-3 md:p-5">
-          <button className="text-start" onClick={() => go('home')} aria-label="SAMIR WANDERUNG">
-            <div className="font-display text-lg md:text-xl font-bold tracking-[0.18em] text-white">SAMIR <span className="text-aqua-400">WANDERUNG</span></div>
+          <button className="text-start" onClick={() => go('home')} aria-label="SSBN">
+            <div className="font-display text-lg md:text-xl font-bold tracking-[0.18em] text-white">SS<span className="text-aqua-400">BN</span></div>
             <div className="hidden md:block text-[9px] tracking-[0.2em] text-slate-500 mt-1">{t('brand.tagline')}</div>
           </button>
           <button className="md:hidden btn btn-chip" aria-expanded={menu} aria-controls="nav" onClick={() => setMenu(!menu)} aria-label="Menu">☰</button>

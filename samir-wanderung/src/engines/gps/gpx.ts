@@ -6,7 +6,7 @@ const esc = (s: string) => s.replace(/[<>&'"]/g, (c) => ({ '<': '&lt;', '>': '&g
 
 export function toGPX(opts: { name: string; track?: TrackPoint[]; route?: LngLat[]; elevations?: (number | null)[]; waypoints?: { name: string; coord: LngLat }[] }): string {
   const parts = [`<?xml version="1.0" encoding="UTF-8"?>`,
-    `<gpx version="1.1" creator="SAMIR WANDERUNG" xmlns="http://www.topografix.com/GPX/1/1">`,
+    `<gpx version="1.1" creator="SSBN" xmlns="http://www.topografix.com/GPX/1/1">`,
     `<metadata><name>${esc(opts.name)}</name><time>${new Date().toISOString()}</time></metadata>`];
   for (const w of opts.waypoints ?? []) parts.push(`<wpt lat="${w.coord[1]}" lon="${w.coord[0]}"><name>${esc(w.name)}</name></wpt>`);
   if (opts.route?.length) {
