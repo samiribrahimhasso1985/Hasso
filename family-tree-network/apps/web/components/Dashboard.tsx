@@ -6,6 +6,8 @@ import { useI18n } from '../lib/i18n';
 import { CATEGORY } from '../lib/tokens';
 import AddRelationshipDialog from './AddRelationshipDialog';
 import ConnectPanel from './ConnectPanel';
+import FriendsPanel from './FriendsPanel';
+import { useConnectText } from '../lib/i18n-connect';
 import GraphCanvas, { avatarFor, type GraphCanvasHandle, type LayoutMode } from './GraphCanvas';
 import IdentityPanel from './IdentityPanel';
 import InboxPanel from './InboxPanel';
@@ -47,7 +49,10 @@ export default function Dashboard({ session, onLogout }: { session: Session; onL
   const [expansions, setExpansions] = useState<Map<string, string[]>>(new Map());
   const [selected, setSelected] = useState<string | null>(null);
   const [selectedEdge, setSelectedEdge] = useState<string | null>(null);
-  const [tab, setTab] = useState<'person' | 'connect' | 'inbox' | 'identity'>('person');
+  const [tab, setTab] = useState<'person' | 'friends' | 'connect' | 'inbox' | 'identity'>('person');
+  const [friendCount, setFriendCount] = useState(0);
+  const [connectPerson, setConnectPerson] = useState<string | null>(null);
+  const ct = useConnectText();
   const [pathFrom, setPathFrom] = useState<PersonSummary | null>(null);
   const [pathTo, setPathTo] = useState<PersonSummary | null>(null);
   const [path, setPath] = useState<PathResult | null>(null);
@@ -84,7 +89,17 @@ export default function Dashboard({ session, onLogout }: { session: Session; onL
 
   useEffect(() => {
     api.awaiting().then((r) => setInboxCount(r.length)).catch(() => undefined);
+    api.connectSummary().then((s) => setFriendCount(s.incomingRequests)).catch(() => undefined);
   }, [api, refreshKey]);
+
+  // EZIDINET CONNECT presence: a heartbeat every minute while this page is visible.
+  useEffect(() => {
+    const beat = () => { if (!document.hidden) api.heartbeat().catch(() => undefined); };
+    beat();
+    const t = setInterval(beat, 60_000);
+    document.addEventListener('visibilitychange', beat);
+    return () => { clearInterval(t); document.removeEventListener('visibilitychange', beat); };
+  }, [api]);
 
   const expand = useCallback(
     async (id: string) => {
@@ -303,6 +318,9 @@ export default function Dashboard({ session, onLogout }: { session: Session; onL
           <button role="tab" aria-selected={tab === 'person'} className={tab === 'person' ? 'active' : ''} onClick={() => setTab('person')}>
             {t.profile}
           </button>
+          <button role="tab" aria-selected={tab === 'friends'} className={tab === 'friends' ? 'active' : ''} onClick={() => { setConnectPerson(null); setTab('friends'); }} data-testid="tab-friends">
+            {ct.friendsTab} {friendCount > 0 && <span className="count" data-testid="friends-count">{friendCount}</span>}
+          </button>
           <button role="tab" aria-selected={tab === 'connect'} className={tab === 'connect' ? 'active' : ''} onClick={() => setTab('connect')} data-testid="tab-connect">
             {t.howConnected}
           </button>
@@ -333,12 +351,16 @@ export default function Dashboard({ session, onLogout }: { session: Session; onL
               }}
               onSelectEdge={setSelectedEdge}
               onChanged={() => setRefreshKey((k) => k + 1)}
+              onOpenConnect={selectedNode.id === session.profileId ? undefined : () => { setConnectPerson(selectedNode.id); setTab('friends'); }}
             />
           ) : (
             <div className="panel empty muted">{t.pickFromGraph}</div>
           ))}
         {tab === 'connect' && (
           <ConnectPanel api={api} from={pathFrom} to={pathTo} setFrom={setPathFrom} setTo={setPathTo} known={nodeList} onResult={setPath} />
+        )}
+        {tab === 'friends' && (
+          <FriendsPanel api={api} myProfileId={session.profileId} openPersonId={connectPerson} onChanged={() => setRefreshKey((k) => k + 1)} onCount={setFriendCount} />
         )}
         {tab === 'inbox' && <InboxPanel api={api} onChanged={() => setRefreshKey((k) => k + 1)} onCount={setInboxCount} />}
         {tab === 'identity' && <IdentityPanel api={api} profileId={session.profileId} onChanged={() => setRefreshKey((k) => k + 1)} />}

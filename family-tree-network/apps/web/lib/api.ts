@@ -146,6 +146,53 @@ export interface QrResolution {
   isSelf: boolean;
 }
 
+// ── EZIDINET CONNECT (Phase 1) ──
+export type Audience = 'EVERYONE' | 'FRIENDS_OF_FRIENDS' | 'FRIENDS' | 'NOBODY' | 'ONLY_ME';
+export type PresenceStatus = 'ONLINE' | 'BUSY' | 'AWAY' | 'INVISIBLE' | 'OFFLINE';
+export type StatusMode = 'ONLINE' | 'BUSY' | 'AWAY' | 'INVISIBLE';
+export type FriendState = 'SELF' | 'NONE' | 'FRIENDS' | 'REQUEST_SENT' | 'REQUEST_RECEIVED' | 'DECLINED' | 'BLOCKED';
+export interface Presence {
+  status: PresenceStatus;
+  lastSeen: string | null;
+}
+export interface ConnectPerson extends PersonSummary {
+  presence: Presence | null;
+}
+export interface ConnectCard {
+  person: PersonSummary;
+  friendship: { state: FriendState; requestId: string | null };
+  following: boolean;
+  followsMe: boolean;
+  followers: number;
+  mutualFriends: { count: number; people: ConnectPerson[] };
+  presence: Presence | null;
+  can: { sendRequest: boolean; follow: boolean; unfollow: boolean; viewFriends: boolean };
+}
+export interface FriendRequest {
+  id: string;
+  state: 'PENDING';
+  createdAt: string;
+  person: ConnectPerson;
+  mutualFriends: number;
+}
+export interface Suggestion extends ConnectPerson {
+  reasons: { mutualFriends: number; sharedLanguages: string[] };
+}
+export interface ConnectSettings {
+  friendRequestsFrom: Audience;
+  followsFrom: Audience;
+  presenceVisibleTo: Audience;
+  friendListVisibleTo: Audience;
+  showLastSeen: boolean;
+  statusMode: StatusMode;
+  options: Record<'friendRequestsFrom' | 'followsFrom' | 'presenceVisibleTo' | 'friendListVisibleTo', Audience[]>;
+}
+export interface Paged<T> {
+  total: number;
+  page: number;
+  items: T[];
+}
+
 export class ApiError extends Error {
   constructor(
     public status: number,
@@ -278,5 +325,66 @@ export class Api {
   }
   resolveQr(token: string) {
     return this.req<QrResolution>('GET', `/qr/${encodeURIComponent(token)}`);
+  }
+  // EZIDINET CONNECT
+  connectSummary() {
+    return this.req<{ incomingRequests: number; followers: number; friends: number }>('GET', '/connect/summary');
+  }
+  connectPerson(id: string) {
+    return this.req<ConnectCard>('GET', `/connect/people/${id}`);
+  }
+  friends(page = 0) {
+    return this.req<Paged<ConnectPerson>>('GET', `/connect/friends?page=${page}`);
+  }
+  friendsOf(id: string, page = 0) {
+    return this.req<Paged<ConnectPerson>>('GET', `/connect/people/${id}/friends?page=${page}`);
+  }
+  sendFriendRequest(profileId: string) {
+    return this.req<ConnectCard>('POST', '/connect/friends/requests', { profileId });
+  }
+  friendRequests(direction: 'incoming' | 'outgoing') {
+    return this.req<FriendRequest[]>('GET', `/connect/friends/requests?direction=${direction}`);
+  }
+  acceptFriend(requestId: string) {
+    return this.req<{ state: string }>('POST', `/connect/friends/requests/${requestId}/accept`);
+  }
+  rejectFriend(requestId: string) {
+    return this.req<{ state: string }>('POST', `/connect/friends/requests/${requestId}/reject`);
+  }
+  cancelFriendRequest(requestId: string) {
+    return this.req<{ state: string }>('DELETE', `/connect/friends/requests/${requestId}`);
+  }
+  removeFriend(profileId: string) {
+    return this.req<{ state: string }>('DELETE', `/connect/friends/${profileId}`);
+  }
+  follow(profileId: string) {
+    return this.req<{ following: boolean }>('POST', `/connect/follows/${profileId}`);
+  }
+  unfollow(profileId: string) {
+    return this.req<{ following: boolean }>('DELETE', `/connect/follows/${profileId}`);
+  }
+  followers(page = 0) {
+    return this.req<Paged<ConnectPerson>>('GET', `/connect/followers?page=${page}`);
+  }
+  following(page = 0) {
+    return this.req<Paged<ConnectPerson>>('GET', `/connect/following?page=${page}`);
+  }
+  discover(q?: string) {
+    return this.req<Suggestion[]>('GET', `/connect/discover${q ? `?q=${encodeURIComponent(q)}` : ''}`);
+  }
+  connectSettings() {
+    return this.req<ConnectSettings>('GET', '/connect/settings');
+  }
+  updateConnectSettings(body: Partial<Omit<ConnectSettings, 'options'>>) {
+    return this.req<ConnectSettings>('PATCH', '/connect/settings', body);
+  }
+  heartbeat() {
+    return this.req<{ status: StatusMode }>('POST', '/connect/presence');
+  }
+  block(profileId: string) {
+    return this.req<{ blocked: boolean }>('POST', '/blocks', { profileId });
+  }
+  unblock(profileId: string) {
+    return this.req<{ blocked: boolean }>('DELETE', `/blocks/${profileId}`);
   }
 }

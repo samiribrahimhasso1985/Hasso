@@ -1266,3 +1266,158 @@ fieldset.plain {
   border-radius: 50%;
   object-fit: cover;
 }
+
+/* ── EZIDINET CONNECT (Phase 1: friends) ── */
+.cn-views {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+.cn-views button {
+  font: inherit;
+  font-size: 13px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--line, #ddd8ce);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+.cn-views button.active {
+  background: var(--ink, #30302d);
+  border-color: var(--ink, #30302d);
+  color: #fff;
+}
+.cn-list {
+  list-style: none;
+  margin: 8px 0;
+  padding: 0;
+}
+.cn-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--line, #ddd8ce);
+}
+.cn-who {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  text-align: start;
+  min-width: 0;
+}
+.cn-name {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.cn-name strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cn-actions,
+.cn-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+.cn-avatar-wrap {
+  position: relative;
+  flex: none;
+  line-height: 0;
+}
+.cn-avatar {
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--sand, #e9e5dc);
+}
+.cn-avatar-wrap .presence {
+  position: absolute;
+  inset-inline-end: -1px;
+  bottom: -1px;
+}
+.presence {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--muted, #858078);
+}
+.presence i {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  border: 2px solid var(--card, #faf9f5);
+  background: #b9b4aa;
+  display: inline-block;
+}
+.presence.online i { background: #5f9a6e; }
+.presence.busy i { background: #b35c4f; }
+.presence.away i { background: #c9a14a; }
+.cn-card-head {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  margin: 10px 0 12px;
+}
+.cn-card-head h3 {
+  margin: 0 0 4px;
+}
+.cn-state {
+  font-size: 13px;
+  color: var(--muted, #858078);
+}
+.cn-state.ok {
+  color: #5f7f66;
+  font-weight: 600;
+}
+.cn-search {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid var(--line, #ddd8ce);
+  border-radius: 10px;
+  font: inherit;
+  background: #fff;
+}
+.cn-sub {
+  margin: 14px 0 4px;
+  font-size: 13px;
+}
+.cn-settings {
+  display: grid;
+  gap: 12px;
+}
+.cn-setting {
+  display: grid;
+  gap: 4px;
+  font-size: 13px;
+}
+.cn-setting select {
+  font: inherit;
+  padding: 7px 9px;
+  border-radius: 8px;
+  border: 1px solid var(--line, #ddd8ce);
+  background: #fff;
+}
+.cn-note {
+  margin-top: 14px;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}

@@ -1,6 +1,6 @@
 # EZIDINET CONNECT — Implementation plan (tied to the existing code)
 
-Specification: [`specs/EZIDINET_CONNECT_SPEC.md`](specs/EZIDINET_CONNECT_SPEC.md) · Date: 2026-11-28 · Status: **Phase 1 in progress**
+Specification: [`specs/EZIDINET_CONNECT_SPEC.md`](specs/EZIDINET_CONNECT_SPEC.md) · Date: 2026-11-28 · Status: **Phase 1 done and tested (2026-11-28) — waiting for owner review before Phase 2**
 
 ## 1. What exists today (inspection)
 

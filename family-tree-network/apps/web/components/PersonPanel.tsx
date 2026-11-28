@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { photoSrc, type Api, type GraphEdge, type GraphNode, type ProfileDetail, type RelationshipDetail, type Visibility } from '../lib/api';
 import { useI18n } from '../lib/i18n';
+import { useConnectText } from '../lib/i18n-connect';
 import { avatarFor } from './GraphCanvas';
 import StatusBadge from './StatusBadge';
 
@@ -18,12 +19,15 @@ interface Props {
   onExpand: () => void;
   onCollapse: () => void;
   onConnectFrom: () => void;
+  /** Opens this member in EZIDINET CONNECT (friend request, follow, presence). */
+  onOpenConnect?: () => void;
   onSelectEdge: (id: string | null) => void;
   onChanged: () => void;
 }
 
 export default function PersonPanel(p: Props) {
   const { t } = useI18n();
+  const friendsLabel = useConnectText().friendsTab;
   const [profile, setProfile] = useState<ProfileDetail | null>(null);
   useEffect(() => {
     setProfile(null);
@@ -68,6 +72,11 @@ export default function PersonPanel(p: Props) {
         <button className="btn small" onClick={p.onConnectFrom}>
           {t.howConnected}
         </button>
+        {p.onOpenConnect && p.node.claimed && !p.node.deceased && (
+          <button className="btn small" onClick={p.onOpenConnect} data-testid="btn-open-connect">
+            {friendsLabel}
+          </button>
+        )}
       </div>
       {profile && (
         <dl className="facts">

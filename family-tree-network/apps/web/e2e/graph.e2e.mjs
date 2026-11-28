@@ -336,3 +336,82 @@ test('EZIDINET WORLD: globe renders, places and all countries open their card an
   await run({});
   await run({ reducedMotion: 'reduce' });
 });
+
+test('EZIDINET CONNECT: two real accounts — discover, friend request, accept, presence, follow, privacy', async () => {
+  const API = process.env.API_URL ?? 'http://localhost:4000/api';
+  const stamp = Date.now();
+  const reg = async (name) => {
+    const r = await fetch(`${API}/auth/register`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ email: `${name.toLowerCase()}-${stamp}@example.test`, password: 'connect-test-pass-2026', displayName: `${name} ${stamp}`, gender: 'UNSPECIFIED', acceptTerms: true, consentSensitiveData: true, confirmMinimumAge: true }),
+    });
+    assert.equal(r.status, 201);
+    return { ...(await r.json()), email: `${name.toLowerCase()}-${stamp}@example.test`, name: `${name} ${stamp}` };
+  };
+  const A = await reg('Ronahi');
+  const B = await reg('Berxwedan');
+  // B chooses to be discoverable (off by default).
+  await fetch(`${API}/profiles/${B.profileId}`, { method: 'PATCH', headers: { 'content-type': 'application/json', authorization: `Bearer ${B.accessToken}` }, body: JSON.stringify({ searchable: true }) });
+
+  const signIn = async (u) => {
+    const page = await browser.newPage({ viewport: { width: 1440, height: 900 } }); // own browser context = own session
+    const errors = [];
+    page.on('pageerror', (e) => errors.push(e.message));
+    await page.goto(`${WEB}/app`);
+    await page.click('[data-testid=lang-en]');
+    await page.fill('#login-email', u.email);
+    await page.fill('#login-password', 'connect-test-pass-2026');
+    await page.click('[data-testid=login-form] button[type=submit]');
+    await page.waitForSelector('[data-testid=tab-friends]');
+    return { page, errors };
+  };
+
+  // A finds B under Discover and sends a request.
+  const a = await signIn(A);
+  await a.page.click('[data-testid=tab-friends]');
+  await a.page.click('[data-testid=cn-discover]');
+  await a.page.fill('[data-testid=cn-search]', 'Berxwedan');
+  await a.page.click(`[data-testid=cn-row-${B.profileId}] .cn-who`);
+  await a.page.click('[data-testid=cn-add]');
+  await a.page.waitForSelector('[data-testid=cn-cancel]');
+
+  // B sees the badge and accepts in the Requests list.
+  const b = await signIn(B);
+  await b.page.waitForSelector('[data-testid=friends-count]');
+  assert.equal(await b.page.textContent('[data-testid=friends-count]'), '1');
+  await b.page.click('[data-testid=tab-friends]');
+  await b.page.click('[data-testid=cn-requests]');
+  await b.page.click(`[data-testid=cn-accept-${A.profileId}]`);
+  await b.page.waitForSelector(`[data-testid=cn-accept-${A.profileId}]`, { state: 'detached' });
+  await b.page.click('[data-testid=cn-friends]');
+  await b.page.waitForSelector(`[data-testid=cn-row-${A.profileId}]`);
+
+  // A: B is now a friend and (being active) shows as online; A follows B.
+  await a.page.click('[data-testid=cn-back]');
+  await a.page.click('[data-testid=cn-friends]');
+  await a.page.waitForSelector(`[data-testid=cn-row-${B.profileId}] .presence.online`);
+  await a.page.click(`[data-testid=cn-row-${B.profileId}] .cn-who`);
+  await a.page.waitForSelector('[data-testid=cn-are-friends]');
+  await a.page.click('[data-testid=cn-follow]');
+  await a.page.waitForSelector('[data-testid=cn-unfollow]');
+
+  // B hides presence from everyone: A no longer sees it.
+  await b.page.click('[data-testid=cn-settings]');
+  await b.page.selectOption('[data-testid=cn-set-presenceVisibleTo]', 'NOBODY');
+  await b.page.waitForSelector('[data-testid=cn-settings] .success');
+  await a.page.click('[data-testid=cn-back]');
+  await a.page.click(`[data-testid=cn-row-${B.profileId}] .cn-who`);
+  await a.page.waitForSelector('[data-testid=cn-are-friends]');
+  assert.equal(await a.page.$('[data-testid=cn-card] [data-testid=presence]'), null);
+
+  // Arabic: the Friends area follows RTL.
+  await a.page.click('[data-testid=lang-ar]');
+  assert.equal(await a.page.getAttribute('.app', 'dir'), 'rtl');
+  assert.match(await a.page.textContent('[data-testid=tab-friends]'), /الأصدقاء/);
+
+  assert.deepEqual(a.errors, []);
+  assert.deepEqual(b.errors, []);
+  await a.page.close();
+  await b.page.close();
+});
