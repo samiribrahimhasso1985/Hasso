@@ -6,6 +6,7 @@ import { AuthModule } from './auth/auth.module';
 import { HealthController } from './health.controller';
 import { IdentityModule } from './identity/identity.module';
 import { MailModule } from './mail/mail.module';
+import { PhotosModule } from './photos/photos.module';
 import { GraphModule } from './graph/graph.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ProfilesModule } from './profiles/profiles.module';
@@ -22,6 +23,7 @@ import { RelationshipsModule } from './relationships/relationships.module';
     RelationshipsModule,
     GraphModule,
     IdentityModule,
+    PhotosModule,
   ],
   controllers: [HealthController],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],

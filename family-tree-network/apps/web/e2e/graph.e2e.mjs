@@ -6,6 +6,7 @@ import { execSync } from 'node:child_process';
 import { createRequire } from 'node:module';
 import assert from 'node:assert/strict';
 import { after, before, test } from 'node:test';
+import { deflateSync } from 'node:zlib';
 
 const require = createRequire(import.meta.url);
 const { chromium } = require('playwright');
@@ -243,5 +244,50 @@ test('website and platform are one address: home page → Sign in / Create accou
   await page.click('#open-register');
   await page.waitForSelector('[data-testid=register-form]');
   assert.deepEqual(errors, []);
+  await page.close();
+});
+
+/** A small colourful PNG generated on the fly (no files needed). */
+function testPng(size = 200) {
+  const crcTable = Array.from({ length: 256 }, (_, n) => { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1; return c >>> 0; });
+  const crc = (b) => { let c = ~0; for (const x of b) c = crcTable[(c ^ x) & 0xff] ^ (c >>> 8); return (~c) >>> 0; };
+  const chunk = (type, data) => { const l = Buffer.alloc(4); l.writeUInt32BE(data.length); const td = Buffer.concat([Buffer.from(type), data]); const c = Buffer.alloc(4); c.writeUInt32BE(crc(td)); return Buffer.concat([l, td, c]); };
+  const ihdr = Buffer.alloc(13); ihdr.writeUInt32BE(size, 0); ihdr.writeUInt32BE(size, 4); ihdr[8] = 8; ihdr[9] = 2;
+  const raw = Buffer.alloc((size * 3 + 1) * size);
+  for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) { const o = y * (size * 3 + 1) + 1 + x * 3; raw[o] = 180; raw[o + 1] = 120 + (x % 60); raw[o + 2] = 90 + (y % 80); }
+  return Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), chunk('IHDR', ihdr), chunk('IDAT', deflateSync(raw)), chunk('IEND', Buffer.alloc(0))]);
+}
+
+test('profile photo: choose → adjust → save → shown in the top bar and to family; privacy setting; remove', async () => {
+  const omar = await loginAs('omar', 'ar');
+  const { page } = omar;
+  await page.click('[data-testid=tab-identity]');
+  await page.waitForSelector('[data-testid=profile-photo]');
+  await page.setInputFiles('[data-testid=photo-input]', { name: 'me.png', mimeType: 'image/png', buffer: testPng() });
+  await page.waitForSelector('[data-testid=photo-editor]');
+  await page.fill('[data-testid=photo-zoom]', '1.6');
+  await page.click('[data-testid=photo-save]');
+  await page.waitForSelector('[data-testid=photo-editor]', { state: 'detached' });
+  await page.waitForFunction(() => document.querySelector('[data-testid=photo-current]')?.getAttribute('src')?.includes('/photos/'));
+  await page.waitForFunction(() => document.querySelector('[data-testid=me-avatar]')?.getAttribute('src')?.includes('/photos/'));
+  const loaded = await page.evaluate(() => { const i = document.querySelector('[data-testid=photo-current]'); return i.complete && i.naturalWidth; });
+  assert.equal(loaded, 512, 'saved as a 512×512 photo and served back');
+  assert.equal(await page.inputValue('[data-testid=photo-visibility]'), 'NETWORK');
+
+  // Anna (family) sees Omar's photo in her graph data.
+  const annaSees = async () => {
+    const r = await fetch('http://localhost:4000/api/auth/login', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ email: 'anna@demo.ftn.local', password: 'demo-password-2026' }) });
+    const { accessToken, profileId } = await r.json();
+    const g = await (await fetch(`http://localhost:4000/api/graph/ego?depth=1`, { headers: { authorization: `Bearer ${accessToken}` } })).json();
+    return g.nodes.find((n) => n.displayName === 'Omar')?.avatarUrl ?? null;
+  };
+  assert.match(await annaSees(), /^\/photos\//);
+  await page.selectOption('[data-testid=photo-visibility]', 'PRIVATE');
+  await page.waitForTimeout(500);
+  assert.equal(await annaSees(), null, 'only me: hidden from family');
+
+  await page.click('[data-testid=photo-remove]');
+  await page.waitForFunction(() => !document.querySelector('[data-testid=me-avatar]')?.getAttribute('src')?.includes('/photos/'));
+  assert.deepEqual(omar.errors, []);
   await page.close();
 });

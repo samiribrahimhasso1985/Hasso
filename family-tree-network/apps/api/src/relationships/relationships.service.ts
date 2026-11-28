@@ -144,9 +144,9 @@ export class RelationshipsService {
     const rel = await this.loadOne(this.prisma, id);
     const from = toPersonNode(rel.fromProfile);
     const to = toPersonNode(rel.toProfile);
+    const loaded: Loaded = { index: new GraphIndex(), profiles: new Map() };
+    const ctx = await this.loader.viewer(user, loaded);
     if (!this.isParty(user, from, to)) {
-      const loaded: Loaded = { index: new GraphIndex(), profiles: new Map() };
-      const ctx = await this.loader.viewer(user, loaded);
       await this.loader.addProfiles(loaded, [from.id, to.id]);
       loaded.index.addEdge(toEdge(rel));
       if (!this.loader.visibleIndex(loaded, ctx).edges.has(id)) throw notFound();
@@ -156,8 +156,8 @@ export class RelationshipsService {
     const edge = toEdge(rel);
     return {
       ...edgeDto(edge, index, locale),
-      from: personSummary(rel.fromProfile),
-      to: personSummary(rel.toProfile),
+      from: personSummary(rel.fromProfile, ctx),
+      to: personSummary(rel.toProfile, ctx),
       createdAt: rel.createdAt,
       createdByMe: rel.createdById === user.userId,
       verifications: rel.verifications.map((v) => ({

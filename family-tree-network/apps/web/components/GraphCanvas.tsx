@@ -3,7 +3,7 @@
 import cytoscape, { type Core, type ElementDefinition, type StylesheetStyle } from 'cytoscape';
 import fcose from 'cytoscape-fcose';
 import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
-import type { GraphEdge, GraphNode } from '../lib/api';
+import { photoSrc, type GraphEdge, type GraphNode } from '../lib/api';
 import { generationLayout } from '../lib/layout';
 
 let registered = false;
@@ -77,7 +77,8 @@ function toElements(nodes: GraphNode[], edges: GraphEdge[], focusId: string, you
       data: {
         id: n.id,
         label: sub ? `${n.displayName}\n${sub}` : n.displayName,
-        avatar: avatarFor(n.displayName, n.id === focusId),
+        avatar: photoSrc(n.avatarUrl) ?? avatarFor(n.displayName, n.id === focusId),
+        hasPhoto: n.avatarUrl ? 1 : 0,
         generation: n.generation,
       },
       classes,

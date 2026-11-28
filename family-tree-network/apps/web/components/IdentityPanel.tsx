@@ -4,11 +4,12 @@ import QRCode from 'qrcode';
 import { useEffect, useState } from 'react';
 import type { Api, IdentityMe } from '../lib/api';
 import { useI18n } from '../lib/i18n';
+import ProfilePhoto from './ProfilePhoto';
 
 /** The QR encodes only a link with an opaque random token — never personal data (spec §5, §24.2). */
 export const qrLink = (token: string) => `${typeof window === 'undefined' ? '' : window.location.origin}/c/${token}`;
 
-export default function IdentityPanel({ api }: { api: Api }) {
+export default function IdentityPanel({ api, profileId, onChanged }: { api: Api; profileId: string; onChanged: () => void }) {
   const { t } = useI18n();
   const [me, setMe] = useState<IdentityMe | null>(null);
   const [svg, setSvg] = useState<string | null>(null);
@@ -56,6 +57,8 @@ export default function IdentityPanel({ api }: { api: Api }) {
         </div>
         <div className="id-name">{me.displayName}</div>
       </div>
+
+      <ProfilePhoto api={api} profileId={profileId} displayName={me.displayName} onChanged={onChanged} />
 
       <h4>{t.qrTitle}</h4>
       <p className="small muted">{t.qrHelp}</p>

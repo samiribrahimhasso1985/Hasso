@@ -9,14 +9,42 @@ import {
   type RelationshipEdge,
   type ViewerContext,
 } from '@ftn/relationship-engine';
+import { parseMarker, photoPath } from '../photos/photo-url';
 
-/** Public-safe person summary used in graphs and lists. No dates, no locations, no contact data. */
-export function personSummary(p: Pick<Profile, 'id' | 'displayName' | 'gender' | 'avatarUrl' | 'isMinor' | 'userId' | 'deathDate'>) {
+/**
+ * Public-safe person summary used in graphs and lists. No dates, no locations, no contact data.
+ * Only called for people the viewer may see; the photo is a signed link that expires within 2 hours.
+ */
+type SummaryProfile = Pick<Profile, 'id' | 'displayName' | 'gender' | 'avatarUrl' | 'isMinor' | 'userId' | 'deathDate'>;
+
+/**
+ * May this viewer see the person's photo? Owner always; otherwise the photo's own setting
+ * (default NETWORK), minors never beyond FAMILY. Without a viewer context only PUBLIC photos are shown.
+ */
+export function photoAllowed(p: SummaryProfile, ctx?: ViewerContext | null, own = false): boolean {
+  const m = parseMarker(p.avatarUrl);
+  if (!m) return false;
+  if (own || (ctx && (ctx.personId === p.id || (p.userId && ctx.userId === p.userId)))) return true;
+  let vis = m.visibility;
+  if (p.isMinor && (vis === 'PUBLIC' || vis === 'NETWORK')) vis = 'FAMILY';
+  switch (vis) {
+    case 'PUBLIC':
+      return true;
+    case 'NETWORK':
+      return Boolean(ctx && (ctx.networkPersonIds.has(p.id) || ctx.familyPersonIds.has(p.id)));
+    case 'FAMILY':
+      return Boolean(ctx && ctx.familyPersonIds.has(p.id));
+    default:
+      return false;
+  }
+}
+
+export function personSummary(p: SummaryProfile, ctx?: ViewerContext | null, own = false) {
   return {
     id: p.id,
     displayName: p.displayName,
     gender: p.gender,
-    avatarUrl: p.avatarUrl,
+    avatarUrl: photoAllowed(p, ctx, own) ? photoPath(p.id, p.avatarUrl) : null,
     isMinor: p.isMinor,
     claimed: Boolean(p.userId),
     deceased: Boolean(p.deathDate),

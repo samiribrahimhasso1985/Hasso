@@ -1,12 +1,12 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Api, type Category, type GraphEdge, type GraphNode, type PathResult, type PersonSummary, type Session } from '../lib/api';
+import { Api, photoSrc, type Category, type GraphEdge, type GraphNode, type PathResult, type PersonSummary, type Session } from '../lib/api';
 import { useI18n } from '../lib/i18n';
 import { CATEGORY } from '../lib/tokens';
 import AddRelationshipDialog from './AddRelationshipDialog';
 import ConnectPanel from './ConnectPanel';
-import GraphCanvas, { type GraphCanvasHandle, type LayoutMode } from './GraphCanvas';
+import GraphCanvas, { avatarFor, type GraphCanvasHandle, type LayoutMode } from './GraphCanvas';
 import IdentityPanel from './IdentityPanel';
 import InboxPanel from './InboxPanel';
 import LanguageSwitch from './LanguageSwitch';
@@ -177,7 +177,10 @@ export default function Dashboard({ session, onLogout }: { session: Session; onL
             + {t.addRelationship}
           </button>
           <LanguageSwitch />
-          <span className="me">{session.displayName}</span>
+          <span className="me">
+            <img src={photoSrc(me.avatarUrl) ?? avatarFor(session.displayName, true)} alt="" width={30} height={30} data-testid="me-avatar" />
+            {session.displayName}
+          </span>
           <button className="btn ghost" onClick={onLogout}>
             {t.logout}
           </button>
@@ -338,7 +341,7 @@ export default function Dashboard({ session, onLogout }: { session: Session; onL
           <ConnectPanel api={api} from={pathFrom} to={pathTo} setFrom={setPathFrom} setTo={setPathTo} known={nodeList} onResult={setPath} />
         )}
         {tab === 'inbox' && <InboxPanel api={api} onChanged={() => setRefreshKey((k) => k + 1)} onCount={setInboxCount} />}
-        {tab === 'identity' && <IdentityPanel api={api} />}
+        {tab === 'identity' && <IdentityPanel api={api} profileId={session.profileId} onChanged={() => setRefreshKey((k) => k + 1)} />}
       </aside>
 
       {adding && (

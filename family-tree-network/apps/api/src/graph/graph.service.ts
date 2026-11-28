@@ -70,7 +70,7 @@ export class GraphService {
       nodes: ego.nodes.map((n) => {
         const p = loaded.profiles.get(n.id)!;
         return {
-          ...personSummary(p),
+          ...personSummary(p, ctx),
           depth: n.depth,
           generation: gen.has(n.id) ? gen.get(n.id)! : null,
           hiddenNeighbours: n.hiddenNeighbours,
@@ -101,7 +101,7 @@ export class GraphService {
     return {
       found: true as const,
       fullyVerified: p.fullyVerified,
-      people: p.personIds.map((id) => personSummary(loaded.profiles.get(id)!)),
+      people: p.personIds.map((id) => personSummary(loaded.profiles.get(id)!, ctx)),
       steps: p.steps.map((s) => {
         const e = visible.edges.get(s.edgeId)!;
         return {

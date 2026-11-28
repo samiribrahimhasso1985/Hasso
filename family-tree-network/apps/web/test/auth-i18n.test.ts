@@ -35,3 +35,31 @@ describe('countries', () => {
     expect(ALL_COUNTRIES.every((c) => /^[A-Z]{2}$/.test(c))).toBe(true);
   });
 });
+
+import { PHOTO_DICTS } from '../lib/i18n-photo';
+import { SCAN_DICTS } from '../lib/i18n-scan';
+import { tokenFromQr } from '../lib/qr-scan';
+
+describe('photo and scanner texts', () => {
+  it('every language defines every text', () => {
+    for (const dicts of [PHOTO_DICTS, SCAN_DICTS] as const) {
+      const keys = Object.keys(dicts.en).sort();
+      for (const l of ['de', 'ar', 'ku'] as const) {
+        expect(Object.keys(dicts[l]).sort()).toEqual(keys);
+        for (const k of keys) expect((dicts[l] as Record<string, string>)[k], `${l}.${k}`).toBeTruthy();
+      }
+    }
+  });
+});
+
+describe('QR token reading', () => {
+  const t = 'a'.repeat(43);
+  it('accepts EZIDINET links from any host and bare tokens, and nothing else', () => {
+    expect(tokenFromQr(`https://ezidinet.onrender.com/c/${t}`)).toBe(t);
+    expect(tokenFromQr(`http://192.168.178.31:3000/c/${t}/`)).toBe(t);
+    expect(tokenFromQr(t)).toBe(t);
+    expect(tokenFromQr('https://evil.example/login')).toBeNull();
+    expect(tokenFromQr(`javascript:alert(1)//c/${t}`)).toBeNull();
+    expect(tokenFromQr('hello')).toBeNull();
+  });
+});

@@ -79,7 +79,14 @@ export interface ProfileDetail extends PersonSummary {
   bio: string | null;
   languages: string[];
   canManage: boolean;
+  /** Only for the owner: who may see the photo. */
+  photoVisibility?: PhotoVisibility | null;
 }
+
+export type PhotoVisibility = 'PUBLIC' | 'NETWORK' | 'FAMILY' | 'PRIVATE';
+
+/** Photo links from the API are relative to the API base (signed, valid ~1–2 hours). */
+export const photoSrc = (path: string | null | undefined) => (path ? `${API_URL}${path}` : null);
 
 export interface Session {
   accessToken: string;
@@ -200,6 +207,15 @@ export class Api {
   }
   resetPassword(token: string, password: string) {
     return this.req<{ ok: boolean }>('POST', '/auth/reset-password', { token, password });
+  }
+  setPhoto(image: string) {
+    return this.req<{ avatarUrl: string; visibility: PhotoVisibility }>('PUT', '/profiles/me/photo', { image });
+  }
+  setPhotoVisibility(visibility: PhotoVisibility) {
+    return this.req<{ visibility: PhotoVisibility }>('PATCH', '/profiles/me/photo', { visibility });
+  }
+  removePhoto() {
+    return this.req<{ avatarUrl: null }>('DELETE', '/profiles/me/photo');
   }
   outbox(key?: string) {
     return this.req<{ messages: OutboxMessage[] }>('GET', `/dev/outbox${key ? `?key=${encodeURIComponent(key)}` : ''}`);

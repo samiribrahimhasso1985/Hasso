@@ -188,6 +188,7 @@ model Profile {
   memberships CommunityMembership[]
   blockedBy   Block[]
   identifier  UserIdentifier?
+  photo       ProfilePhoto?
   qrTokens    QrToken[]
   qrScans     QrScanEvent[]
 
@@ -488,4 +489,21 @@ model LoginThrottle {
   updatedAt   DateTime  @updatedAt @map("updated_at")
 
   @@map("login_throttles")
+}
+
+/// Profile photo (EZIDINET test phase): kept in its own table so it can move to object storage later (spec §29)
+/// without touching profiles. Metadata (EXIF/GPS, text chunks) is removed before storing.
+model ProfilePhoto {
+  profileId String   @id @map("profile_id") @db.Uuid
+  mime      String   @db.VarChar(20)
+  data      Bytes
+  bytes     Int
+  version   Int      @default(1)
+  /// Who may see the photo. Default: the person's connections. Minors: never beyond family.
+  visibility Visibility @default(NETWORK)
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@map("profile_photos")
 }

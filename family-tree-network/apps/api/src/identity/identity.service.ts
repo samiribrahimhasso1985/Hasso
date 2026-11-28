@@ -114,7 +114,8 @@ export class IdentityService {
     if (outcome !== 'OK' && outcome !== 'SELF') throw invalid();
     await this.prisma.qrToken.update({ where: { id: row.id }, data: { lastUsedAt: new Date() } });
     return {
-      person: personSummary(row.profile),
+      // A scanned person is not yet connected: only a PUBLIC photo is shown (or one's own).
+      person: personSummary(row.profile, null, outcome === 'SELF'),
       ezidId: row.profile.identifier?.ezidId ?? null,
       isSelf: outcome === 'SELF',
     };

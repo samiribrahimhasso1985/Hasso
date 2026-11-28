@@ -1181,3 +1181,88 @@ fieldset.plain {
   display: flex;
   flex-direction: column;
 }
+
+/* ── profile photo ── */
+.photo-section {
+  margin-top: 18px;
+}
+.photo-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.photo-current {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--border);
+  background: var(--surface-alt);
+  flex: none;
+}
+.photo-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.photo-vis select {
+  margin-top: 4px;
+}
+.cropper {
+  width: min(100%, 340px);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+.crop-view {
+  position: relative;
+  overflow: hidden;
+  border-radius: 16px;
+  background: var(--surface-alt);
+  touch-action: none;
+  cursor: grab;
+  user-select: none;
+}
+.crop-view:active {
+  cursor: grabbing;
+}
+.crop-view img {
+  position: absolute;
+  max-width: none;
+  pointer-events: none;
+}
+.crop-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  box-shadow: 0 0 0 999px rgba(48, 48, 45, 0.42);
+  pointer-events: none;
+}
+.crop-zoom {
+  width: 100%;
+}
+.crop-zoom input {
+  width: 100%;
+}
+.cropper .step-actions {
+  width: 100%;
+}
+.top-actions .me {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.top-actions .me img {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--border);
+}
+.person-head img {
+  border-radius: 50%;
+  object-fit: cover;
+}

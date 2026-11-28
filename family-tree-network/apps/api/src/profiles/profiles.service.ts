@@ -66,7 +66,8 @@ export class ProfilesService {
       }
     };
     return {
-      ...personSummary(p),
+      ...personSummary(p, ctx, own),
+      photoVisibility: own ? (await this.prisma.profilePhoto.findUnique({ where: { profileId: p.id }, select: { visibility: true } }))?.visibility ?? null : undefined,
       fullName: own || ctx.familyPersonIds.has(p.id) ? p.fullName : null,
       birthDate: allowed('BIRTH_DATE') ? p.birthDate?.toISOString().slice(0, 10) ?? null : null,
       deathDate: p.deathDate?.toISOString().slice(0, 10) ?? null,
@@ -97,7 +98,7 @@ export class ProfilesService {
     });
     return rows
       .filter((p) => canSeePerson(ctx, { ...p, stewardUserIds: p.stewards.map((s) => s.userId) }))
-      .map((p) => ({ ...personSummary(p), inMyFamily: ctx.familyPersonIds.has(p.id), connected: ctx.networkPersonIds.has(p.id) }));
+      .map((p) => ({ ...personSummary(p, ctx), inMyFamily: ctx.familyPersonIds.has(p.id), connected: ctx.networkPersonIds.has(p.id) }));
   }
 
   /** Profiles this user manages (own + stewarded). */
@@ -106,7 +107,7 @@ export class ProfilesService {
       where: { OR: [{ userId: user.userId }, { stewards: { some: { userId: user.userId } } }] },
       orderBy: { createdAt: 'asc' },
     });
-    return rows.map(personSummary);
+    return rows.map((p) => personSummary(p, null, true));
   }
 
   /**

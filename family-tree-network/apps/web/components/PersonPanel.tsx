@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import type { Api, GraphEdge, GraphNode, ProfileDetail, RelationshipDetail, Visibility } from '../lib/api';
+import { photoSrc, type Api, type GraphEdge, type GraphNode, type ProfileDetail, type RelationshipDetail, type Visibility } from '../lib/api';
 import { useI18n } from '../lib/i18n';
 import { avatarFor } from './GraphCanvas';
 import StatusBadge from './StatusBadge';
@@ -36,7 +36,7 @@ export default function PersonPanel(p: Props) {
   return (
     <div className="panel person" data-testid="person-panel">
       <header className="person-head">
-        <img src={avatarFor(p.node.displayName, true)} alt="" width={64} height={64} />
+        <img src={photoSrc(p.node.avatarUrl) ?? avatarFor(p.node.displayName, true)} alt="" width={64} height={64} data-testid="person-avatar" />
         <div>
           <h3>{profile?.fullName ?? p.node.displayName}</h3>
           {p.node.kinship && <div className="kinship">{p.node.kinship.label}</div>}
