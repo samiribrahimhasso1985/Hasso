@@ -19,7 +19,9 @@
 #>
 param([switch]$SkipInstall, [switch]$NoDemo)
 
-$ErrorActionPreference = 'Stop'
+# 'Continue': Windows PowerShell 5.1 turns any stderr line of a native program (psql, docker, npm) into a
+# terminating error under 'Stop'. Every native step below checks $LASTEXITCODE explicitly instead.
+$ErrorActionPreference = 'Continue'
 $Root = Resolve-Path (Join-Path $PSScriptRoot '..\..')
 Set-Location $Root
 
@@ -142,8 +144,8 @@ $ok = $false
 for ($i = 0; $i -lt 90 -and -not $ok; $i++) {
   Start-Sleep 2
   try {
-    $a = Invoke-WebRequest 'http://localhost:4000/api/health' -UseBasicParsing -TimeoutSec 3
-    $w = Invoke-WebRequest 'http://localhost:3000/' -UseBasicParsing -TimeoutSec 30
+    $a = Invoke-WebRequest 'http://localhost:4000/api/health' -UseBasicParsing -TimeoutSec 3 -ErrorAction Stop
+    $w = Invoke-WebRequest 'http://localhost:3000/' -UseBasicParsing -TimeoutSec 30 -ErrorAction Stop
     if ($a.StatusCode -eq 200 -and $w.StatusCode -eq 200) { $ok = $true }
   } catch { }
 }
