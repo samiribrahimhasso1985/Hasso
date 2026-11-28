@@ -1,0 +1,19 @@
+# Local development database. Credentials are development-only.
+services:
+  postgres:
+    image: postgres:16.4-alpine
+    environment:
+      POSTGRES_USER: ftn
+      POSTGRES_PASSWORD: ftn_dev
+      POSTGRES_DB: ftn
+    ports:
+      - "5432:5432"
+    volumes:
+      - ftn-pg:/var/lib/postgresql/data
+      - ./scripts/create-test-db.sql:/docker-entrypoint-initdb.d/create-test-db.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ftn"]
+      interval: 5s
+      retries: 10
+volumes:
+  ftn-pg:

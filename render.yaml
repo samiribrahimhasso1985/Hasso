@@ -1,0 +1,42 @@
+# EZIDINET — online test server on Render (Blueprint). Region Frankfurt (EU). Free plans: no cost.
+# Free database: Render deletes it 30 days after creation unless it is upgraded — test data only.
+databases:
+  - name: ezidinet-db
+    plan: free
+    region: frankfurt
+    databaseName: ezidinet
+    user: ezidinet
+    postgresMajorVersion: "16"
+    ipAllowList: [] # no access from the internet; only the EZIDINET service connects
+
+services:
+  - type: web
+    name: ezidinet
+    runtime: node
+    plan: free
+    region: frankfurt
+    rootDir: family-tree-network
+    buildCommand: bash scripts/render-build.sh
+    startCommand: bash scripts/render-start.sh
+    healthCheckPath: /
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: ezidinet-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: QR_TOKEN_KEY
+        generateValue: true
+      # No e-mail provider yet: account e-mails go to the developer mailbox, which needs this key
+      # (open https://<address>/dev/mailbox?key=<OUTBOX_KEY>; the value is shown in Render → Environment).
+      - key: MAIL_TRANSPORT
+        value: outbox
+      - key: OUTBOX_KEY
+        generateValue: true
+      - key: AUTH_RATE_LIMIT_PER_MINUTE
+        value: "30"

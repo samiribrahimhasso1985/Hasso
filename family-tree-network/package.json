@@ -1,0 +1,22 @@
+{
+  "name": "family-tree-network",
+  "private": true,
+  "version": "0.1.0",
+  "description": "FAMILY TREE NETWORK — multidimensional relationship network (monorepo)",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "build:engine": "npm run build -w @ftn/relationship-engine",
+    "test": "npm run build:engine && npm test -w @ftn/relationship-engine && npm test -w @ftn/api && npm test -w @ftn/web",
+    "dev:api": "npm run start:dev -w @ftn/api",
+    "dev:web": "npm run dev -w @ftn/web",
+    "db:migrate": "npm run db:migrate -w @ftn/api",
+    "db:seed": "npm run db:seed -w @ftn/api",
+    "site:build": "python3 website/make_site.py website/source.html apps/web/public/site/index.html"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
