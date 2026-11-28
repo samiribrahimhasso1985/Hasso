@@ -34,8 +34,8 @@ pip install -q -U "yt-dlp[default]" || log "yt-dlp pip failed"
 
 # 3) Ghost Editor: raw talking-head take -> finished reel
 link "$TOOLS/ghost-editor" ghost-editor
-pip install -q numpy opencv-python-headless pillow openai-whisper || log "ghost-editor python deps failed"
-python3 "$TOOLS/ghost-editor/scripts/library_restore.py" >/dev/null 2>&1 || log "ghost-editor sound library not downloaded"
+python3 -c "import whisper" 2>/dev/null || pip install -q numpy opencv-python-headless pillow openai-whisper || log "ghost-editor python deps failed"
+timeout 600 python3 "$TOOLS/ghost-editor/scripts/library_restore.py" >/dev/null 2>&1 || log "ghost-editor sound library not downloaded (optional; rerun scripts/library_restore.py)"
 
 # 4) HyperFrames (HeyGen): HTML video, animated captions, motion graphics, MP4 export
 for s in hyperframes hyperframes-cli hyperframes-registry media-use reverse-any-video remotion-to-hyperframes slideshow style-sampling; do
@@ -58,9 +58,9 @@ link "$TOOLS/video-shotcraft" video-shotcraft
 link "$TOOLS/stickman-video-director/skills/directing-stickman-videos" directing-stickman-videos
 
 # 9) Herk Edit Kit: workspace (open the folder); 15 editing skills incl. cut-silences / cut-mistakes
-(cd "$TOOLS/herk-edit-kit" && npm ci --silent --no-audit --no-fund) || log "herk-edit-kit npm ci failed"
+[ -d "$TOOLS/herk-edit-kit/node_modules" ] || (cd "$TOOLS/herk-edit-kit" && timeout 900 npm ci --silent --no-audit --no-fund) || log "herk-edit-kit npm ci failed"
 
 # 10) OpenMontage: workspace (open the folder); full AI video production pipelines (AGPL-3.0)
-(cd "$TOOLS/OpenMontage" && pip install -q -r requirements.txt && (cd remotion-composer && npm install --silent --no-audit --no-fund)) || log "OpenMontage setup incomplete"
+(cd "$TOOLS/OpenMontage" && timeout 1200 pip install -q -r requirements.txt && (cd remotion-composer && [ -d node_modules ] || timeout 900 npm install --silent --no-audit --no-fund)) || log "OpenMontage setup incomplete"
 
 log "done. Tools: $TOOLS  Skills: $SKILLS"
