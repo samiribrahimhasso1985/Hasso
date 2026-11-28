@@ -19,6 +19,7 @@ import {
 } from '@ftn/relationship-engine';
 import { AuditService } from '../audit/audit.service';
 import { FRIEND_TYPES, assertFriendRequestAllowed } from '../connect/policy';
+import { NotificationsService } from '../notifications/notifications.service';
 import type { AuthUser } from '../common/auth-user';
 import { AppError } from '../common/errors.filter';
 import { GraphLoader, toEdge, toPersonNode, type Loaded } from '../graph/graph-loader.service';
@@ -41,7 +42,36 @@ export class RelationshipsService {
     private readonly prisma: PrismaService,
     private readonly loader: GraphLoader,
     private readonly audit: AuditService,
+    private readonly notifications: NotificationsService,
   ) {}
+
+  /** Member profiles that decide for a person: the person, or their stewards. */
+  private async deciderProfiles(person: PersonNode) {
+    const users = confirmersOf(person);
+    if (!users.length) return [];
+    const rows = await this.prisma.profile.findMany({ where: { userId: { in: users } }, select: { id: true } });
+    return rows.map((r) => r.id);
+  }
+
+  /** A new request: everyone who must still decide is notified (friend requests in FRIENDS, others in RELATIONSHIPS). */
+  private async notifyRequest(user: AuthUser, relId: string, from: PersonNode, to: PersonNode, typeKey: string) {
+    const friend = FRIEND_TYPES.includes(typeKey);
+    for (const side of [from, to]) {
+      if (confirmersOf(side).includes(user.userId)) continue; // the creator's own side
+      for (const recipient of await this.deciderProfiles(side)) {
+        await this.notifications.notify({
+          recipientProfileId: recipient,
+          actorProfileId: user.profileId,
+          category: friend ? 'FRIENDS' : 'RELATIONSHIPS',
+          type: friend ? 'FRIEND_REQUEST' : 'RELATIONSHIP_REQUEST',
+          entityType: 'relationship',
+          entityId: relId,
+          data: { typeKey, subjectProfileId: side.id },
+          dedupeKey: `rel:${relId}`,
+        });
+      }
+    }
+  }
 
   /** Serialises concurrent writes that touch the same people (duplicate / parent-count races). */
   private async lockPeople(db: Db, ids: string[]) {
@@ -128,6 +158,10 @@ export class RelationshipsService {
       },
       { isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted, timeout: 15_000 },
     );
+    const created = await this.loadOne(this.prisma, id);
+    if (created.status === 'PENDING') {
+      await this.notifyRequest(user, id, toPersonNode(created.fromProfile), toPersonNode(created.toProfile), created.typeKey);
+    }
     return this.get(user, id, locale);
   }
 
@@ -182,6 +216,7 @@ export class RelationshipsService {
   }
 
   async decide(user: AuthUser, id: string, dto: DecisionDto, locale: Locale) {
+    let outcome: { before: string; after: string; createdById: string; typeKey: string } | null = null;
     await this.prisma.$transaction(async (tx) => {
       const rel = await this.loadOne(tx, id);
       await this.lockPeople(tx, [rel.fromProfileId, rel.toProfileId]);
@@ -202,8 +237,32 @@ export class RelationshipsService {
       });
       await tx.relationship.update({ where: { id }, data: { status } });
       await this.audit.log(user.userId, `relationship.${dto.decision.toLowerCase()}`, 'relationship', id, { status }, tx);
+      outcome = { before: rel.status, after: status, createdById: rel.createdById, typeKey: rel.typeKey };
     });
+    await this.afterDecision(user, id, outcome);
     return this.get(user, id, locale);
+  }
+
+  /** My request notification is done once I decided; the creator hears about a confirmation (not about a rejection). */
+  private async afterDecision(user: AuthUser, id: string, o: { before: string; after: string; createdById: string; typeKey: string } | null) {
+    if (!o) return;
+    await this.prisma.notification.updateMany({ where: { recipientProfileId: user.profileId, entityType: 'relationship', entityId: id, readAt: null }, data: { readAt: new Date() } });
+    if (o.before !== 'CONFIRMED' && o.after === 'CONFIRMED' && o.createdById !== user.userId) {
+      const creator = await this.prisma.profile.findUnique({ where: { userId: o.createdById }, select: { id: true } });
+      if (creator) {
+        const friend = FRIEND_TYPES.includes(o.typeKey);
+        await this.notifications.notify({
+          recipientProfileId: creator.id,
+          actorProfileId: user.profileId,
+          category: friend ? 'FRIENDS' : 'RELATIONSHIPS',
+          type: friend ? 'FRIEND_ACCEPTED' : 'RELATIONSHIP_CONFIRMED',
+          entityType: 'relationship',
+          entityId: id,
+          data: { typeKey: o.typeKey },
+          dedupeKey: `relok:${id}`,
+        });
+      }
+    }
   }
 
   async update(user: AuthUser, id: string, dto: UpdateRelationshipDto, locale: Locale) {
@@ -233,6 +292,10 @@ export class RelationshipsService {
     const rel = await this.loadOne(this.prisma, id);
     if (!this.isParty(user, toPersonNode(rel.fromProfile), toPersonNode(rel.toProfile))) {
       throw new AppError(HttpStatus.FORBIDDEN, 'NOT_A_PARTY', 'Only the people involved can remove this relationship');
+    }
+    if (rel.status === 'PENDING') {
+      // A withdrawn request disappears from the other person's notifications.
+      await this.prisma.notification.deleteMany({ where: { entityType: 'relationship', entityId: id, type: { in: ['FRIEND_REQUEST', 'RELATIONSHIP_REQUEST'] } } });
     }
     await this.prisma.$transaction(async (tx) => {
       await tx.relationship.delete({ where: { id } });

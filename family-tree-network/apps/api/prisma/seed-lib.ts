@@ -134,6 +134,6 @@ export async function seedDemo(prisma: PrismaClient, opts: { bcryptRounds?: numb
 
 export async function wipe(prisma: PrismaClient) {
   await prisma.$executeRawUnsafe(
-    'TRUNCATE "follows", "connect_settings", "user_presence", "profile_photos", "login_throttles", "sessions", "auth_tokens", "consents", "qr_scan_events", "qr_tokens", "user_identifiers", "audit_logs", "blocks", "community_memberships", "communities", "relationship_verifications", "relationships", "privacy_settings", "profile_stewards", "profiles", "users" RESTART IDENTITY CASCADE',
+    'TRUNCATE "notifications", "notification_preferences", "follows", "connect_settings", "user_presence", "profile_photos", "login_throttles", "sessions", "auth_tokens", "consents", "qr_scan_events", "qr_tokens", "user_identifiers", "audit_logs", "blocks", "community_memberships", "communities", "relationship_verifications", "relationships", "privacy_settings", "profile_stewards", "profiles", "users" RESTART IDENTITY CASCADE',
   );
 }

@@ -193,6 +193,30 @@ export interface Paged<T> {
   items: T[];
 }
 
+// ── Notifications (unified service) ──
+export type NotificationCategory = 'RELATIONSHIPS' | 'FRIENDS' | 'FOLLOWS' | 'MESSAGES' | 'CALLS' | 'GROUPS' | 'EVENTS' | 'INVITATIONS' | 'LEARNING' | 'CREATORS' | 'COLLABORATION' | 'COMMUNITY' | 'SAFETY';
+export interface AppNotification {
+  id: string;
+  category: NotificationCategory;
+  type: string;
+  entityType: string | null;
+  entityId: string | null;
+  data: Record<string, unknown> | null;
+  silent: boolean;
+  read: boolean;
+  createdAt: string;
+  actor: PersonSummary | null;
+}
+export interface NotificationPrefs {
+  mutedCategories: NotificationCategory[];
+  pushEnabled: boolean;
+  quietStart: number | null;
+  quietEnd: number | null;
+  timeZone: string;
+  dndUntil: string | null;
+  categories: NotificationCategory[];
+}
+
 export class ApiError extends Error {
   constructor(
     public status: number,
@@ -380,6 +404,24 @@ export class Api {
   }
   heartbeat() {
     return this.req<{ status: StatusMode }>('POST', '/connect/presence');
+  }
+  notifications(before?: string) {
+    return this.req<{ items: AppNotification[]; next: string | null; unread: number }>('GET', `/notifications${before ? `?before=${encodeURIComponent(before)}` : ''}`);
+  }
+  unreadNotifications() {
+    return this.req<{ unread: number }>('GET', '/notifications/unread-count');
+  }
+  readNotification(id: string) {
+    return this.req<{ unread: number }>('POST', `/notifications/${id}/read`);
+  }
+  readAllNotifications() {
+    return this.req<{ unread: number }>('POST', '/notifications/read-all');
+  }
+  notificationPrefs() {
+    return this.req<NotificationPrefs>('GET', '/notifications/preferences');
+  }
+  updateNotificationPrefs(body: { mutedCategories?: NotificationCategory[]; quietStart?: number | null; quietEnd?: number | null; timeZone?: string; dndMinutes?: number | null }) {
+    return this.req<NotificationPrefs>('PATCH', '/notifications/preferences', body);
   }
   block(profileId: string) {
     return this.req<{ blocked: boolean }>('POST', '/blocks', { profileId });

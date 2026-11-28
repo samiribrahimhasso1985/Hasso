@@ -7,6 +7,7 @@ import { CATEGORY } from '../lib/tokens';
 import AddRelationshipDialog from './AddRelationshipDialog';
 import ConnectPanel from './ConnectPanel';
 import FriendsPanel from './FriendsPanel';
+import NotificationBell from './NotificationBell';
 import { useConnectText } from '../lib/i18n-connect';
 import GraphCanvas, { avatarFor, type GraphCanvasHandle, type LayoutMode } from './GraphCanvas';
 import IdentityPanel from './IdentityPanel';
@@ -191,6 +192,21 @@ export default function Dashboard({ session, onLogout }: { session: Session; onL
           <button className="btn gold" onClick={() => setAdding(true)} data-testid="btn-add">
             + {t.addRelationship}
           </button>
+          <NotificationBell
+            api={api}
+            onOpen={(n) => {
+              setRefreshKey((k) => k + 1);
+              if (n.category === 'RELATIONSHIPS') return setTab('inbox');
+              if (n.type === 'FRIEND_REQUEST' && n.entityId) {
+                setConnectPerson(null);
+                return setTab('friends');
+              }
+              if (n.actor) {
+                setConnectPerson(n.actor.id);
+                setTab('friends');
+              }
+            }}
+          />
           <LanguageSwitch />
           <span className="me">
             <img src={photoSrc(me.avatarUrl) ?? avatarFor(session.displayName, true)} alt="" width={30} height={30} data-testid="me-avatar" />

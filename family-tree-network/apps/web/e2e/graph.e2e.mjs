@@ -415,3 +415,71 @@ test('EZIDINET CONNECT: two real accounts — discover, friend request, accept, 
   await a.page.close();
   await b.page.close();
 });
+
+test('Notification centre: two accounts — request arrives in the bell, opens Friends, acceptance notifies back, preferences', async () => {
+  const API = process.env.API_URL ?? 'http://localhost:4000/api';
+  const stamp = Date.now();
+  const pass = 'notify-test-pass-2026';
+  const reg = async (name) => {
+    const email = `${name.toLowerCase()}-${stamp}@example.test`;
+    const r = await fetch(`${API}/auth/register`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ email, password: pass, displayName: `${name} ${stamp}`, gender: 'UNSPECIFIED', acceptTerms: true, consentSensitiveData: true, confirmMinimumAge: true }),
+    });
+    assert.equal(r.status, 201);
+    return { ...(await r.json()), email };
+  };
+  const A = await reg('Hevi');
+  const B = await reg('Zana');
+  await fetch(`${API}/profiles/${B.profileId}`, { method: 'PATCH', headers: { 'content-type': 'application/json', authorization: `Bearer ${B.accessToken}` }, body: JSON.stringify({ searchable: true }) });
+  const signIn = async (u, viewport = { width: 1440, height: 900 }) => {
+    const page = await browser.newPage({ viewport });
+    const errors = [];
+    page.on('pageerror', (e) => errors.push(e.message));
+    await page.goto(`${WEB}/app`);
+    await page.click('[data-testid=lang-en]');
+    await page.fill('#login-email', u.email);
+    await page.fill('#login-password', pass);
+    await page.click('[data-testid=login-form] button[type=submit]');
+    await page.waitForSelector('[data-testid=nt-bell]');
+    return { page, errors };
+  };
+  // A sends B a friend request (through the API, as the QR flow or Discover would).
+  const sent = await fetch(`${API}/connect/friends/requests`, {
+    method: 'POST', headers: { 'content-type': 'application/json', authorization: `Bearer ${A.accessToken}` }, body: JSON.stringify({ profileId: B.profileId }),
+  });
+  assert.equal(sent.status, 201);
+
+  // B (on a phone) sees the count, opens the bell, taps the request → Friends tab.
+  const b = await signIn(B, { width: 390, height: 844 });
+  await b.page.waitForSelector('[data-testid=nt-count]');
+  assert.equal(await b.page.textContent('[data-testid=nt-count]'), '1');
+  await b.page.click('[data-testid=nt-bell]');
+  assert.match(await b.page.textContent('[data-testid=nt-item-FRIEND_REQUEST]'), /sent you a friend request/);
+  await b.page.click('[data-testid=nt-item-FRIEND_REQUEST]');
+  await b.page.waitForSelector('[data-testid=friends-panel]');
+  await b.page.waitForSelector('[data-testid=nt-count]', { state: 'detached' });
+  await b.page.click('[data-testid=cn-requests]');
+  await b.page.click(`[data-testid=cn-accept-${A.profileId}]`);
+  assert.equal(await b.page.evaluate(() => document.documentElement.scrollWidth - innerWidth), 0);
+
+  // A gets "accepted" in Arabic, then mutes friend notifications in the preferences.
+  const a = await signIn(A);
+  await a.page.click('[data-testid=lang-ar]');
+  await a.page.click('[data-testid=nt-bell]');
+  assert.match(await a.page.textContent('[data-testid=nt-item-FRIEND_ACCEPTED]'), /قبل .* طلب صداقتك/);
+  await a.page.click('[data-testid=nt-settings]');
+  await a.page.uncheck('[data-testid=nt-cat-FRIENDS]');
+  await a.page.waitForSelector('[data-testid=nt-prefs] .success');
+  await a.page.click('[data-testid=nt-dnd-1h]');
+  await a.page.waitForSelector('[data-testid=nt-dnd-on]');
+  const prefs = await (await fetch(`${API}/notifications/preferences`, { headers: { authorization: `Bearer ${A.accessToken}` } })).json();
+  assert.deepEqual(prefs.mutedCategories, ['FRIENDS']);
+  assert.ok(new Date(prefs.dndUntil) > new Date());
+
+  assert.deepEqual(a.errors, []);
+  assert.deepEqual(b.errors, []);
+  await a.page.close();
+  await b.page.close();
+});

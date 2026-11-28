@@ -117,7 +117,7 @@ connect (17), dev outbox (1), health (1).
 ### L. CONNECT NOTIFICATIONS
 | Feature | Status | Note |
 |---|---|---|
-| In-app notifications, history, preferences, quiet hours, do not disturb | ❌ → **Phase 2 of this integration** | the engine already computes relationship tiers (`notifications.ts`) but there is no notification table, service or UI |
+| In-app notifications, history, unread count, read / read all / delete, preferences (categories), quiet hours (time zone, overnight), do not disturb | ✅ (2026-11-28) | **one** `NotificationsService` (`notifications`, `notification_preferences`); producers today: friend requests & acceptance, relationship requests & confirmation, new followers (withdrawn when a request is cancelled or someone unfollows); blocked people never notify; muted category = nothing created; quiet hours / DND = silent but kept. Bell + centre in the platform, 4 languages. Tests: 11 API + 2-account e2e |
 | Push notifications | ❌ | Web Push (free) — D-C4 |
 
 ### M. CONNECT TRUST & SAFETY
@@ -159,7 +159,7 @@ personal or friends video archive.
 | 1 | User Service | ✅ auth + profiles modules | reuse |
 | 2 | Friendship Service | ✅ `ConnectService` on relationships | reuse |
 | 3 | Messaging Service | ❌ | Phase 4 (after D-C1, D-C3) |
-| 4 | Notification Service | ❌ | **Phase 2 — now** |
+| 4 | Notification Service | ✅ in-app (push later, D-C4) | done — every module calls `NotificationsService.notify()` |
 | 5 | Media Service | 🟡 profile photos only | Phase 4 (storage decision D-C3) |
 | 6 | Call & Realtime Service | ❌ (presence heartbeat) | WebSocket gateway (D-C1), WebRTC Phase 6 |
 | 7 | Group Membership Service | 🟡 tables only | Phase 5 |
@@ -204,14 +204,14 @@ phone bottom bar keeps 5 items.
 | Phase | Content | Status |
 |---|---|---|
 | 1 | Audit & inventory | ✅ this document |
-| 2 | Unified database & shared services | ▶ started: **Notification Service + central Privacy Service** (no external cost) |
+| 2 | Unified database & shared services | 🟡 Notification Service ✅; rollback scripts ✅ (`rollback/`); central Privacy Service deferred to Phase 4 with the first private content (messages) so it is built on real use, not in the abstract; WebSocket / storage wait for D-C1 / D-C3 |
 | 3 | CONNECT Home & navigation | next |
 | 4 | Messenger & friends integration | needs D-C1, D-C3 |
 | 5–13 | as in the master spec | not started |
 
 ## 9. Evidence (test runs at the time of this audit)
 
-engine 54/54 · API 70/70 (incl. 13 CONNECT) · web unit 18/18 · browser e2e 11/11 (incl. two-account CONNECT test).
+engine 54/54 · API 80/80 (13 CONNECT + 10 notifications) · web unit 18/18 · browser e2e 12/12 (two-account CONNECT and notification tests).
 
 ## 10. Known issues
 

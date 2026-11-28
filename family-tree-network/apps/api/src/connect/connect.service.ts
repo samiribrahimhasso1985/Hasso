@@ -7,6 +7,7 @@ import { AppError } from '../common/errors.filter';
 import { GraphLoader, type Loaded } from '../graph/graph-loader.service';
 import { canSeePerson, personSummary } from '../graph/present';
 import { PrismaService } from '../prisma/prisma.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { FIELD_DEFAULTS } from '../profiles/profiles.service';
 import { RelationshipsService } from '../relationships/relationships.service';
 import type { SettingsDto } from './dto';
@@ -39,6 +40,7 @@ export class ConnectService {
     private readonly loader: GraphLoader,
     private readonly rels: RelationshipsService,
     private readonly audit: AuditService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   // ── helpers ────────────────────────────────────────────────────────────────────────────────────────
@@ -326,11 +328,21 @@ export class ConnectService {
       update: {},
     });
     await this.audit.log(user.userId, 'follow.create', 'profile', targetId);
+    await this.notifications.notify({
+      recipientProfileId: targetId,
+      actorProfileId: user.profileId,
+      category: 'FOLLOWS',
+      type: 'NEW_FOLLOWER',
+      entityType: 'profile',
+      entityId: user.profileId,
+      dedupeKey: `follow:${user.profileId}`,
+    });
     return { following: true };
   }
 
   async unfollow(user: AuthUser, targetId: string) {
     await this.prisma.follow.deleteMany({ where: { followerProfileId: user.profileId, followeeProfileId: targetId } });
+    await this.notifications.withdraw(targetId, `follow:${user.profileId}`);
     await this.audit.log(user.userId, 'follow.delete', 'profile', targetId);
     return { following: false };
   }

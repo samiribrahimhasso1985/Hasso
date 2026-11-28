@@ -195,6 +195,9 @@ model Profile {
   followers   Follow[]          @relation("Followers")
   connectSettings ConnectSettings?
   presence    UserPresence?
+  notifications        Notification[] @relation("NotificationsReceived")
+  causedNotifications  Notification[] @relation("NotificationsCaused")
+  notificationPrefs    NotificationPreferences?
 
   @@index([displayName])
   @@map("profiles")
@@ -569,4 +572,65 @@ model UserPresence {
   profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
 
   @@map("user_presence")
+}
+
+// ───────────── EZIDINET CONNECT — unified Notification Service (master integration, phase 2) ─────────────
+// One notification table for every CONNECT module. History is kept; a muted category creates nothing;
+// quiet hours / do-not-disturb mark a notification as silent (no alert, still in the history).
+
+enum NotificationCategory {
+  RELATIONSHIPS
+  FRIENDS
+  FOLLOWS
+  MESSAGES
+  CALLS
+  GROUPS
+  EVENTS
+  INVITATIONS
+  LEARNING
+  CREATORS
+  COLLABORATION
+  COMMUNITY
+  SAFETY
+}
+
+model Notification {
+  id                 String               @id @default(uuid()) @db.Uuid
+  recipientProfileId String               @map("recipient_profile_id") @db.Uuid
+  actorProfileId     String?              @map("actor_profile_id") @db.Uuid
+  category           NotificationCategory
+  type               String               @db.VarChar(40)
+  entityType         String?              @map("entity_type") @db.VarChar(40)
+  entityId           String?              @map("entity_id") @db.VarChar(64)
+  data               Json?
+  /// Same key = same event: repeated events update one notification instead of piling up.
+  dedupeKey          String?              @map("dedupe_key") @db.VarChar(120)
+  silent             Boolean              @default(false)
+  readAt             DateTime?            @map("read_at")
+  createdAt          DateTime             @default(now()) @map("created_at")
+
+  recipient Profile  @relation("NotificationsReceived", fields: [recipientProfileId], references: [id], onDelete: Cascade)
+  actor     Profile? @relation("NotificationsCaused", fields: [actorProfileId], references: [id], onDelete: SetNull)
+
+  @@unique([recipientProfileId, dedupeKey])
+  @@index([recipientProfileId, createdAt])
+  @@index([recipientProfileId, readAt])
+  @@map("notifications")
+}
+
+/// Per-member notification choices (missing row = everything on, no quiet hours).
+model NotificationPreferences {
+  profileId       String                 @id @map("profile_id") @db.Uuid
+  mutedCategories NotificationCategory[] @default([]) @map("muted_categories")
+  pushEnabled     Boolean                @default(false) @map("push_enabled")
+  /// Quiet hours as minutes after midnight in `timeZone` (start may be after end: overnight).
+  quietStart      Int?                   @map("quiet_start") @db.SmallInt
+  quietEnd        Int?                   @map("quiet_end") @db.SmallInt
+  timeZone        String                 @default("UTC") @map("time_zone") @db.VarChar(40)
+  dndUntil        DateTime?              @map("dnd_until")
+  updatedAt       DateTime               @updatedAt @map("updated_at")
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@map("notification_preferences")
 }
