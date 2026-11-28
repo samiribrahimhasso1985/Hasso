@@ -198,6 +198,9 @@ model Profile {
   notifications        Notification[] @relation("NotificationsReceived")
   causedNotifications  Notification[] @relation("NotificationsCaused")
   notificationPrefs    NotificationPreferences?
+  eventsOrganized      Event[]         @relation("EventsOrganized")
+  eventRegistrations   EventAttendee[] @relation("EventRegistrations")
+  eventSaves           EventSave[]     @relation("EventSaves")
 
   @@index([displayName])
   @@map("profiles")
@@ -633,4 +636,219 @@ model NotificationPreferences {
   profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
 
   @@map("notification_preferences")
+}
+
+// ───────────── EZIDINET Events & ÊZÎDÎ Calendar (docs/events/EVENTS_AUDIT_AND_PLAN.md) ─────────────
+// Two kinds of records, linked but never mixed:
+//  * calendar_days / calendar_dates — Yazidi holy days, fasts, pilgrimages, remembrance (a date per year,
+//    verified by a calendar editor; shown the day before and on the day only).
+//  * events — community events published by members (their own dates and lifetime; may celebrate a calendar day).
+
+enum CalendarCategory {
+  RELIGIOUS_HOLIDAY
+  FASTING
+  CULTURAL
+  PILGRIMAGE
+  HERITAGE
+  REMEMBRANCE
+  COMMUNITY
+  LOCAL_TRADITION
+}
+
+enum DateVerification {
+  UNVERIFIED
+  VERIFIED
+  DISPUTED
+}
+
+enum EventCategory {
+  CULTURAL_FESTIVAL
+  RELIGIOUS_CELEBRATION
+  COMMUNITY_GATHERING
+  HERITAGE_EXHIBITION
+  MUSIC
+  EDUCATIONAL
+  YOUTH
+  CHARITY
+  MEMORIAL
+  ONLINE
+  INTERNATIONAL_MEETUP
+}
+
+enum EventTemplate {
+  RELIGIOUS
+  CULTURAL
+  HERITAGE
+  COMMUNITY
+  MEMORIAL
+  MUSIC
+  INTERNATIONAL
+  ONLINE
+  LOCAL
+}
+
+enum EventAudience {
+  PUBLIC
+  FRIENDS
+  PRIVATE
+}
+
+enum EventStatus {
+  DRAFT
+  PENDING_REVIEW
+  PUBLISHED
+  CANCELLED
+  REJECTED
+}
+
+enum RegistrationMode {
+  NONE
+  RSVP
+  EXTERNAL
+}
+
+enum SessionStatus {
+  SCHEDULED
+  LIVE
+  DONE
+  CANCELLED
+}
+
+/// A day of the Yazidi calendar (definition; dates per year in calendar_dates).
+model CalendarDay {
+  id          String           @id @default(uuid()) @db.Uuid
+  slug        String           @unique @db.VarChar(60)
+  category    CalendarCategory
+  /// { ku, ar, de, en } — ku is the original name.
+  names       Json
+  summary     Json?
+  description Json?
+  region      String?          @db.VarChar(120)
+  tradition   String?          @db.VarChar(200)
+  sources     String[]         @default([])
+  template    EventTemplate
+  /// Shown to members only after a calendar editor reviewed the text.
+  published   Boolean          @default(false)
+  createdAt   DateTime         @default(now()) @map("created_at")
+  updatedAt   DateTime         @updatedAt @map("updated_at")
+
+  dates  CalendarDate[]
+  events Event[]
+
+  @@map("calendar_days")
+}
+
+/// The Gregorian date(s) of a calendar day in one year. Only VERIFIED dates are shown.
+model CalendarDate {
+  id              String           @id @default(uuid()) @db.Uuid
+  dayId           String           @map("day_id") @db.Uuid
+  startDate       DateTime         @map("start_date") @db.Date
+  endDate         DateTime         @map("end_date") @db.Date
+  traditionalDate String?          @map("traditional_date") @db.VarChar(120)
+  verification    DateVerification @default(UNVERIFIED)
+  note            String?          @db.VarChar(500)
+  verifiedByUserId String?         @map("verified_by_user_id") @db.Uuid
+  verifiedAt      DateTime?        @map("verified_at")
+  createdAt       DateTime         @default(now()) @map("created_at")
+
+  day CalendarDay @relation(fields: [dayId], references: [id], onDelete: Cascade)
+
+  @@unique([dayId, startDate])
+  @@index([startDate, endDate])
+  @@map("calendar_dates")
+}
+
+/// A community event (festival, gathering, exhibition, online meeting …).
+model Event {
+  id                 String           @id @default(uuid()) @db.Uuid
+  organizerProfileId String           @map("organizer_profile_id") @db.Uuid
+  /// Optional organisation name shown as organizer (the account stays responsible).
+  hostName           String?          @map("host_name") @db.VarChar(120)
+  title              String           @db.VarChar(140)
+  summary            String           @db.VarChar(300)
+  description        String           @default("") @db.VarChar(8000)
+  category           EventCategory
+  template           EventTemplate
+  audience           EventAudience    @default(PUBLIC)
+  status             EventStatus      @default(DRAFT)
+  startsAt           DateTime         @map("starts_at")
+  endsAt             DateTime         @map("ends_at")
+  timeZone           String           @default("UTC") @map("time_zone") @db.VarChar(40)
+  country            String?          @db.VarChar(2)
+  city               String?          @db.VarChar(80)
+  venue              String?          @db.VarChar(200)
+  /// false = the venue is shown only to registered participants and the organizer.
+  venuePublic        Boolean          @default(true) @map("venue_public")
+  onlineUrl          String?          @map("online_url") @db.VarChar(300)
+  registration       RegistrationMode @default(NONE)
+  registrationUrl    String?          @map("registration_url") @db.VarChar(300)
+  capacity           Int?
+  contact            String?          @db.VarChar(200)
+  /// [{ name, role }]
+  speakers           Json?
+  /// [{ q, a }]
+  faq                Json?
+  calendarDayId      String?          @map("calendar_day_id") @db.Uuid
+  featuredAt         DateTime?        @map("featured_at")
+  reviewNote         String?          @map("review_note") @db.VarChar(500)
+  publishedAt        DateTime?        @map("published_at")
+  createdAt          DateTime         @default(now()) @map("created_at")
+  updatedAt          DateTime         @updatedAt @map("updated_at")
+
+  organizer   Profile          @relation("EventsOrganized", fields: [organizerProfileId], references: [id], onDelete: Cascade)
+  calendarDay CalendarDay?     @relation(fields: [calendarDayId], references: [id], onDelete: SetNull)
+  sessions    EventSession[]
+  attendees   EventAttendee[]
+  saves       EventSave[]
+
+  @@index([status, audience, startsAt])
+  @@index([organizerProfileId])
+  @@index([calendarDayId])
+  @@map("events")
+}
+
+/// One item of the program / schedule (several stages possible).
+model EventSession {
+  id        String        @id @default(uuid()) @db.Uuid
+  eventId   String        @map("event_id") @db.Uuid
+  title     String        @db.VarChar(140)
+  startsAt  DateTime      @map("starts_at")
+  endsAt    DateTime      @map("ends_at")
+  stage     String?       @db.VarChar(80)
+  host      String?       @db.VarChar(120)
+  kind      String?       @db.VarChar(60)
+  status    SessionStatus @default(SCHEDULED)
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@index([eventId, startsAt])
+  @@map("event_sessions")
+}
+
+/// A member registered for an event (RSVP; tickets come later on the same record).
+model EventAttendee {
+  eventId   String   @map("event_id") @db.Uuid
+  profileId String   @map("profile_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+
+  event   Event   @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  profile Profile @relation("EventRegistrations", fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@id([eventId, profileId])
+  @@index([profileId])
+  @@map("event_attendees")
+}
+
+/// "Save for later".
+model EventSave {
+  eventId   String   @map("event_id") @db.Uuid
+  profileId String   @map("profile_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+
+  event   Event   @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  profile Profile @relation("EventSaves", fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@id([eventId, profileId])
+  @@index([profileId])
+  @@map("event_saves")
 }

@@ -134,6 +134,27 @@ export async function seedDemo(prisma: PrismaClient, opts: { bcryptRounds?: numb
 
 export async function wipe(prisma: PrismaClient) {
   await prisma.$executeRawUnsafe(
-    'TRUNCATE "notifications", "notification_preferences", "follows", "connect_settings", "user_presence", "profile_photos", "login_throttles", "sessions", "auth_tokens", "consents", "qr_scan_events", "qr_tokens", "user_identifiers", "audit_logs", "blocks", "community_memberships", "communities", "relationship_verifications", "relationships", "privacy_settings", "profile_stewards", "profiles", "users" RESTART IDENTITY CASCADE',
+    'TRUNCATE "event_saves", "event_attendees", "event_sessions", "events", "calendar_dates", "calendar_days", "notifications", "notification_preferences", "follows", "connect_settings", "user_presence", "profile_photos", "login_throttles", "sessions", "auth_tokens", "consents", "qr_scan_events", "qr_tokens", "user_identifiers", "audit_logs", "blocks", "community_memberships", "communities", "relationship_verifications", "relationships", "privacy_settings", "profile_stewards", "profiles", "users" RESTART IDENTITY CASCADE',
   );
+}
+
+/**
+ * ÊZÎDÎ Calendar — names of well-known days as UNPUBLISHED DRAFTS WITHOUT DATES. A calendar editor reviews the texts,
+ * enters each year's dates and verifies them; only then do they appear. Existing entries are never overwritten.
+ */
+const CALENDAR_DRAFTS: { slug: string; category: 'RELIGIOUS_HOLIDAY' | 'FASTING' | 'PILGRIMAGE' | 'CULTURAL' | 'REMEMBRANCE'; template: 'RELIGIOUS' | 'CULTURAL' | 'MEMORIAL'; names: Record<'ku' | 'ar' | 'de' | 'en', string> }[] = [
+  { slug: 'carsema-sor', category: 'RELIGIOUS_HOLIDAY', template: 'RELIGIOUS', names: { ku: 'Çarşema Sor', ar: 'الأربعاء الأحمر (رأس السنة الإيزيدية)', de: 'Roter Mittwoch (ezidisches Neujahr)', en: 'Red Wednesday (Yazidi New Year)' } },
+  { slug: 'rojiyen-ezid', category: 'FASTING', template: 'RELIGIOUS', names: { ku: 'Rojiyên Êzîd', ar: 'صوم إيزيد', de: 'Ezid-Fasten', en: 'Fast of Ezid' } },
+  { slug: 'cejna-ezid', category: 'RELIGIOUS_HOLIDAY', template: 'RELIGIOUS', names: { ku: 'Cejna Êzîd', ar: 'عيد إيزيد', de: 'Ezid-Fest', en: 'Feast of Ezid' } },
+  { slug: 'cejna-cemaya', category: 'PILGRIMAGE', template: 'RELIGIOUS', names: { ku: 'Cejna Cemaya', ar: 'عيد الجماعية', de: 'Fest der Versammlung', en: 'Feast of the Assembly' } },
+  { slug: 'xidir-nebi', category: 'RELIGIOUS_HOLIDAY', template: 'RELIGIOUS', names: { ku: 'Xidir Nebî', ar: 'خضر نبي', de: 'Xidir Nebî', en: 'Xidir Nebî' } },
+  { slug: 'belinde', category: 'CULTURAL', template: 'CULTURAL', names: { ku: 'Belîndê', ar: 'بيليندة', de: 'Belinde', en: 'Belinde' } },
+  { slug: 'fermana-shingale', category: 'REMEMBRANCE', template: 'MEMORIAL', names: { ku: 'Bîranîna Fermana Şingalê', ar: 'ذكرى الإبادة الإيزيدية في شنكال', de: 'Gedenken an den Völkermord in Şingal', en: 'Remembrance of the Yazidi genocide in Sinjar' } },
+];
+
+export async function seedCalendarDrafts(prisma: PrismaClient) {
+  for (const d of CALENDAR_DRAFTS) {
+    const exists = await prisma.calendarDay.findUnique({ where: { slug: d.slug } });
+    if (!exists) await prisma.calendarDay.create({ data: { slug: d.slug, category: d.category, template: d.template, names: d.names, published: false } });
+  }
 }

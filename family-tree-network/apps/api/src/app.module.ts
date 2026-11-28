@@ -5,6 +5,7 @@ import { AuditModule } from './audit/audit.module';
 import { AuthModule } from './auth/auth.module';
 import { ConnectModule } from './connect/connect.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { EventsModule } from './events/events.module';
 import { HealthController } from './health.controller';
 import { IdentityModule } from './identity/identity.module';
 import { MailModule } from './mail/mail.module';
@@ -28,6 +29,7 @@ import { RelationshipsModule } from './relationships/relationships.module';
     IdentityModule,
     PhotosModule,
     ConnectModule,
+    EventsModule,
   ],
   controllers: [HealthController],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
