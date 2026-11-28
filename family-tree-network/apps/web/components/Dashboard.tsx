@@ -56,6 +56,7 @@ export default function Dashboard({ session, onLogout }: { session: Session; onL
   const [connectPerson, setConnectPerson] = useState<string | null>(null);
   const ct = useConnectText();
   const [area, setArea] = useState<'network' | 'connect'>('network');
+  const [openEventId, setOpenEventId] = useState<string | null>(null);
   const [pathFrom, setPathFrom] = useState<PersonSummary | null>(null);
   const [pathTo, setPathTo] = useState<PersonSummary | null>(null);
   const [path, setPath] = useState<PathResult | null>(null);
@@ -84,6 +85,12 @@ export default function Dashboard({ session, onLogout }: { session: Session; onL
   useEffect(() => {
     // the welcome screen may have been scrolled (phones): start the dashboard at the top
     window.scrollTo(0, 0);
+    // Deep link from a shared event page: /app?event=<id>
+    const ev = new URLSearchParams(window.location.search).get('event');
+    if (ev && /^[0-9a-f-]{36}$/i.test(ev)) {
+      setOpenEventId(ev);
+      setArea('connect');
+    }
   }, []);
 
   useEffect(() => {
@@ -207,6 +214,10 @@ export default function Dashboard({ session, onLogout }: { session: Session; onL
             onOpen={(n) => {
               setRefreshKey((k) => k + 1);
               if (n.category === 'RELATIONSHIPS') return setTab('inbox');
+              if (n.category === 'EVENTS' && n.entityId) {
+                setOpenEventId(n.entityId);
+                return setArea('connect');
+              }
               if (n.type === 'FRIEND_REQUEST' && n.entityId) {
                 setConnectPerson(null);
                 return setTab('friends');
@@ -229,7 +240,7 @@ export default function Dashboard({ session, onLogout }: { session: Session; onL
       </header>
       <AccountBanner api={api} />
 
-      {area === 'connect' && <ConnectArea api={api} myProfileId={session.profileId} onChanged={() => setRefreshKey((k) => k + 1)} />}
+      {area === 'connect' && <ConnectArea api={api} myProfileId={session.profileId} onChanged={() => setRefreshKey((k) => k + 1)} openEventId={openEventId} />}
       <aside className="sidebar" hidden={area === 'connect'}>
         <section>
           <h4>{t.filters}</h4>

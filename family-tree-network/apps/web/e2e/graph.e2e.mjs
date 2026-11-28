@@ -526,3 +526,112 @@ test('CONNECT Home (tablet): waiting request answered on the home page, counts u
   assert.deepEqual(errors, []);
   await page.close();
 });
+
+test('Events & ÊZÎDÎ Calendar: organizer publishes with the form, another member registers, public page, holy-day card', async () => {
+  const API = process.env.API_URL ?? 'http://localhost:4000/api';
+  const stamp = Date.now();
+  const pass = 'events-test-pass-2026';
+  const reg = async (name) => {
+    const email = `${name.toLowerCase()}-${stamp}@example.test`;
+    const r = await fetch(`${API}/auth/register`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ email, password: pass, displayName: `${name} ${stamp}`, gender: 'UNSPECIFIED', acceptTerms: true, consentSensitiveData: true, confirmMinimumAge: true }) });
+    assert.equal(r.status, 201);
+    return { ...(await r.json()), email };
+  };
+  const signIn = async (u, viewport) => {
+    const page = await browser.newPage({ viewport });
+    const errors = [];
+    page.on('pageerror', (e) => errors.push(e.message));
+    await page.goto(`${WEB}/app`);
+    await page.click('[data-testid=lang-en]');
+    await page.fill('#login-email', u.email);
+    await page.fill('#login-password', pass);
+    await page.click('[data-testid=login-form] button[type=submit]');
+    await page.click('[data-testid=area-connect]');
+    return { page, errors };
+  };
+  const ORG = await reg('Organizer');
+  const GUEST = await reg('Guest');
+
+  // 1. Organizer (desktop) publishes through the form: the card and page are generated from it.
+  const o = await signIn(ORG, { width: 1440, height: 900 });
+  await o.page.click('[data-testid=cx-nav-events]');
+  await o.page.click('[data-testid=ev-new]');
+  await o.page.fill('#ev-title', `Heritage evening ${stamp}`);
+  await o.page.fill('#ev-summary', 'Stories, music and food.');
+  await o.page.selectOption('#ev-category', 'HERITAGE_EXHIBITION');
+  await o.page.fill('#ev-country', 'DE');
+  await o.page.fill('#ev-city', 'Bielefeld');
+  await o.page.fill('#ev-venue', 'Community hall, Example street 5');
+  await o.page.check('.ev-check input');
+  await o.page.selectOption('#ev-registration', 'RSVP');
+  await o.page.fill('#ev-capacity', '50');
+  await o.page.click('[data-testid=ev-add-session]');
+  const row = (await o.page.$$('fieldset.ev-repeat:first-of-type .ev-repeat-row'))[0];
+  const inputs = await row.$$('input');
+  await inputs[0].fill('Opening');
+  await inputs[3].fill('Main stage');
+  await o.page.click('[data-testid=ev-publish]');
+  await o.page.waitForSelector('[data-testid=ev-detail]');
+  assert.match(await o.page.textContent('[data-testid=ev-detail]'), new RegExp(`Heritage evening ${stamp}`));
+  assert.match(await o.page.textContent('[data-testid=ev-schedule]'), /Opening.*Main stage/s);
+  const eventId = await o.page.evaluate(async (title) => {
+    const s = JSON.parse(sessionStorage.getItem('ftn.session'));
+    const r = await fetch(`${location.origin.replace('3000', '4000')}/api/events?scope=mine`, { headers: { authorization: `Bearer ${s.accessToken}` } });
+    return (await r.json()).items.find((e) => e.title === title).id;
+  }, `Heritage evening ${stamp}`);
+
+  // 2. Another member (phone) finds the card, opens it: the private venue is hidden until registering.
+  const g = await signIn(GUEST, { width: 390, height: 844 });
+  await g.page.click('[data-testid=cx-nav-events]');
+  await g.page.waitForSelector(`[data-testid=ev-card-${eventId}]`);
+  await g.page.click(`[data-testid=ev-open-${eventId}]`);
+  await g.page.waitForSelector('[data-testid=ev-detail]');
+  assert.doesNotMatch(await g.page.textContent('[data-testid=ev-detail]'), /Example street 5/);
+  await g.page.click('[data-testid=ev-register]');
+  await g.page.waitForSelector('[data-testid=ev-unregister]');
+  assert.match(await g.page.textContent('[data-testid=ev-detail]'), /Example street 5/);
+  await g.page.click('[data-testid=ev-save]');
+  await g.page.waitForSelector('[data-testid=ev-save][aria-pressed=true]');
+  assert.equal(await g.page.evaluate(() => document.documentElement.scrollWidth - innerWidth), 0);
+
+  // 3. Organizer is notified and sees the participant.
+  await o.page.reload();
+  await o.page.click('[data-testid=nt-bell]');
+  await o.page.waitForSelector('[data-testid=nt-item-EVENT_REGISTRATION]');
+  await o.page.click('[data-testid=nt-item-EVENT_REGISTRATION]');
+  await o.page.waitForSelector('[data-testid=ev-organizer-panel]');
+  assert.match(await o.page.textContent('[data-testid=ev-organizer-panel]'), new RegExp(`Guest ${stamp}`));
+
+  // 4. Anyone can open the shared public page; the private venue stays hidden there.
+  const pub = await browser.newPage({ viewport: { width: 390, height: 844 } });
+  await pub.goto(`${WEB}/e/${eventId}`);
+  await pub.waitForSelector('[data-testid=ev-detail]');
+  assert.match(await pub.textContent('[data-testid=ev-detail]'), new RegExp(`Heritage evening ${stamp}`));
+  assert.doesNotMatch(await pub.textContent('[data-testid=ev-detail]'), /Example street 5/);
+  await pub.close();
+
+  // 5. Holy-day card on CONNECT Home (needs the API started with STAFF_EMAILS=omar@demo.ftn.local).
+  const staff = await (await fetch(`${API}/auth/login`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ email: 'omar@demo.ftn.local', password: 'demo-password-2026' }) })).json();
+  const H = { 'content-type': 'application/json', authorization: `Bearer ${staff.accessToken}` };
+  const day = await fetch(`${API}/calendar/days`, { method: 'POST', headers: H, body: JSON.stringify({ slug: `e2e-${stamp}`, category: 'RELIGIOUS_HOLIDAY', template: 'RELIGIOUS', published: true, names: { ku: `Roja Testê ${stamp}`, ar: 'يوم اختبار', de: 'Testtag', en: 'Test day' } }) });
+  if (day.status === 201) {
+    const d = await day.json();
+    const tz = await g.page.evaluate(() => Intl.DateTimeFormat().resolvedOptions().timeZone);
+    const today = new Intl.DateTimeFormat('en-CA', { timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
+    const dt = await (await fetch(`${API}/calendar/days/${d.id}/dates`, { method: 'POST', headers: H, body: JSON.stringify({ startDate: today, endDate: today }) })).json();
+    await fetch(`${API}/calendar/dates/${dt.id}/verify`, { method: 'POST', headers: H, body: JSON.stringify({ verification: 'VERIFIED' }) });
+    await g.page.click('[data-testid=cx-nav-home]');
+    await g.page.waitForSelector(`[data-testid=ev-holiday-e2e-${stamp}]`);
+    assert.match(await g.page.textContent(`[data-testid=ev-holiday-e2e-${stamp}]`), /Today/);
+  } else {
+    console.log('  (holy-day card part skipped: start the API with STAFF_EMAILS=omar@demo.ftn.local)');
+  }
+
+  // 6. Organizer cancels: the participant is told.
+  await o.page.click('[data-testid=ev-cancel]');
+  await o.page.waitForSelector('[data-testid=ev-detail] .ev-countdown.off');
+  assert.deepEqual(o.errors, []);
+  assert.deepEqual(g.errors, []);
+  await o.page.close();
+  await g.page.close();
+});

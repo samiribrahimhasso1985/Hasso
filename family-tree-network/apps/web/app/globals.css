@@ -1726,3 +1726,30 @@ fieldset.plain {
     grid-template-areas: 'top' 'cx';
   }
 }
+
+/* holy-day cards on CONNECT Home use the festival style */
+.ev.ev-home-holidays {
+  padding: 14px;
+  border-radius: 24px;
+  min-height: 0;
+}
+.ev.ev-home-holidays .ev-holidays {
+  margin: 0;
+}
+/* The CONNECT column must never grow wider than the screen (scrollable rows scroll inside it). */
+.app.app-connect { grid-template-columns: minmax(0, 1fr); }
+.cx, .cx-main { min-width: 0; }
+@media (min-width: 901px) {
+  .cx { grid-template-columns: 230px minmax(0, 1fr); }
+}
+@media (max-width: 900px) {
+  .cx { grid-template-columns: minmax(0, 1fr); }
+}
+/* While the fixed account banner is shown, keep room below the content so nothing stays hidden under it. */
+.app:has(.account-banner) .cx-main,
+.app:has(.account-banner) .rightbar {
+  padding-bottom: 150px;
+}
+html:has(.account-banner) {
+  scroll-padding-bottom: 150px;
+}

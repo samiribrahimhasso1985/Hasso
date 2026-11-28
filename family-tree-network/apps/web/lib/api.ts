@@ -217,6 +217,90 @@ export interface NotificationPrefs {
   categories: NotificationCategory[];
 }
 
+// ── Events & ÊZÎDÎ Calendar ──
+export type EventCategory = 'CULTURAL_FESTIVAL' | 'RELIGIOUS_CELEBRATION' | 'COMMUNITY_GATHERING' | 'HERITAGE_EXHIBITION' | 'MUSIC' | 'EDUCATIONAL' | 'YOUTH' | 'CHARITY' | 'MEMORIAL' | 'ONLINE' | 'INTERNATIONAL_MEETUP';
+export type EventTemplate = 'RELIGIOUS' | 'CULTURAL' | 'HERITAGE' | 'COMMUNITY' | 'MEMORIAL' | 'MUSIC' | 'INTERNATIONAL' | 'ONLINE' | 'LOCAL';
+export type EventStatus = 'DRAFT' | 'PENDING_REVIEW' | 'PUBLISHED' | 'CANCELLED' | 'REJECTED';
+export type Names = { ku: string; ar: string; de: string; en: string };
+export interface EventCardData {
+  id: string;
+  title: string;
+  summary: string;
+  category: EventCategory;
+  template: EventTemplate;
+  audience: 'PUBLIC' | 'FRIENDS' | 'PRIVATE';
+  status: EventStatus;
+  startsAt: string;
+  endsAt: string;
+  timeZone: string;
+  country: string | null;
+  city: string | null;
+  online: boolean;
+  hostName: string | null;
+  organizer: PersonSummary;
+  registration: 'NONE' | 'RSVP' | 'EXTERNAL';
+  capacity: number | null;
+  registered: boolean;
+  saved: boolean;
+  attendees: number;
+  spotsLeft: number | null;
+  featured: boolean;
+  calendarDayId: string | null;
+  isOrganizer: boolean;
+}
+export interface EventSessionData {
+  id?: string;
+  title: string;
+  startsAt: string;
+  endsAt: string;
+  stage?: string | null;
+  host?: string | null;
+  kind?: string | null;
+  status?: 'SCHEDULED' | 'LIVE' | 'DONE' | 'CANCELLED';
+}
+export interface EventDetailData extends EventCardData {
+  description: string;
+  venue: string | null;
+  venueHidden: boolean;
+  onlineUrl: string | null;
+  registrationUrl: string | null;
+  contact: string | null;
+  speakers: { name: string; role?: string }[];
+  faq: { q: string; a: string }[];
+  sessions: EventSessionData[];
+  calendarDay: { id: string; slug: string; names: Names; published: boolean } | null;
+  reviewNote: string | null;
+  canEdit: boolean;
+}
+export interface CalendarDateData {
+  id: string;
+  startDate: string;
+  endDate: string;
+  traditionalDate: string | null;
+  verification: 'UNVERIFIED' | 'VERIFIED' | 'DISPUTED';
+  note: string | null;
+}
+export interface CalendarDayData {
+  id: string;
+  slug: string;
+  category: string;
+  names: Names;
+  summary: Partial<Names> | null;
+  description: Partial<Names> | null;
+  region: string | null;
+  tradition: string | null;
+  sources: string[];
+  template: EventTemplate;
+  published: boolean;
+  dates: CalendarDateData[];
+}
+export interface HolidayToday {
+  phase: 'TOMORROW' | 'TODAY';
+  day: Omit<CalendarDayData, 'dates'>;
+  date: CalendarDateData;
+}
+export type EventInput = Partial<Omit<EventDetailData, 'id' | 'organizer' | 'registered' | 'saved' | 'attendees' | 'spotsLeft' | 'featured' | 'isOrganizer' | 'online' | 'venueHidden' | 'canEdit' | 'calendarDay' | 'reviewNote' | 'status'>> & { publish?: boolean; venuePublic?: boolean; calendarDayId?: string };
+
 export class ApiError extends Error {
   constructor(
     public status: number,
@@ -432,6 +516,64 @@ export class Api {
   }
   updateNotificationPrefs(body: { mutedCategories?: NotificationCategory[]; quietStart?: number | null; quietEnd?: number | null; timeZone?: string; dndMinutes?: number | null }) {
     return this.req<NotificationPrefs>('PATCH', '/notifications/preferences', body);
+  }
+  events(q: { scope?: string; category?: string; country?: string; page?: number } = {}) {
+    const p = new URLSearchParams(Object.entries(q).filter(([, v]) => v !== undefined && v !== '').map(([k, v]) => [k, String(v)]));
+    return this.req<{ total: number; page: number; staff: boolean; items: EventCardData[] }>('GET', `/events?${p}`);
+  }
+  event(id: string) {
+    return this.req<EventDetailData>('GET', `/events/${id}`);
+  }
+  publicEvent(id: string) {
+    return this.req<EventDetailData>('GET', `/events/public/${id}`);
+  }
+  createEvent(body: EventInput) {
+    return this.req<EventDetailData>('POST', '/events', body);
+  }
+  updateEvent(id: string, body: EventInput) {
+    return this.req<EventDetailData>('PATCH', `/events/${id}`, body);
+  }
+  cancelEvent(id: string) {
+    return this.req<EventDetailData>('POST', `/events/${id}/cancel`);
+  }
+  deleteEvent(id: string) {
+    return this.req<{ deleted: boolean }>('DELETE', `/events/${id}`);
+  }
+  saveEvent(id: string, on: boolean) {
+    return this.req<{ saved: boolean }>(on ? 'PUT' : 'DELETE', `/events/${id}/save`);
+  }
+  registerEvent(id: string, on: boolean) {
+    return this.req<EventDetailData>(on ? 'PUT' : 'DELETE', `/events/${id}/registration`);
+  }
+  eventAttendees(id: string) {
+    return this.req<(PersonSummary & { registeredAt: string })[]>('GET', `/events/${id}/attendees`);
+  }
+  reviewEvent(id: string, approve: boolean, note?: string) {
+    return this.req<EventDetailData>('POST', `/events/${id}/review`, { approve, note });
+  }
+  featureEvent(id: string, on: boolean) {
+    return this.req<EventDetailData>(on ? 'PUT' : 'DELETE', `/events/${id}/feature`);
+  }
+  calendarToday(tz: string) {
+    return this.req<{ today: string; timeZone: string; items: HolidayToday[] }>('GET', `/calendar/today?tz=${encodeURIComponent(tz)}`);
+  }
+  calendarYear(year: number) {
+    return this.req<{ year: number; staff: boolean; days: CalendarDayData[] }>('GET', `/calendar?year=${year}`);
+  }
+  calendarDay(slug: string) {
+    return this.req<CalendarDayData & { events: { id: string; title: string; startsAt: string; endsAt: string; city: string | null; country: string | null; template: EventTemplate }[] }>('GET', `/calendar/days/${encodeURIComponent(slug)}`);
+  }
+  updateCalendarDay(id: string, body: { published?: boolean }) {
+    return this.req<CalendarDayData>('PATCH', `/calendar/days/${id}`, body);
+  }
+  addCalendarDate(dayId: string, body: { startDate: string; endDate: string; traditionalDate?: string; note?: string }) {
+    return this.req<CalendarDateData>('POST', `/calendar/days/${dayId}/dates`, body);
+  }
+  verifyCalendarDate(dateId: string, verification: 'UNVERIFIED' | 'VERIFIED' | 'DISPUTED') {
+    return this.req<CalendarDateData>('POST', `/calendar/dates/${dateId}/verify`, { verification });
+  }
+  deleteCalendarDate(dateId: string) {
+    return this.req<{ deleted: boolean }>('DELETE', `/calendar/dates/${dateId}`);
   }
   block(profileId: string) {
     return this.req<{ blocked: boolean }>('POST', '/blocks', { profileId });

@@ -3,20 +3,27 @@
 import { useCallback, useEffect, useState } from 'react';
 import { photoSrc, type Api, type ConnectPerson } from '../lib/api';
 import { useConnectText } from '../lib/i18n-connect';
+import { useI18n } from '../lib/i18n';
 import { useNotifyText } from '../lib/i18n-notify';
 import FriendsPanel, { PresenceDot, type View } from './FriendsPanel';
 import { avatarFor } from './GraphCanvas';
+import EventsArea from './events/EventsArea';
+import HolidayCard from './events/HolidayCard';
+import { EV } from '../lib/i18n-events';
+import type { HolidayToday } from '../lib/api';
 
-type Hub = 'home' | 'connections' | 'discover';
+type Hub = 'home' | 'connections' | 'discover' | 'events';
 type HomeData = Awaited<ReturnType<Api['connectHome']>>;
 
 /**
  * EZIDINET CONNECT area: side menu (desktop) / chips (phone) with the hubs that already work, and the CONNECT Home.
  * Hubs that are not built yet are not shown as buttons (no placeholders); a note says they will follow.
  */
-export default function ConnectArea({ api, myProfileId, onChanged }: { api: Api; myProfileId: string; onChanged: () => void }) {
+export default function ConnectArea({ api, myProfileId, onChanged, openEventId }: { api: Api; myProfileId: string; onChanged: () => void; openEventId?: string | null }) {
   const c = useConnectText();
-  const [hub, setHub] = useState<Hub>('home');
+  const { locale } = useI18n();
+  const [hub, setHub] = useState<Hub>(openEventId ? 'events' : 'home');
+  useEffect(() => { if (openEventId) setHub('events'); }, [openEventId]);
   const [person, setPerson] = useState<string | null>(null);
   const [view, setView] = useState<View>('friends');
 
@@ -29,17 +36,19 @@ export default function ConnectArea({ api, myProfileId, onChanged }: { api: Api;
   return (
     <div className="cx" data-testid="connect-area">
       <nav className="cx-nav" aria-label="CONNECT">
-        {(['home', 'connections', 'discover'] as Hub[]).map((h) => (
+        {(['home', 'connections', 'discover', 'events'] as Hub[]).map((h) => (
           <button key={h} type="button" className={hub === h ? 'active' : ''} aria-current={hub === h ? 'page' : undefined} onClick={() => open(h, h === 'discover' ? 'discover' : 'friends')} data-testid={`cx-nav-${h}`}>
-            <span aria-hidden="true">{h === 'home' ? '⌂' : h === 'connections' ? '◎' : '⌕'}</span>
-            {h === 'home' ? c.hubHome : h === 'connections' ? c.hubConnections : c.hubDiscover}
+            <span aria-hidden="true">{h === 'home' ? '⌂' : h === 'connections' ? '◎' : h === 'discover' ? '⌕' : '✦'}</span>
+            {h === 'home' ? c.hubHome : h === 'connections' ? c.hubConnections : h === 'discover' ? c.hubDiscover : EV.hub[locale]}
           </button>
         ))}
         <p className="small muted cx-more">{c.moreHubs}</p>
       </nav>
       <section className="cx-main">
-        {hub === 'home' ? (
-          <Home api={api} onPerson={(id) => open('connections', 'friends', id)} onGo={(h, v) => open(h, v)} onChanged={onChanged} />
+        {hub === 'events' ? (
+          <EventsArea api={api} openId={openEventId} />
+        ) : hub === 'home' ? (
+          <Home api={api} onPerson={(id) => open('connections', 'friends', id)} onGo={(h, v) => open(h, v)} onChanged={onChanged} onEvents={() => setHub('events')} />
         ) : (
           <FriendsPanel api={api} myProfileId={myProfileId} initialView={view} openPersonId={person} onChanged={onChanged} onCount={() => undefined} />
         )}
@@ -60,12 +69,18 @@ function Face({ p, onClick }: { p: ConnectPerson; onClick: () => void }) {
   );
 }
 
-function Home({ api, onPerson, onGo, onChanged }: { api: Api; onPerson: (id: string) => void; onGo: (h: Hub, v: View) => void; onChanged: () => void }) {
+function Home({ api, onPerson, onGo, onChanged, onEvents }: { api: Api; onPerson: (id: string) => void; onGo: (h: Hub, v: View) => void; onChanged: () => void; onEvents: () => void }) {
   const c = useConnectText();
   const nt = useNotifyText();
   const [d, setD] = useState<HomeData | null>(null);
+  const [holidays, setHolidays] = useState<HolidayToday[]>([]);
   const load = useCallback(() => api.connectHome().then(setD).catch(() => undefined), [api]);
   useEffect(() => { load(); }, [load]);
+  // ÊZÎDÎ Calendar: cards only the day before and on the day, in this device's time zone.
+  useEffect(() => {
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+    api.calendarToday(tz).then((r) => setHolidays(r.items)).catch(() => undefined);
+  }, [api]);
   if (!d) return <p className="muted">…</p>;
   const answer = async (id: string, accept: boolean) => {
     await (accept ? api.acceptFriend(id) : api.rejectFriend(id)).catch(() => undefined);
@@ -74,6 +89,13 @@ function Home({ api, onPerson, onGo, onChanged }: { api: Api; onPerson: (id: str
   };
   return (
     <div className="cx-home" data-testid="cx-home">
+      {holidays.length > 0 && (
+        <div className="ev ev-home-holidays" data-testid="cx-holidays">
+          <div className="ev-holidays">
+            {holidays.map((h) => <HolidayCard key={h.date.id} h={h} size={h.phase === 'TODAY' ? 'featured' : 'standard'} onOpen={onEvents} />)}
+          </div>
+        </div>
+      )}
       <header className="cx-welcome">
         <h2>{c.welcome(d.displayName)}</h2>
         <p className="muted">{c.homeIntro}</p>

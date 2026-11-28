@@ -7,7 +7,7 @@ import { useNotifyText } from '../lib/i18n-notify';
 import { avatarFor } from './GraphCanvas';
 
 /** Categories that something in EZIDINET actually sends today (no switches for features that do not exist yet). */
-const ACTIVE: NotificationCategory[] = ['FRIENDS', 'FOLLOWS', 'RELATIONSHIPS'];
+const ACTIVE: NotificationCategory[] = ['FRIENDS', 'FOLLOWS', 'RELATIONSHIPS', 'EVENTS'];
 
 const toTime = (m: number | null) => (m === null ? '' : `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`);
 const fromTime = (s: string) => {
