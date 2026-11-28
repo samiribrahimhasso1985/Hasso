@@ -5,12 +5,15 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0 --port 5173",
-    "server": "NODE_USE_ENV_PROXY=1 node server/index.mjs",
+    "server": "node --env-file-if-exists=.env server/index.mjs",
     "build": "tsc -b && vite build",
     "typecheck": "tsc -b --noEmit",
     "preview": "vite preview --host 0.0.0.0 --port 4173",
     "test": "vitest run",
-    "start": "NODE_ENV=production NODE_USE_ENV_PROXY=1 node server/index.mjs"
+    "start": "NODE_ENV=production node --env-file-if-exists=.env server/index.mjs",
+    "test:offline-safe": "SKIP_NETWORK=1 vitest run",
+    "e2e": "node tests/e2e/e2e.mjs",
+    "prefetch:atlas": "node scripts/prefetch-atlas.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.14.0",
@@ -42,5 +45,8 @@
   },
   "overrides": {
     "@zip.js/zip.js": "2.7.54"
+  },
+  "engines": {
+    "node": ">=22.12"
   }
 }

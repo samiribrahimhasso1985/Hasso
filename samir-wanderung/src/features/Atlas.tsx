@@ -106,7 +106,7 @@ export default function Atlas() {
             </Glass>
             {err != null && <ErrorBox error={err} onRetry={() => load(true)} />}
             <Glass className="p-2">
-              {busy && items.length === 0 ? <div className="p-4"><Spinner label={t('common.loading')} /></div> : shown.length === 0 ? <Empty>{t('common.empty')}</Empty> : (
+              {busy && items.length === 0 ? <div className="p-4"><Spinner label={`${t('common.loading')} Wikidata… (live queries can take up to a minute)`} /></div> : shown.length === 0 ? <Empty>{t('common.empty')}</Empty> : (
                 <ul className="divide-y divide-white/5" data-testid="atlas-list">
                   {shown.map((i) => (
                     <li key={i.id}><button className="w-full text-start p-2 hover:bg-white/5 rounded-lg flex gap-3" onClick={() => setDetail(i)}>

@@ -19,7 +19,16 @@ const geoCache = new Cache(2000, 24 * 3600_000);
 const nominatimQueue = serialQueue(1100);
 const valhallaQueue = serialQueue(250);
 const weatherCache = new Cache(500, 15 * 60_000);
-const atlasCache = new Cache(500, 6 * 3600_000);
+const atlasCache = new Cache(2000, 6 * 3600_000);
+// Seed cache: real Wikidata results fetched by scripts/prefetch-atlas.mjs (kept for 30 days).
+import { readFileSync as _rf, existsSync as _ex } from 'node:fs';
+const SEED_FILE = new URL('./data/atlas-seed.json', import.meta.url);
+const seed = new Map();
+try {
+  if (_ex(SEED_FILE)) for (const [k, v] of Object.entries(JSON.parse(_rf(SEED_FILE, 'utf8'))))
+    if (Date.now() - Date.parse(v.fetchedAt) < 30 * 86400_000) seed.set(k, v);
+} catch { /* ignore broken seed */ }
+export const atlasKey = (category, country, lang, off, lim) => `${category}|${country ?? ''}|${lang}|${off}|${lim}`;
 const trailCache = new Cache(300, 6 * 3600_000);
 
 export async function geocode({ q, limit = 6, lang = 'en' }) {
@@ -157,8 +166,8 @@ export async function atlas({ category, country, lang = 'en', offset = 0, limit 
   if (country && !/^Q\d+$/.test(country)) throw new HttpError(400, 'invalid_country');
   const off = Math.max(0, Math.min(2000, +offset || 0)), lim = Math.max(1, Math.min(50, +limit || 30));
   const l = ['en', 'de', 'ar', 'ku'].includes(lang) ? lang : 'en';
-  const key = `${category}|${country}|${l}|${off}|${lim}`;
-  const hit = atlasCache.get(key); if (hit) return hit;
+  const key = atlasKey(category, country, l, off, lim);
+  const hit = atlasCache.get(key) ?? seed.get(key); if (hit) return hit;
   // Sitelinks count is used as a popularity proxy so well-known places come first.
   // GROUP BY item so multi-valued properties (several coords/images) do not consume the LIMIT.
   const label = (v, prop, langs) => `OPTIONAL { ?item ${prop} ?${v}_. FILTER(LANG(?${v}_) IN (${langs})) }`;
@@ -177,7 +186,7 @@ export async function atlas({ category, country, lang = 'en', offset = 0, limit 
   ${label('desc', 'schema:description', `"${l}"`)}
   OPTIONAL { ?article_ schema:about ?item; schema:isPartOf <https://${l}.wikipedia.org/>. }
 } GROUP BY ?item ?links ORDER BY DESC(?links) LIMIT ${lim} OFFSET ${off}`;
-  const data = await upstream(`${WIKIDATA_SPARQL}?format=json&query=${encodeURIComponent(sparql)}`, { headers: { accept: 'application/sparql-results+json' } }, 60_000);
+  const data = await upstream(`${WIKIDATA_SPARQL}?format=json&query=${encodeURIComponent(sparql)}`, { headers: { accept: 'application/sparql-results+json' } }, 70_000);
   const seen = new Set();
   const items = [];
   for (const b of data.results.bindings) {

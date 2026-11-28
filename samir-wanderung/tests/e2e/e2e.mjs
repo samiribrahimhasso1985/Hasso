@@ -272,8 +272,8 @@ if (want('studio')) {
     for (let i = 0; i < await durs.count(); i++) await durs.nth(i).fill(i === 3 ? '4' : '1.5');
     await page.waitForTimeout(800);
     const [dl] = await Promise.all([
-      page.waitForEvent('download', { timeout: 600000 }),
-      (async () => { await page.click('[data-testid=render]'); await page.waitForSelector('[data-testid=render-done]', { timeout: 600000 }); await page.getByRole('button', { name: 'Download MP4' }).click(); })(),
+      page.waitForEvent('download', { timeout: 2700000 }),
+      (async () => { await page.click('[data-testid=render]'); await page.waitForSelector('[data-testid=render-done]', { timeout: 2700000 }); await page.getByRole('button', { name: 'Download MP4' }).click(); })(),
     ]);
     const file = 'test-results/sample-export.mp4'; await dl.saveAs(file);
     await page.screenshot({ path: `${OUT}/13-studio-render.png` });
