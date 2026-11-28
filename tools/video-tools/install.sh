@@ -58,7 +58,7 @@ link "$TOOLS/video-shotcraft" video-shotcraft
 link "$TOOLS/stickman-video-director/skills/directing-stickman-videos" directing-stickman-videos
 
 # 9) Herk Edit Kit: workspace (open the folder); 15 editing skills incl. cut-silences / cut-mistakes
-[ -d "$TOOLS/herk-edit-kit/node_modules" ] || (cd "$TOOLS/herk-edit-kit" && timeout 900 npm ci --silent --no-audit --no-fund) || log "herk-edit-kit npm ci failed"
+[ -d "$TOOLS/herk-edit-kit/node_modules" ] || (cd "$TOOLS/herk-edit-kit" && ONNXRUNTIME_NODE_INSTALL_CUDA=skip ONNXRUNTIME_NODE_INSTALL=skip timeout 900 npm ci --silent --no-audit --no-fund) || log "herk-edit-kit npm ci failed"
 
 # 10) OpenMontage: workspace (open the folder); full AI video production pipelines (AGPL-3.0)
 (cd "$TOOLS/OpenMontage" && timeout 1200 pip install -q -r requirements.txt && (cd remotion-composer && [ -d node_modules ] || timeout 900 npm install --silent --no-audit --no-fund)) || log "OpenMontage setup incomplete"
