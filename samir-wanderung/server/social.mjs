@@ -1,11 +1,13 @@
 // Social hiking community: accounts, profiles, feed, groups, events, live sharing, moderation.
 // Every permission is checked here on the server; the frontend only mirrors it.
-import { DatabaseSync } from 'node:sqlite';
+import { createRequire } from 'node:module';
 import { randomBytes, scryptSync, timingSafeEqual, createHash } from 'node:crypto';
 import { mkdirSync, writeFileSync, readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { HttpError, RateLimiter, validLonLat, isNum } from './lib.mjs';
 
+// node:sqlite via require so bundlers/test runners do not strip the node: prefix.
+const { DatabaseSync } = createRequire(import.meta.url)('node:sqlite');
 const DATA_DIR = process.env.DATA_DIR || join(process.cwd(), 'server', 'data');
 mkdirSync(join(DATA_DIR, 'media'), { recursive: true });
 

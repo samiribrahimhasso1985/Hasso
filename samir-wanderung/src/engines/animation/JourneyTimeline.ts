@@ -84,7 +84,13 @@ export class JourneyTimeline {
 
   /** Animation time at which the hiker reaches distance d (for scrubbing by distance). */
   timeForDistance(d: number): number {
-    for (const s of this.segments) if (s.phase === 'hike' && d <= s.d1) return s.t0 + ((d - s.d0) / Math.max(1e-9, s.d1 - s.d0)) * (s.t1 - s.t0);
+    for (const s of this.segments) {
+      if (s.phase !== 'hike' || d > s.d1) continue;
+      // Bisection on at(): exact inverse including the start/end easing.
+      let lo = s.t0, hi = s.t1;
+      for (let i = 0; i < 40; i++) { const mid = (lo + hi) / 2; if (this.at(mid).distance < d) lo = mid; else hi = mid; }
+      return hi;
+    }
     return this.duration;
   }
 }

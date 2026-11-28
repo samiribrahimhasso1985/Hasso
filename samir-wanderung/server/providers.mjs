@@ -160,19 +160,23 @@ export async function atlas({ category, country, lang = 'en', offset = 0, limit 
   const key = `${category}|${country}|${l}|${off}|${lim}`;
   const hit = atlasCache.get(key); if (hit) return hit;
   // Sitelinks count is used as a popularity proxy so well-known places come first.
-  const sparql = `SELECT ?item ?itemLabel ?origLabel ?coord ?ele ?countryLabel ?image ?website ?article ?desc ?links WHERE {
-  ?item wdt:P31/wdt:P279* wd:${cls}; wdt:P625 ?coord; wikibase:sitelinks ?links.
+  // GROUP BY item so multi-valued properties (several coords/images) do not consume the LIMIT.
+  const label = (v, prop, langs) => `OPTIONAL { ?item ${prop} ?${v}_. FILTER(LANG(?${v}_) IN (${langs})) }`;
+  const sparql = `SELECT ?item ?links (SAMPLE(?coord_) AS ?coord) (SAMPLE(?ele_) AS ?ele) (SAMPLE(?image_) AS ?image) (SAMPLE(?website_) AS ?website)
+  (SAMPLE(?lbl_) AS ?itemLabel) (SAMPLE(?en_) AS ?enLabel) (SAMPLE(?orig_) AS ?origLabel) (SAMPLE(?desc_) AS ?desc) (SAMPLE(?article_) AS ?article) (GROUP_CONCAT(DISTINCT ?cl_; separator=", ") AS ?countryLabel) WHERE {
+  ?item ${country ? 'wdt:P31/wdt:P279?' : 'wdt:P31'} wd:${cls}; wdt:P625 ?coord_; wikibase:sitelinks ?links.
   ${country ? `?item wdt:P17 wd:${country}.` : ''}
-  FILTER(?links > ${country ? 2 : 25})
-  OPTIONAL { ?item wdt:P2044 ?ele. }
-  OPTIONAL { ?item wdt:P17 ?country. }
-  OPTIONAL { ?item wdt:P18 ?image. }
-  OPTIONAL { ?item wdt:P856 ?website. }
-  OPTIONAL { ?item rdfs:label ?origLabel. FILTER(LANG(?origLabel) = "mul") }
-  OPTIONAL { ?item schema:description ?desc. FILTER(LANG(?desc) = "${l}") }
-  OPTIONAL { ?article schema:about ?item; schema:isPartOf <https://${l}.wikipedia.org/>. }
-  SERVICE wikibase:label { bd:serviceParam wikibase:language "${l},en,mul". }
-} ORDER BY DESC(?links) LIMIT ${lim} OFFSET ${off}`;
+  FILTER(?links > ${country ? 2 : 40})
+  OPTIONAL { ?item wdt:P2044 ?ele_. }
+  OPTIONAL { ?item wdt:P18 ?image_. }
+  OPTIONAL { ?item wdt:P856 ?website_. }
+  OPTIONAL { ?item wdt:P17 ?ctry. ?ctry rdfs:label ?cl_. FILTER(LANG(?cl_) = "${l}") }
+  ${label('lbl', 'rdfs:label', `"${l}"`)}
+  ${label('en', 'rdfs:label', '"en"')}
+  ${label('orig', 'rdfs:label', '"mul"')}
+  ${label('desc', 'schema:description', `"${l}"`)}
+  OPTIONAL { ?article_ schema:about ?item; schema:isPartOf <https://${l}.wikipedia.org/>. }
+} GROUP BY ?item ?links ORDER BY DESC(?links) LIMIT ${lim} OFFSET ${off}`;
   const data = await upstream(`${WIKIDATA_SPARQL}?format=json&query=${encodeURIComponent(sparql)}`, { headers: { accept: 'application/sparql-results+json' } }, 60_000);
   const seen = new Set();
   const items = [];
@@ -185,7 +189,7 @@ export async function atlas({ category, country, lang = 'en', offset = 0, limit 
     if (!validLonLat(lon, lat)) continue;
     seen.add(id);
     items.push({
-      id, name: b.itemLabel?.value, originalName: b.origLabel?.value ?? null, lon, lat,
+      id, name: b.itemLabel?.value ?? b.enLabel?.value ?? id, originalName: b.origLabel?.value ?? null, lon, lat,
       elevation: b.ele ? Math.round(+b.ele.value) : null, country: b.countryLabel?.value ?? null,
       description: b.desc?.value ?? null, image: b.image?.value ?? null, website: b.website?.value ?? null,
       article: b.article?.value ?? null, category, source: `https://www.wikidata.org/wiki/${id}`,
