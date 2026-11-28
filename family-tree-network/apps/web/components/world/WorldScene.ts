@@ -8,6 +8,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { PLACES, SINJAR, type WorldPlace } from '../../lib/world/places';
 import { loadCountries, type CountryIndex, type WorldCountry } from '../../lib/world/countries';
+import { SHRINE, STORY } from '../../lib/world/story';
 
 export const PALETTE = {
   navy: 0x061426,
@@ -24,6 +25,8 @@ export interface SceneOptions {
   onSelect: (place: WorldPlace | null) => void;
   /** A country was chosen on the globe (null: tapped the sea / closed). */
   onCountry?: (country: WorldCountry | null) => void;
+  /** A historical photograph in "From here the story began" was tapped. */
+  onStory?: (id: string) => void;
   onReady?: () => void;
 }
 
@@ -141,6 +144,11 @@ export class WorldScene {
   private borders?: THREE.LineSegments;
   private highlight?: THREE.LineSegments;
   private selectedCountry: string | null = null;
+  private story = new THREE.Group();
+  private storyItems: { mesh: THREE.Mesh; glow: THREE.Mesh; shadow: THREE.Mesh; base: THREE.Vector3; phase: number; id: string }[] = [];
+  private storyTextures: THREE.Texture[] = [];
+  private shrine?: THREE.Mesh;
+  private caption?: THREE.Mesh;
   private targetSpin: number | null = null;
   private targetTilt: number | null = null;
   private targetCam: { pos: THREE.Vector3; look: THREE.Vector3 } | null = null;
@@ -176,6 +184,7 @@ export class WorldScene {
     this.buildGlobeShell();
     this.buildPlaces();
     this.buildOrbits();
+    this.buildStory();
 
     canvas.addEventListener('pointerdown', this.onDown);
     canvas.addEventListener('pointerup', this.onUp);
@@ -373,6 +382,107 @@ export class WorldScene {
     });
   }
 
+  /**
+   * "From here the story began": historical portraits (backgrounds removed) standing in a wide arc in front of
+   * the Sinjar ridge, each with a soft golden halo and a shadow, turning gently towards the viewer; the shrine
+   * photograph as a faded archival plate behind them; a caption below.
+   */
+  private buildStory() {
+    this.root.add(this.story);
+    const loader = new THREE.TextureLoader();
+    const load = (url: string) =>
+      new Promise<THREE.Texture>((res, rej) => loader.load(url, (t) => { t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; this.storyTextures.push(t); res(t); }, undefined, rej));
+    const n = STORY.length;
+    const shadowTex = dotTexture(0.2);
+    this.storyTextures.push(shadowTex);
+    STORY.forEach((p, i) => {
+      const u = n === 1 ? 0 : i / (n - 1) - 0.5; // -0.5 … 0.5
+      const base = new THREE.Vector3(u * 11.6, -3.75, 2.2 + Math.cos(u * Math.PI) * 1.3);
+      Promise.all([load(p.cutout!), load(p.cutout!.replace('.webp', '-glow.webp'))])
+        .then(([tex, glowTex]) => {
+          if (this.disposed) return;
+          const img = tex.image as HTMLImageElement;
+          const w = (p.height * img.width) / img.height;
+          const geo = new THREE.PlaneGeometry(w, p.height);
+          geo.translate(0, p.height / 2, 0); // stand on the ground
+          const mesh = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ map: tex, transparent: true, alphaTest: 0.04, opacity: 0, toneMapped: false }));
+          mesh.userData.storyId = p.id;
+          // Halo: the same silhouette, blurred, in soft gold, slightly behind.
+          const gw = w * 1.36, gh = p.height * 1.26;
+          const glowGeo = new THREE.PlaneGeometry(gw, gh);
+          glowGeo.translate(0, p.height / 2, -0.05);
+          const glow = new THREE.Mesh(glowGeo, new THREE.MeshBasicMaterial({ map: glowTex, color: PALETTE.gold, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending }));
+          const shadow = new THREE.Mesh(new THREE.PlaneGeometry(w * 1.1, 0.34), new THREE.MeshBasicMaterial({ map: shadowTex, color: 0x000000, transparent: true, opacity: 0, depthWrite: false }));
+          shadow.rotation.x = -Math.PI / 2;
+          const holder = new THREE.Group();
+          holder.add(glow, mesh);
+          holder.position.copy(base);
+          shadow.position.set(base.x, base.y + 0.01, base.z);
+          this.story.add(holder, shadow);
+          this.storyItems.push({ mesh, glow, shadow, base, phase: i * 0.9, id: p.id });
+          this.kick();
+        })
+        .catch(() => undefined);
+    });
+    load(SHRINE.plate)
+      .then((tex) => {
+        if (this.disposed) return;
+        const img = tex.image as HTMLImageElement;
+        const h = 2.3;
+        this.shrine = new THREE.Mesh(new THREE.PlaneGeometry((h * img.width) / img.height, h), new THREE.MeshBasicMaterial({ map: tex, transparent: true, opacity: 0, depthWrite: false, toneMapped: false }));
+        this.shrine.position.set(0, -2.95, 1.15);
+        this.shrine.userData.storyId = SHRINE.id;
+        this.story.add(this.shrine);
+        this.kick();
+      })
+      .catch(() => undefined);
+  }
+
+  /** Caption under the portraits, drawn into a texture so it stays part of the 3D scene (any language). */
+  setStoryCaption(text: string, rtl: boolean) {
+    const c = document.createElement('canvas');
+    c.width = 2048;
+    c.height = 200;
+    const g = c.getContext('2d')!;
+    const draw = () => {
+      g.clearRect(0, 0, c.width, c.height);
+      g.direction = rtl ? 'rtl' : 'ltr';
+      g.textAlign = 'center';
+      g.textBaseline = 'middle';
+      g.font = `600 ${rtl ? 92 : 78}px ${rtl ? "'IBM Plex Sans Arabic'" : 'Inter'}, system-ui, sans-serif`;
+      if (!rtl) (g as CanvasRenderingContext2D & { letterSpacing?: string }).letterSpacing = '14px';
+      g.shadowColor = 'rgba(214,177,92,0.65)';
+      g.shadowBlur = 28;
+      g.fillStyle = '#d6b15c';
+      g.fillText(text, c.width / 2, c.height / 2 + 4);
+      const grd = g.createLinearGradient(0, 0, c.width, 0);
+      grd.addColorStop(0, 'rgba(214,177,92,0)');
+      grd.addColorStop(0.5, 'rgba(214,177,92,0.8)');
+      grd.addColorStop(1, 'rgba(214,177,92,0)');
+      g.shadowBlur = 0;
+      g.fillStyle = grd;
+      g.fillRect(c.width * 0.2, c.height - 18, c.width * 0.6, 3);
+      if (this.caption) (this.caption.material as THREE.MeshBasicMaterial).map!.needsUpdate = true;
+      this.kick();
+    };
+    if (this.caption) {
+      const m = this.caption.material as THREE.MeshBasicMaterial;
+      m.map?.dispose();
+      m.map = new THREE.CanvasTexture(c);
+      m.map.colorSpace = THREE.SRGBColorSpace;
+      m.needsUpdate = true;
+    } else {
+      const tex = new THREE.CanvasTexture(c);
+      tex.colorSpace = THREE.SRGBColorSpace;
+      this.caption = new THREE.Mesh(new THREE.PlaneGeometry(7.6, 0.74), new THREE.MeshBasicMaterial({ map: tex, transparent: true, opacity: 0, depthWrite: false, toneMapped: false }));
+      this.caption.position.set(0, -4.15, 3.75);
+      this.story.add(this.caption);
+    }
+    draw();
+    // Web fonts may still be loading: draw again once they are ready.
+    document.fonts?.ready.then(() => !this.disposed && draw());
+  }
+
   // ── interaction ──────────────────────────────────────────────────────────────────────────────────────
 
   private onDown = (e: PointerEvent) => { this.down = { x: e.clientX, y: e.clientY }; };
@@ -382,6 +492,10 @@ export class WorldScene {
     const rect = this.canvas.getBoundingClientRect();
     const ndc = new THREE.Vector2(((e.clientX - rect.left) / rect.width) * 2 - 1, -((e.clientY - rect.top) / rect.height) * 2 + 1);
     this.raycaster.setFromCamera(ndc, this.camera);
+    // 0. A historical photograph of the story.
+    const storyHits = this.raycaster.intersectObjects([...this.storyItems.map((s) => s.mesh), ...(this.shrine ? [this.shrine] : [])], false);
+    const sh = storyHits.find((h) => ((h.object as THREE.Mesh).material as THREE.MeshBasicMaterial).opacity > 0.3);
+    if (sh) return this.opts.onStory?.(sh.object.userData.storyId as string);
     // 1. A place light (cities and regions) wins over the country under it.
     for (const h of this.raycaster.intersectObjects(this.placeTargets, false)) {
       if (h.object.userData.place && this.isFacing(h.object as THREE.Mesh)) return this.select((h.object.userData.place as WorldPlace).id);
@@ -529,9 +643,9 @@ export class WorldScene {
   flyTo(where: 'overview' | 'globe' | 'sinjar') {
     this.userMoved = true;
     const presets = {
-      overview: { pos: new THREE.Vector3(0, 0.4, this.fitDistance()), look: new THREE.Vector3(0, -0.3, 0) },
+      overview: { pos: new THREE.Vector3(0, -0.1, this.fitDistance()), look: new THREE.Vector3(0, -1.45, 0) },
       globe: { pos: new THREE.Vector3(0, GLOBE_Y + 0.3, 7.4), look: new THREE.Vector3(0, GLOBE_Y, 0) },
-      sinjar: { pos: new THREE.Vector3(2.2, -1.6, 7.2), look: new THREE.Vector3(0, -2.4, 0) },
+      sinjar: { pos: new THREE.Vector3(0, -2.2, this.storyDistance()), look: new THREE.Vector3(0, -2.9, 1.8) },
     };
     // The overview keeps the scene beside the title; the other views centre their subject.
     const { x: sx, y: sy } = where === 'overview' ? { x: 0, y: 0 } : this.root.position;
@@ -539,6 +653,11 @@ export class WorldScene {
     presets[where].look.x += sx;
     presets[where].pos.y += sy;
     presets[where].look.y += sy;
+    // Portrait phones: the title fills the top, so the photographs are shown lower on the screen.
+    if (where === 'sinjar' && (this.camera.aspect || 1) < 0.8) {
+      presets.sinjar.pos.y += 1.5;
+      presets.sinjar.look.y += 1.5;
+    }
     this.targetCam = presets[where];
     if (where === 'sinjar') this.focus(SINJAR.lat, SINJAR.lon, null);
     if (this.opts.reduceMotion) this.jumpCamera();
@@ -566,9 +685,15 @@ export class WorldScene {
     return from + ((((to - from) % tau) + tau * 1.5) % tau) - tau / 2;
   }
 
+  /** Distance at which the whole row of portraits fits the screen. */
+  private storyDistance() {
+    const aspect = this.camera.aspect || 1;
+    return aspect < 0.6 ? 16 : aspect < 1.2 ? 15 : 13.5;
+  }
+
   private fitDistance() {
     const aspect = this.camera.aspect || 1;
-    return aspect < 0.6 ? 17 : aspect < 0.8 ? 14.5 : aspect < 1.2 ? 12 : 10.5;
+    return aspect < 0.6 ? 19.5 : aspect < 0.8 ? 16.5 : aspect < 1.2 ? 14 : 12.5;
   }
 
   /** On wide screens the scene moves away from the side where the title is (RTL: title on the right). */
@@ -591,6 +716,16 @@ export class WorldScene {
     const p = target.getWorldPosition(new THREE.Vector3()).project(this.camera);
     const rect = this.canvas.getBoundingClientRect();
     return { x: rect.left + ((p.x + 1) / 2) * rect.width, y: rect.top + ((1 - p.y) / 2) * rect.height, facing: this.isFacing(target) };
+  }
+
+  /** For tests: where a story photograph appears on screen (CSS px), once loaded. */
+  storyScreenPosition(id: string) {
+    const it = this.storyItems.find((s) => s.id === id);
+    if (!it) return null;
+    const box = new THREE.Box3().setFromObject(it.mesh);
+    const p = box.getCenter(new THREE.Vector3()).project(this.camera);
+    const rect = this.canvas.getBoundingClientRect();
+    return { x: rect.left + ((p.x + 1) / 2) * rect.width, y: rect.top + ((1 - p.y) / 2) * rect.height, loaded: this.storyItems.length };
   }
 
   /** For tests: where a latitude/longitude on the Earth appears on screen (CSS px). */
@@ -664,6 +799,26 @@ export class WorldScene {
       this.tilt.rotation.x += (this.targetTilt - this.tilt.rotation.x) * Math.min(1, dt * 2.5 || 1);
     }
 
+    // The story: fades in during the opening shot; portraits float slightly and turn towards the viewer.
+    const sk = ease(0.3, 2.4);
+    const camLocal = this.root.worldToLocal(this.camera.position.clone());
+    for (const it of this.storyItems) {
+      const holder = it.mesh.parent!;
+      if (!still) holder.position.y = it.base.y + Math.sin(t * 0.7 + it.phase) * 0.035;
+      holder.rotation.y = Math.atan2(camLocal.x - it.base.x, camLocal.z - it.base.z) * 0.9;
+      (it.mesh.material as THREE.MeshBasicMaterial).opacity = sk;
+      (it.glow.material as THREE.MeshBasicMaterial).opacity = sk * (0.32 + (still ? 0 : Math.sin(t * 1.1 + it.phase) * 0.08));
+      (it.shadow.material as THREE.MeshBasicMaterial).opacity = sk * 0.55;
+    }
+    if (this.shrine) {
+      (this.shrine.material as THREE.MeshBasicMaterial).opacity = 0.42 * ease(0.8, 3.2);
+      this.shrine.rotation.y = Math.atan2(camLocal.x - this.shrine.position.x, camLocal.z - this.shrine.position.z) * 0.6;
+    }
+    if (this.caption) {
+      (this.caption.material as THREE.MeshBasicMaterial).opacity = ease(1.2, 3.2);
+      this.caption.rotation.x = Math.atan2(camLocal.y - this.caption.position.y, camLocal.z - this.caption.position.z) * -0.5;
+    }
+
     // Moving lights.
     const pulseK = ease(4.8, 6.4);
     for (const p of this.arcPulses) {
@@ -686,9 +841,9 @@ export class WorldScene {
       if (this.camera.position.distanceTo(this.targetCam.pos) < 0.02) this.targetCam = null;
     } else if (!this.userMoved) {
       const k = ease(0.5, 5.5);
-      const end = new THREE.Vector3(0, 0.4, this.fitDistance());
+      const end = new THREE.Vector3(0, -0.1, this.fitDistance());
       this.camera.position.lerpVectors(new THREE.Vector3(0, -1.4, 10.5), end, k);
-      this.controls.target.lerpVectors(new THREE.Vector3(0, -2.6, 0), new THREE.Vector3(0, -0.3, 0), k);
+      this.controls.target.lerpVectors(new THREE.Vector3(0, -2.6, 0), new THREE.Vector3(0, -1.45, 0), k);
     }
     this.controls.update();
     this.renderer.render(this.scene, this.camera);
@@ -718,6 +873,8 @@ export class WorldScene {
       mats.forEach((x) => x.dispose());
     });
     this.dots.dispose();
+    this.storyTextures.forEach((t) => t.dispose());
+    (this.caption?.material as THREE.MeshBasicMaterial | undefined)?.map?.dispose();
     this.renderer.dispose();
   }
 }

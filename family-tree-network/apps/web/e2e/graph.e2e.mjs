@@ -330,6 +330,17 @@ test('EZIDINET WORLD: globe renders, places and all countries open their card an
     await page.mouse.click(es.x, es.y);
     await page.waitForSelector('[data-testid=w-country-card]');
     assert.match(await page.textContent('[data-testid=w-country-card]'), /Spain|Spanien|إسبانيا|Spanya|Îspanya/);
+    await page.click('[data-testid=w-country-card] .w-close');
+    // "From here the story began": the historical photographs stand in 3D; tapping one opens its story card.
+    await page.click('[data-testid=w-sinjar]');
+    await page.waitForFunction(() => window.__ezWorld.storyScreenPosition('p3')?.loaded === 8, null, { timeout: 20000 });
+    await page.waitForTimeout(2500);
+    const p3 = await page.evaluate(() => window.__ezWorld.storyScreenPosition('p3'));
+    await page.mouse.click(p3.x, p3.y);
+    await page.waitForSelector('[data-testid=w-story-card]');
+    assert.match(await page.textContent('[data-testid=w-story-card]'), /story began|Geschichte|بدأت القصة|dest pê kir/i);
+    await page.click('[data-testid=w-story-p6]');
+    assert.match(await page.textContent('[data-testid=w-story-card]'), /Yezidi Photo Archive/);
     assert.deepEqual(errors, []);
     await page.close();
   };

@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { COUNTRY_NAMES, COUNTRY_NOTES, PLACES, type WorldLocale, type WorldPlace } from '../../lib/world/places';
 import { loadCountries, sortedCountries, type WorldCountry } from '../../lib/world/countries';
+import { SHRINE, STORY, STORY_TEXT } from '../../lib/world/story';
 import { WT } from '../../lib/world/texts';
 import { hasWebGL, WorldScene } from './WorldScene';
 
@@ -22,6 +23,8 @@ export default function WorldExperience() {
   const [country, setCountry] = useState<WorldCountry | null>(null);
   const [allCountries, setAllCountries] = useState<WorldCountry[]>([]);
   const [query, setQuery] = useState('');
+  const [story, setStory] = useState<string | null>(null);
+  const st = (k: keyof typeof STORY_TEXT) => STORY_TEXT[k][lang];
   const [panel, setPanel] = useState<'communities' | 'heritage' | null>(null);
   const [webgl, setWebgl] = useState(true);
   const [ready, setReady] = useState(false);
@@ -49,7 +52,8 @@ export default function WorldExperience() {
         lowDetail,
         reduceMotion,
         onSelect: (p) => { setPlace(p); if (p) setCountry(null); },
-        onCountry: (c) => { setCountry(c); if (c) setPanel(null); },
+        onCountry: (c) => { setCountry(c); if (c) { setPanel(null); setStory(null); } },
+        onStory: (id) => { setStory(id); setPlace(null); setCountry(null); setPanel(null); },
         onReady: () => setReady(true),
       });
     } catch {
@@ -74,6 +78,8 @@ export default function WorldExperience() {
 
   // Keep the scene on the side opposite the title (RTL title on the right).
   useEffect(() => { scene.current?.setSide(lang === 'ar' ? 'rtl' : 'ltr'); }, [lang, ready]);
+  // The caption under the photographs follows the language.
+  useEffect(() => { scene.current?.setStoryCaption(STORY_TEXT.caption[lang], lang === 'ar'); }, [lang, webgl]);
 
   const byCountry = useMemo(() => {
     const m = new Map<string, WorldPlace[]>();
@@ -123,7 +129,7 @@ export default function WorldExperience() {
         </div>
       </header>
 
-      <section className={`world-hero ${place || panel || country ? 'dim' : ''}`}>
+      <section className={`world-hero ${place || panel || country || story ? 'dim' : ''}`}>
         <p className="world-kicker">{t('kicker')}</p>
         <h1>{t('title')}</h1>
         <p className="world-tagline">«{t('tagline')}»</p>
@@ -136,7 +142,7 @@ export default function WorldExperience() {
       </section>
 
       <nav className="world-views" aria-label="View">
-        <button type="button" onClick={() => scene.current?.flyTo('sinjar')} data-testid="w-sinjar">⛰ {t('sinjar')}</button>
+        <button type="button" onClick={() => scene.current?.flyTo('sinjar')} data-testid="w-sinjar">⛰ {st('button')}</button>
         <button type="button" onClick={() => scene.current?.flyTo('overview')}>◎ {t('overview')}</button>
       </nav>
       <p className="world-hint">{t('hint')} · <span>{t('preview')}</span></p>
@@ -203,6 +209,35 @@ export default function WorldExperience() {
           <p className="w-draft">{t('draft')}</p>
         </aside>
       )}
+
+      {story && (() => {
+        const all = [...STORY.map((p) => ({ id: p.id, original: p.original, credit: p.credit })), { id: SHRINE.id, original: SHRINE.original, credit: undefined }];
+        const cur = all.find((p) => p.id === story) ?? all[0];
+        return (
+          <aside className="world-card w-story" data-testid="w-story-card" role="dialog" aria-labelledby="w-story-title">
+            <div className="w-panel-head">
+              <div>
+                <span className="w-kind homeland">{st('photo')}</span>
+                <h2 id="w-story-title">{st('caption')}</h2>
+              </div>
+              <button type="button" className="w-close" onClick={() => setStory(null)} aria-label={t('close')}>×</button>
+            </div>
+            <img className="w-story-photo" src={cur.original} alt={st('photo')} />
+            {cur.credit && <p className="w-credit">{st('credit')}: {cur.credit}</p>}
+            <p>{st('intro')}</p>
+            <p className="w-note">{st('unknown')}</p>
+            <h3>{st('all')}</h3>
+            <div className="w-thumbs">
+              {all.map((p) => (
+                <button key={p.id} type="button" aria-pressed={p.id === cur.id} onClick={() => setStory(p.id)} data-testid={`w-story-${p.id}`}>
+                  <img src={p.original} alt="" loading="lazy" />
+                </button>
+              ))}
+            </div>
+            <p className="w-draft">{st('rights')}</p>
+          </aside>
+        );
+      })()}
 
       {country && !place && (
         <aside className="world-card" data-testid="w-country-card" role="dialog" aria-labelledby="w-country-title">
