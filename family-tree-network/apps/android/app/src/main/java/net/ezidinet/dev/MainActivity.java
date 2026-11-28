@@ -31,6 +31,8 @@ public class MainActivity extends Activity {
     private static final String PREFS = "ezidinet";
     private static final String KEY_SERVER = "server_url";
     private static final String SETUP_URL = "file:///android_asset/setup.html";
+    /** The online EZIDINET test server. Used until the person chooses another address on the setup screen. */
+    static final String DEFAULT_SERVER = "https://ezidinet.onrender.com/";
     private static final int CAMERA_REQUEST = 7;
     /** The web app needs a WebView based on Chrome 80 or newer (globalThis, optional chaining, …). */
     static final int MIN_WEBVIEW_MAJOR = 80;
@@ -110,7 +112,7 @@ public class MainActivity extends Activity {
     }
 
     private String savedServer() {
-        return getSharedPreferences(PREFS, MODE_PRIVATE).getString(KEY_SERVER, null);
+        return getSharedPreferences(PREFS, MODE_PRIVATE).getString(KEY_SERVER, DEFAULT_SERVER);
     }
 
     private boolean isServerOrigin(Uri uri) {

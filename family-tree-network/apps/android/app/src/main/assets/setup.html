@@ -21,16 +21,16 @@
 <body>
 <div class="card">
   <h1>EZIDINET</h1>
-  <p>Development build. Enter the address of the EZIDINET test server (for example the PC on your Wi-Fi running <code>npm run dev:lan</code>).</p>
-  <p class="err" id="err">The server could not be reached. Check the address and that the phone is on the same network.</p>
+  <p>EZIDINET opens <code>https://ezidinet.onrender.com</code>. You only need this screen to use a different server.</p>
+  <p class="err" id="err">The server could not be reached. Check your internet connection and press Connect again. (The free test server can take up to a minute to wake up.)</p>
   <p class="err" id="rend">The page stopped unexpectedly and was closed safely. Press Connect to open it again.<br><span dir="rtl">توقفت الصفحة بشكل غير متوقع وأُغلقت بأمان. اضغط Connect لفتحها من جديد.</span></p>
   <p class="err" id="old">This phone's "Android System WebView" is too old (version <span id="ver"></span>; 80 or newer is needed). Update "Android System WebView" (or Chrome) in the Play Store, then reopen EZIDINET.<br><span dir="rtl">نسخة "Android System WebView" على هذا الهاتف قديمة. حدّثها (أو حدّث Chrome) من متجر Play ثم افتح EZIDINET من جديد.</span></p>
   <label for="url">Server address</label>
-  <input id="url" type="url" inputmode="url" autocomplete="off" placeholder="http://192.168.1.20:3000">
+  <input id="url" type="url" inputmode="url" autocomplete="off" placeholder="https://ezidinet.onrender.com">
   <button id="go" type="button">Connect</button>
   <p class="err" id="bad">Please enter a valid http:// or https:// address.</p>
   <div class="ar">
-    <p>نسخة تجريبية للتطوير. أدخل عنوان خادم EZIDINET التجريبي (مثلاً الحاسوب على نفس شبكة الواي فاي الذي يشغّل التطبيق)، ثم اضغط Connect.</p>
+    <p>يفتح EZIDINET العنوان <span dir="ltr">https://ezidinet.onrender.com</span>. تحتاج هذه الشاشة فقط إن أردت خادماً آخر. إن ظهرت هذه الشاشة بسبب خطأ، تأكد من اتصالك بالإنترنت ثم اضغط Connect.</p>
   </div>
 </div>
 <script>

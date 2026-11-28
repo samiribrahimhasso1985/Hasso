@@ -1,5 +1,7 @@
 # EZIDINET — online test server on Render (Blueprint)
 
+**Status 2026-11-28: live at https://ezidinet.onrender.com** (Blueprint EZIDINET, branch `ccr-47c5f9b6-alewtl`).
+
 `render.yaml` (repository root) creates, in Frankfurt (EU), on free plans:
 * **ezidinet-db** — PostgreSQL 16, no internet access (only the service connects). Free databases are deleted by
   Render 30 days after creation unless upgraded — use for testing only.
