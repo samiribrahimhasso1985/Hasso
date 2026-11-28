@@ -1,0 +1,55 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root { color-scheme: dark; --aqua: #14d3c8; --cyan: #38d9ff; }
+html, body, #root { height: 100%; }
+body { @apply bg-ink-900 text-slate-200 font-sans antialiased; background-image: radial-gradient(1200px 600px at 80% -10%, rgba(20,211,200,.08), transparent 60%), radial-gradient(900px 500px at -10% 110%, rgba(56,217,255,.06), transparent 60%); }
+[dir='rtl'] body { font-family: 'Noto Sans Arabic', Inter, system-ui, sans-serif; }
+
+.glass { @apply rounded-2xl border border-white/10 bg-ink-800/70 shadow-xl backdrop-blur-xl; }
+.btn { @apply inline-flex items-center justify-center gap-2 rounded-xl px-3.5 py-2 text-sm font-medium transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-aqua-400 disabled:opacity-40 disabled:cursor-not-allowed; }
+.btn-primary { @apply bg-gradient-to-r from-aqua-500 to-cyanx-500 text-ink-950 hover:shadow-glow hover:brightness-110; }
+.btn-ghost { @apply border border-white/10 bg-white/5 text-slate-100 hover:bg-white/10 hover:border-aqua-500/40; }
+.btn-danger { @apply border border-red-400/30 bg-red-500/10 text-red-200 hover:bg-red-500/20; }
+.btn-chip { @apply px-2.5 py-1.5 border border-white/10 bg-ink-900/60 text-slate-200 hover:border-aqua-400/50 hover:text-white; }
+.btn-chip.is-active, .btn-ghost.is-active { @apply border-aqua-400 text-aqua-300 bg-aqua-500/10; }
+.field { @apply w-full rounded-xl border border-white/10 bg-ink-950/70 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:border-aqua-400 focus:outline-none focus:ring-1 focus:ring-aqua-400; }
+.field-label { @apply block text-[11px] uppercase tracking-wider text-slate-400 mb-1; }
+.stat { @apply rounded-xl bg-white/[0.04] border border-white/5 px-3 py-2; }
+.stat-label { @apply text-[10px] uppercase tracking-wider text-slate-400; }
+.stat-value { @apply font-display text-lg text-white; }
+.stat-note { @apply text-[10px] text-slate-500; }
+.badge { @apply inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold tracking-wider uppercase; }
+.badge-sim { @apply border-cyanx-400/60 bg-cyanx-500/15 text-cyanx-400; }
+.badge-live { @apply border-orange-400/60 bg-orange-500/15 text-orange-300; }
+.spinner { @apply inline-block h-4 w-4 rounded-full border-2 border-aqua-400/30 border-t-aqua-400 animate-spin; }
+.toggle { @apply h-5 w-9 appearance-none rounded-full bg-white/15 relative cursor-pointer transition; }
+.toggle::after { content: ''; @apply absolute top-0.5 h-4 w-4 rounded-full bg-white transition-all; inset-inline-start: 2px; }
+.toggle:checked { @apply bg-aqua-500; }
+.toggle:checked::after { inset-inline-start: 18px; }
+.map-fallback { @apply flex flex-col items-center justify-center bg-ink-800 text-slate-400 text-sm p-6; }
+.page { @apply p-3 md:p-6 max-w-7xl mx-auto; }
+.fade-in { animation: fadeIn .35s ease both; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
+.reduced-motion *, .reduced-motion *::before, .reduced-motion *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+
+/* Map markers */
+.sw-marker { @apply flex items-center justify-center rounded-full text-[10px] font-bold text-ink-950 shadow-lg; width: 22px; height: 22px; border: 2px solid #fff; }
+.sw-marker-start { background: #14d3c8; }
+.sw-marker-end { background: #38d9ff; width: 26px; height: 26px; }
+.sw-marker-stop { background: #a5f3fc; }
+.sw-marker-poi { @apply rounded-md px-1.5 w-auto h-auto py-0.5 text-[11px] text-white bg-ink-800/90 border-aqua-400; white-space: nowrap; }
+.sw-marker-me { background: #ffb347; box-shadow: 0 0 0 6px rgba(255,179,71,.25); }
+.sw-hiker { position: relative; width: 22px; height: 22px; }
+.sw-hiker-dot { position: absolute; inset: 4px; border-radius: 9999px; background: #e9fffd; border: 3px solid #14d3c8; box-shadow: 0 0 16px #14d3c8; }
+.sw-hiker-pulse { position: absolute; inset: -10px; border-radius: 9999px; border: 2px solid rgba(56,217,255,.6); animation: pulse 1.8s ease-out infinite; }
+.sw-hiker-arrived .sw-hiker-dot { background: #38d9ff; }
+@keyframes pulse { from { transform: scale(.4); opacity: 1; } to { transform: scale(1.4); opacity: 0; } }
+.maplibregl-ctrl-attrib { @apply !bg-ink-900/70 !text-slate-400 text-[10px]; }
+.maplibregl-ctrl-attrib a { @apply !text-slate-300; }
+.cesium-viewer-bottom { opacity: .8; }
+.scrollbar-thin::-webkit-scrollbar { width: 6px; height: 6px; }
+.scrollbar-thin::-webkit-scrollbar-thumb { background: rgba(255,255,255,.15); border-radius: 3px; }
+.vignette { pointer-events: none; position: absolute; inset: 0; background: radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,.55)); }
