@@ -291,3 +291,32 @@ test('profile photo: choose → adjust → save → shown in the top bar and to 
   assert.deepEqual(omar.errors, []);
   await page.close();
 });
+
+test('EZIDINET WORLD: 3D scene renders, places open their card, works with reduced motion, no page errors', async () => {
+  const run = async (opts) => {
+    const page = await browser.newPage({ viewport: { width: 1280, height: 800 }, ...opts });
+    const errors = [];
+    page.on('pageerror', (e) => errors.push(e.message));
+    await page.goto(`${WEB}/world`);
+    await page.waitForSelector('[data-testid=world-canvas]');
+    await page.waitForFunction(() => Boolean(window.__ezWorld), null, { timeout: 30000 });
+    await page.waitForTimeout(1500);
+    // The renderer really drew the scene (WebGL buffers cannot be read back, so use the renderer's counters).
+    const drawn = await page.evaluate(() => { window.__ezWorld.renderOnce(); return window.__ezWorld.stats(); });
+    assert.ok(drawn.calls > 8 && drawn.lines > 500 && drawn.points > 100, `scene drawn ${JSON.stringify(drawn)}`);
+    // Heritage list → place card; tapping Sinjar on the globe also opens it.
+    await page.click('[data-testid=w-heritage]');
+    await page.click('[data-testid=w-place-lalish]');
+    await page.waitForSelector('[data-testid=w-card]');
+    assert.match(await page.textContent('[data-testid=w-card]'), /Lalish|لالش|Laliş|Lalisch/);
+    await page.click('[data-testid=w-card] .w-close');
+    await page.waitForTimeout(2500);
+    const sp = await page.evaluate(() => window.__ezWorld.screenPosition('sinjar'));
+    await page.mouse.click(sp.x, sp.y);
+    await page.waitForSelector('[data-testid=w-card]');
+    assert.deepEqual(errors, []);
+    await page.close();
+  };
+  await run({});
+  await run({ reducedMotion: 'reduce' });
+});

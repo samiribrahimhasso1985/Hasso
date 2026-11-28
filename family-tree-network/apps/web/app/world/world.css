@@ -1,0 +1,397 @@
+/* EZIDINET WORLD — own visual identity for this module (owner's specification): deep navy, digital blue, cyan, soft gold.
+   Scoped to .world so the rest of EZIDINET keeps its design system. */
+.world {
+  --w-navy: #061426;
+  --w-blue: #087cff;
+  --w-cyan: #35cfff;
+  --w-gold: #d6b15c;
+  --w-glow: #eaf7ff;
+  --w-shadow: #17212b;
+  --w-panel: rgba(6, 20, 38, 0.78);
+  --w-line: rgba(53, 207, 255, 0.22);
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background: radial-gradient(ellipse at 50% 30%, #0b2546 0%, var(--w-navy) 60%);
+  color: var(--w-glow);
+  font-family: Inter, 'IBM Plex Sans Arabic', system-ui, sans-serif;
+}
+.world[lang='ar'] {
+  font-family: 'IBM Plex Sans Arabic', Inter, system-ui, sans-serif;
+}
+.world-boot {
+  background: var(--w-navy, #061426);
+}
+.world-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  touch-action: none;
+  outline: none;
+}
+.world-loading {
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--w-cyan), transparent);
+  animation: w-load 1.4s ease-in-out infinite;
+}
+@keyframes w-load {
+  from { transform: translateX(-60%); }
+  to { transform: translateX(60%); }
+}
+
+.world-top {
+  position: absolute;
+  inset: 0 0 auto 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: calc(14px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) 0 max(16px, env(safe-area-inset-left, 0px));
+  pointer-events: none;
+}
+.world-top > * {
+  pointer-events: auto;
+}
+.world-brand {
+  color: var(--w-glow);
+  text-decoration: none;
+  font-family: Inter, system-ui, sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.32em;
+  font-size: 13px;
+  direction: ltr;
+}
+.world-langs {
+  display: flex;
+  gap: 2px;
+  background: rgba(234, 247, 255, 0.06);
+  border: 1px solid var(--w-line);
+  border-radius: 999px;
+  padding: 3px;
+}
+.world-langs button {
+  background: none;
+  border: 0;
+  color: rgba(234, 247, 255, 0.7);
+  font: inherit;
+  font-size: 12px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+.world-langs button[aria-pressed='true'] {
+  background: rgba(53, 207, 255, 0.16);
+  color: var(--w-glow);
+}
+
+.world-hero {
+  position: absolute;
+  inset-inline-start: max(24px, env(safe-area-inset-left, 0px));
+  top: 72px;
+  max-width: min(560px, calc(100% - 48px));
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+  animation: w-rise 1.6s ease-out 0.6s both;
+}
+.world-hero.dim {
+  opacity: 0.25;
+}
+.world-hero > * {
+  pointer-events: auto;
+}
+@keyframes w-rise {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+.world-kicker {
+  margin: 0;
+  color: var(--w-cyan);
+  letter-spacing: 0.4em;
+  font-size: 12px;
+  font-weight: 600;
+  direction: ltr;
+  text-align: start;
+}
+.world h1 {
+  margin: 10px 0 8px;
+  font-size: clamp(26px, 4.2vw, 48px);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  line-height: 1.12;
+  text-shadow: 0 0 24px rgba(8, 124, 255, 0.45);
+}
+.world[lang='ar'] h1 {
+  letter-spacing: 0;
+  line-height: 1.35;
+}
+.world-tagline {
+  margin: 0 0 18px;
+  color: var(--w-gold);
+  font-size: clamp(15px, 1.6vw, 19px);
+}
+.world-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.w-btn {
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  color: var(--w-glow);
+  background: rgba(8, 124, 255, 0.1);
+  border: 1px solid var(--w-line);
+  border-radius: 999px;
+  padding: 10px 16px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+.world[lang='ar'] .w-btn {
+  letter-spacing: 0;
+  font-size: 14px;
+}
+.w-btn:hover,
+.w-btn:focus-visible {
+  background: rgba(53, 207, 255, 0.2);
+  border-color: var(--w-cyan);
+}
+.w-btn.primary {
+  background: var(--w-blue);
+  border-color: var(--w-blue);
+}
+.w-btn.gold {
+  color: var(--w-navy);
+  background: var(--w-gold);
+  border-color: var(--w-gold);
+}
+
+.world-views {
+  position: absolute;
+  inset-inline-end: max(16px, env(safe-area-inset-right, 0px));
+  bottom: calc(52px + env(safe-area-inset-bottom, 0px));
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.world-views button {
+  font: inherit;
+  font-size: 13px;
+  color: var(--w-glow);
+  background: var(--w-panel);
+  border: 1px solid var(--w-line);
+  border-radius: 999px;
+  padding: 8px 14px;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+}
+.world-hint {
+  position: absolute;
+  inset-inline: 0;
+  bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+  margin: 0;
+  text-align: center;
+  font-size: 12px;
+  color: rgba(234, 247, 255, 0.55);
+  padding-inline: 16px;
+  pointer-events: none;
+}
+.world-hint span {
+  color: var(--w-gold);
+}
+
+.world-panel,
+.world-card {
+  position: absolute;
+  inset-inline-end: max(16px, env(safe-area-inset-right, 0px));
+  top: 64px;
+  width: min(360px, calc(100% - 32px));
+  max-height: calc(100% - 140px);
+  overflow: auto;
+  background: var(--w-panel);
+  border: 1px solid var(--w-line);
+  border-radius: 18px;
+  padding: 18px 20px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+  animation: w-rise 0.35s ease-out both;
+}
+.w-panel-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+.world-panel h2,
+.world-card h2 {
+  margin: 4px 0 6px;
+  font-size: 20px;
+  font-weight: 600;
+}
+.world-card h3 {
+  margin: 16px 0 4px;
+  font-size: 13px;
+  color: var(--w-cyan);
+  font-weight: 600;
+}
+.world-card p {
+  margin: 6px 0;
+  line-height: 1.6;
+}
+.w-close {
+  background: none;
+  border: 1px solid var(--w-line);
+  color: var(--w-glow);
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  flex: none;
+}
+.w-kind {
+  display: inline-block;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--w-line);
+}
+.w-kind.homeland {
+  color: var(--w-gold);
+  border-color: rgba(214, 177, 92, 0.5);
+}
+.w-kind.diaspora {
+  color: var(--w-cyan);
+}
+.w-country {
+  color: rgba(234, 247, 255, 0.65);
+}
+.w-note {
+  font-size: 13px;
+  color: rgba(234, 247, 255, 0.68);
+  line-height: 1.6;
+}
+.w-draft {
+  font-size: 12px;
+  color: var(--w-gold);
+  border-top: 1px solid var(--w-line);
+  padding-top: 10px;
+  margin-top: 14px !important;
+}
+.w-list {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0;
+}
+.w-list button {
+  width: 100%;
+  text-align: start;
+  font: inherit;
+  font-size: 14px;
+  color: var(--w-glow);
+  background: none;
+  border: 0;
+  border-bottom: 1px solid rgba(53, 207, 255, 0.1);
+  padding: 9px 2px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.w-list button:hover {
+  color: var(--w-cyan);
+}
+.w-list small {
+  margin-inline-start: auto;
+  color: rgba(234, 247, 255, 0.5);
+}
+.w-list i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--w-cyan);
+  box-shadow: 0 0 8px var(--w-cyan);
+  flex: none;
+}
+.w-list i.homeland {
+  background: var(--w-gold);
+  box-shadow: 0 0 8px var(--w-gold);
+}
+.world-fallback {
+  position: absolute;
+  inset: 0;
+  padding: 220px 24px 24px;
+  overflow: auto;
+}
+.world-fallback button {
+  background: none;
+  border: 0;
+  color: var(--w-cyan);
+  font: inherit;
+  cursor: pointer;
+}
+
+@media (max-width: 700px) {
+  .world-hero {
+    top: 60px;
+    inset-inline: 16px;
+    max-width: none;
+  }
+  .world h1 {
+    font-size: 24px;
+  }
+  .world-tagline {
+    font-size: 14px;
+    margin-bottom: 12px;
+  }
+  .world-actions {
+    gap: 6px;
+  }
+  .w-btn {
+    padding: 6px 11px;
+    font-size: 10.5px;
+    letter-spacing: 0.06em;
+  }
+  .world-tagline {
+    font-size: 13px;
+  }
+  .world-views {
+    flex-direction: row;
+    inset-inline: 16px;
+    justify-content: center;
+    bottom: calc(46px + env(safe-area-inset-bottom, 0px));
+  }
+  .world-views button {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+  .world[lang='ar'] .w-btn {
+    font-size: 12px;
+  }
+  .world-panel,
+  .world-card {
+    inset: auto 12px calc(12px + env(safe-area-inset-bottom, 0px)) 12px;
+    top: auto;
+    width: auto;
+    max-height: 56%;
+  }
+  .world-langs button {
+    padding: 4px 7px;
+    font-size: 11px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .world-hero,
+  .world-panel,
+  .world-card,
+  .world-loading {
+    animation: none;
+  }
+}
