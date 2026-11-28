@@ -3,6 +3,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { AuditModule } from './audit/audit.module';
 import { AuthModule } from './auth/auth.module';
+import { ConnectModule } from './connect/connect.module';
 import { HealthController } from './health.controller';
 import { IdentityModule } from './identity/identity.module';
 import { MailModule } from './mail/mail.module';
@@ -24,6 +25,7 @@ import { RelationshipsModule } from './relationships/relationships.module';
     GraphModule,
     IdentityModule,
     PhotosModule,
+    ConnectModule,
   ],
   controllers: [HealthController],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],

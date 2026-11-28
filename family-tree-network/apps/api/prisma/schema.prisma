@@ -191,6 +191,10 @@ model Profile {
   photo       ProfilePhoto?
   qrTokens    QrToken[]
   qrScans     QrScanEvent[]
+  following   Follow[]          @relation("Following")
+  followers   Follow[]          @relation("Followers")
+  connectSettings ConnectSettings?
+  presence    UserPresence?
 
   @@index([displayName])
   @@map("profiles")
@@ -506,4 +510,63 @@ model ProfilePhoto {
   profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
 
   @@map("profile_photos")
+}
+
+// ───────────── EZIDINET CONNECT — Phase 1 (docs/EZIDINET_CONNECT_PLAN.md) ─────────────
+// Friendships are FRIENDSHIP relationships (no second friendship table). These tables add following,
+// presence and the CONNECT privacy choices of a member's own profile.
+
+enum ConnectAudience {
+  EVERYONE
+  FRIENDS_OF_FRIENDS
+  FRIENDS
+  NOBODY
+  ONLY_ME
+}
+
+enum PresenceMode {
+  ONLINE
+  BUSY
+  AWAY
+  INVISIBLE
+}
+
+/// One-way following between two member profiles (no approval).
+model Follow {
+  followerProfileId String   @map("follower_profile_id") @db.Uuid
+  followeeProfileId String   @map("followee_profile_id") @db.Uuid
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  follower Profile @relation("Following", fields: [followerProfileId], references: [id], onDelete: Cascade)
+  followee Profile @relation("Followers", fields: [followeeProfileId], references: [id], onDelete: Cascade)
+
+  @@id([followerProfileId, followeeProfileId])
+  @@index([followeeProfileId, createdAt])
+  @@map("follows")
+}
+
+/// CONNECT privacy choices of a member (missing row = defaults, see ConnectService.DEFAULTS).
+model ConnectSettings {
+  profileId           String          @id @map("profile_id") @db.Uuid
+  friendRequestsFrom  ConnectAudience @default(EVERYONE) @map("friend_requests_from")
+  followsFrom         ConnectAudience @default(EVERYONE) @map("follows_from")
+  presenceVisibleTo   ConnectAudience @default(FRIENDS) @map("presence_visible_to")
+  showLastSeen        Boolean         @default(true) @map("show_last_seen")
+  friendListVisibleTo ConnectAudience @default(FRIENDS) @map("friend_list_visible_to")
+  statusMode          PresenceMode    @default(ONLINE) @map("status_mode")
+  updatedAt           DateTime        @updatedAt @map("updated_at")
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@map("connect_settings")
+}
+
+/// Last activity of a member (online = active within the last 2 minutes).
+model UserPresence {
+  profileId    String   @id @map("profile_id") @db.Uuid
+  lastActiveAt DateTime @map("last_active_at")
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@map("user_presence")
 }

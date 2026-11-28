@@ -18,6 +18,7 @@ import {
   type VerificationDecision,
 } from '@ftn/relationship-engine';
 import { AuditService } from '../audit/audit.service';
+import { FRIEND_TYPES, assertFriendRequestAllowed } from '../connect/policy';
 import type { AuthUser } from '../common/auth-user';
 import { AppError } from '../common/errors.filter';
 import { GraphLoader, toEdge, toPersonNode, type Loaded } from '../graph/graph-loader.service';
@@ -76,6 +77,14 @@ export class RelationshipsService {
         const from = await this.person(tx, n.fromId);
         const to = await this.person(tx, n.toId);
         assertCanCreate(from, to, user.userId);
+        // A friendship with another member respects that member's CONNECT setting (also for the QR flow).
+        if (FRIEND_TYPES.includes(n.typeKey)) {
+          const other = confirmersOf(from).includes(user.userId) ? to : from;
+          if (other.userId && other.userId !== user.userId) {
+            const mine = confirmersOf(from).includes(user.userId) ? from : to;
+            await assertFriendRequestAllowed(tx, mine.id, other.id);
+          }
+        }
 
         // Validation context: both people, their direct ties and full ancestry.
         const loaded: Loaded = { index: new GraphIndex(), profiles: new Map() };
