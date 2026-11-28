@@ -313,6 +313,7 @@ if (want('mobile')) {
       await p.goto(`${BASE}/#/${h}`); await p.waitForTimeout(2500);
       const over = await p.evaluate(() => document.documentElement.scrollWidth - innerWidth);
       if (over > 2) bad.push(`${h}:${over}px`);
+      if (['planner', 'live', 'atlas'].includes(h)) { const mh = await p.evaluate(() => document.querySelector('[data-testid=map]')?.getBoundingClientRect().height ?? -1); if (mh < 200) bad.push(`${h}: map height ${mh}`); }
       if (['home', 'planner', 'safety'].includes(h)) await p.screenshot({ path: `${OUT}/15-mobile-${h}.png` });
     }
     await p.goto(`${BASE}/#/home`); await p.getByRole('button', { name: 'Menu' }).click(); await p.waitForTimeout(400);

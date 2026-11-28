@@ -63,7 +63,7 @@ export default function MountainExplorer() {
         )}
         <Glass className="p-3"><AttributionList ids={['overpass', 'openfreemap', 'terrarium']} /></Glass>
       </aside>
-      <div className="flex-1 order-1 lg:order-2 h-[55vh] lg:h-auto"><MapView className="h-full" center={focus?.coord ?? [7.66, 45.98]} zoom={12} pitch={65} onReady={setEngine} /></div>
+      <div className="lg:flex-1 shrink-0 order-1 lg:order-2 h-[55vh] lg:h-auto"><MapView className="h-full" center={focus?.coord ?? [7.66, 45.98]} zoom={12} pitch={65} onReady={setEngine} /></div>
     </div>
   );
 }

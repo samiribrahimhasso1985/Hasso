@@ -76,7 +76,7 @@ export default function Offline() {
           <p className="text-[11px] text-slate-500 mt-2">Route geometry and elevation profiles are stored locally in IndexedDB and are available offline. Offline rerouting is not available.</p>
         </Glass>
       </aside>
-      <div className="flex-1 order-1 lg:order-2 h-[50vh] lg:h-auto">{engine === undefined ? <Spinner /> : <MapView className="h-full" zoom={12} pitch={0} onReady={setEngine} />}</div>
+      <div className="lg:flex-1 shrink-0 order-1 lg:order-2 h-[50vh] lg:h-auto">{engine === undefined ? <Spinner /> : <MapView className="h-full" zoom={12} pitch={0} onReady={setEngine} />}</div>
     </div>
   );
 }

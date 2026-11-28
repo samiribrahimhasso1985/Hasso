@@ -124,7 +124,7 @@ export default function Atlas() {
           </>
         )}
       </aside>
-      <div className="flex-1 order-1 lg:order-2 h-[50vh] lg:h-auto"><MapView className="h-full" center={[12, 46]} zoom={3.2} pitch={0} mode="flat" onReady={setEngine} /></div>
+      <div className="lg:flex-1 shrink-0 order-1 lg:order-2 h-[50vh] lg:h-auto"><MapView className="h-full" center={[12, 46]} zoom={3.2} pitch={0} mode="flat" onReady={setEngine} /></div>
     </div>
   );
 }

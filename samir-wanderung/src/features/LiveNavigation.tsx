@@ -159,7 +159,7 @@ export default function LiveNavigation() {
         </Glass>
         {planned && planned.elevation.some((e) => e.h != null) && <Glass className="p-3"><ElevationProfile samples={planned.elevation} marker={deviation?.along ?? null} /></Glass>}
       </aside>
-      <div className="flex-1 order-1 lg:order-2 h-[55vh] lg:h-auto"><MapView className="h-full" onReady={setEngine} zoom={12} pitch={45} /></div>
+      <div className="lg:flex-1 shrink-0 order-1 lg:order-2 h-[55vh] lg:h-auto"><MapView className="h-full" onReady={setEngine} zoom={12} pitch={45} /></div>
     </div>
   );
 }

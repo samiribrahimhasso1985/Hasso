@@ -200,7 +200,7 @@ export default function Planner() {
         {plan.points[0] && <WeatherPanel coord={plan.points[0].coord} hours={selected ? selected.hikingHours : 4} />}
         <Glass className="p-3"><AttributionList ids={['valhalla', 'nominatim', 'openfreemap', 'terrarium']} /></Glass>
       </aside>
-      <div className="flex-1 order-1 lg:order-2 h-[55vh] lg:h-auto">
+      <div className="lg:flex-1 shrink-0 order-1 lg:order-2 h-[55vh] lg:h-auto">
         <MapView className="h-full" center={plan.points[0]?.coord ?? [10.99, 47.43]} zoom={11} onReady={setEngine} />
       </div>
     </div>
