@@ -7,6 +7,7 @@ import { CATEGORY } from '../lib/tokens';
 import AddRelationshipDialog from './AddRelationshipDialog';
 import ConnectPanel from './ConnectPanel';
 import FriendsPanel from './FriendsPanel';
+import ConnectArea from './ConnectHome';
 import NotificationBell from './NotificationBell';
 import { useConnectText } from '../lib/i18n-connect';
 import GraphCanvas, { avatarFor, type GraphCanvasHandle, type LayoutMode } from './GraphCanvas';
@@ -54,6 +55,7 @@ export default function Dashboard({ session, onLogout }: { session: Session; onL
   const [friendCount, setFriendCount] = useState(0);
   const [connectPerson, setConnectPerson] = useState<string | null>(null);
   const ct = useConnectText();
+  const [area, setArea] = useState<'network' | 'connect'>('network');
   const [pathFrom, setPathFrom] = useState<PersonSummary | null>(null);
   const [pathTo, setPathTo] = useState<PersonSummary | null>(null);
   const [path, setPath] = useState<PathResult | null>(null);
@@ -163,11 +165,19 @@ export default function Dashboard({ session, onLogout }: { session: Session; onL
   };
 
   return (
-    <div className="app" dir={dir}>
+    <div className={`app ${area === 'connect' ? 'app-connect' : ''}`} dir={dir}>
       <header className="topbar">
         <div className="brand">
           <Logo size={34} />
           <span>EZIDINET</span>
+        </div>
+        <div className="segmented area-switch" role="tablist" aria-label="EZIDINET">
+          <button role="tab" aria-selected={area === 'network'} className={area === 'network' ? 'active' : ''} onClick={() => setArea('network')} data-testid="area-network">
+            {ct.networkView}
+          </button>
+          <button role="tab" aria-selected={area === 'connect'} className={area === 'connect' ? 'active' : ''} onClick={() => setArea('connect')} data-testid="area-connect">
+            {ct.connectView}
+          </button>
         </div>
         <div className="top-search">
           <PersonPicker
@@ -219,7 +229,8 @@ export default function Dashboard({ session, onLogout }: { session: Session; onL
       </header>
       <AccountBanner api={api} />
 
-      <aside className="sidebar">
+      {area === 'connect' && <ConnectArea api={api} myProfileId={session.profileId} onChanged={() => setRefreshKey((k) => k + 1)} />}
+      <aside className="sidebar" hidden={area === 'connect'}>
         <section>
           <h4>{t.filters}</h4>
           <div className="filters" role="radiogroup" aria-label={t.filters}>
@@ -280,7 +291,7 @@ export default function Dashboard({ session, onLogout }: { session: Session; onL
         </section>
       </aside>
 
-      <main className="stage">
+      <main className="stage" hidden={area === 'connect'}>
         <GraphCanvas
           ref={canvas}
           nodes={nodeList}
@@ -329,7 +340,7 @@ export default function Dashboard({ session, onLogout }: { session: Session; onL
         )}
       </main>
 
-      <aside className="rightbar">
+      <aside className="rightbar" hidden={area === 'connect'}>
         <nav className="tabs" role="tablist">
           <button role="tab" aria-selected={tab === 'person'} className={tab === 'person' ? 'active' : ''} onClick={() => setTab('person')}>
             {t.profile}

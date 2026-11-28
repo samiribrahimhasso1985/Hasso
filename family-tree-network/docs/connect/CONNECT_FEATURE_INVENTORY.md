@@ -39,8 +39,8 @@ connect (17), dev outbox (1), health (1).
 ### A. CONNECT HOME
 | Feature | Status | Where / note |
 |---|---|---|
-| Welcome dashboard | 🟡 | `/app` is the relationship graph dashboard; no social home yet |
-| Friends overview, friend requests, suggested connections, online members | 🟡 | data exists (`/api/connect/*`), shown in the Friends tab, not on a home page |
+| Welcome dashboard | ✅ (2026-11-28) | CONNECT area in `/app` (switch **Network / CONNECT** in the top bar), one request `GET /api/connect/home` |
+| Friends overview (counts), friend requests (answer on the home page), suggested connections, online members (only where allowed), latest notifications | ✅ | same services and rules as the other screens; API test + tablet e2e |
 | Recent messages, incoming calls | ❌ | needs Messenger / Live |
 | Upcoming activities, social events, group activities, meetups, learning sessions | ❌ | needs Event Service |
 | Active live rooms, podcast updates | ❌ | needs Live / Creator |
@@ -205,13 +205,13 @@ phone bottom bar keeps 5 items.
 |---|---|---|
 | 1 | Audit & inventory | ✅ this document |
 | 2 | Unified database & shared services | 🟡 Notification Service ✅; rollback scripts ✅ (`rollback/`); central Privacy Service deferred to Phase 4 with the first private content (messages) so it is built on real use, not in the abstract; WebSocket / storage wait for D-C1 / D-C3 |
-| 3 | CONNECT Home & navigation | next |
+| 3 | CONNECT Home & navigation | ✅ home + hub menu showing only working hubs (Home, My connections, Discover); other hubs appear when built (no placeholder buttons) |
 | 4 | Messenger & friends integration | needs D-C1, D-C3 |
 | 5–13 | as in the master spec | not started |
 
 ## 9. Evidence (test runs at the time of this audit)
 
-engine 54/54 · API 80/80 (13 CONNECT + 10 notifications) · web unit 18/18 · browser e2e 12/12 (two-account CONNECT and notification tests).
+engine 54/54 · API 81/81 (14 CONNECT + 10 notifications) · web unit 18/18 · browser e2e 13/13 (two-account CONNECT, notifications on phone, CONNECT Home on tablet).
 
 ## 10. Known issues
 

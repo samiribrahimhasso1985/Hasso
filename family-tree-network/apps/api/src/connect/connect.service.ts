@@ -468,6 +468,31 @@ export class ConnectService {
     return { status: s.statusMode, at: now.toISOString() };
   }
 
+  /**
+   * CONNECT Home in one request: counts, waiting friend requests, friends who are online now (only where they allow
+   * it), suggestions and the latest notifications. Everything comes from the same services and rules as the other
+   * screens — the home page never shows more than they do.
+   */
+  async home(user: AuthUser) {
+    const [summary, requests, friends, suggestions, notifications, me] = await Promise.all([
+      this.summary(user),
+      this.requests(user, 'incoming'),
+      this.friends(user, user.profileId),
+      this.discover(user),
+      this.notifications.list(user, {}),
+      this.prisma.profile.findUniqueOrThrow({ where: { id: user.profileId }, select: { displayName: true } }),
+    ]);
+    const following = await this.prisma.follow.count({ where: { followerProfileId: user.profileId } });
+    return {
+      displayName: me.displayName,
+      counts: { ...summary, following, unreadNotifications: notifications.unread },
+      requests: requests.slice(0, 5),
+      online: friends.items.filter((f) => f.presence && f.presence.status !== 'OFFLINE').slice(0, 12),
+      suggestions: suggestions.slice(0, 6),
+      notifications: notifications.items.slice(0, 6),
+    };
+  }
+
   /** Counts for the Friends tab badge. */
   async summary(user: AuthUser) {
     const [incoming, followers] = await Promise.all([

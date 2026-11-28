@@ -17,7 +17,7 @@ import {
 import { useConnectText, type ConnectDict } from '../lib/i18n-connect';
 import { avatarFor } from './GraphCanvas';
 
-type View = 'friends' | 'requests' | 'discover' | 'followers' | 'settings';
+export type View = 'friends' | 'requests' | 'discover' | 'followers' | 'settings';
 
 /** Online dot + label (only when the person allows the viewer to see it). */
 export function PresenceDot({ presence, withLabel = false }: { presence: Presence | null; withLabel?: boolean }) {
@@ -45,15 +45,18 @@ export default function FriendsPanel({
   onChanged,
   onCount,
   openPersonId,
+  initialView = 'friends',
 }: {
   api: Api;
   myProfileId: string;
   onChanged: () => void;
   onCount: (n: number) => void;
   openPersonId?: string | null;
+  initialView?: View;
 }) {
   const c = useConnectText();
-  const [view, setView] = useState<View>('friends');
+  const [view, setView] = useState<View>(initialView);
+  useEffect(() => setView(initialView), [initialView]);
   const [person, setPerson] = useState<string | null>(openPersonId ?? null);
 
   useEffect(() => { if (openPersonId) setPerson(openPersonId); }, [openPersonId]);

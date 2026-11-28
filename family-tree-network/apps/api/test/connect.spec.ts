@@ -188,3 +188,33 @@ describe('EZIDINET CONNECT — friends, followers, presence, privacy', () => {
     expect((await ctx.api(null).post('/api/connect/presence')).status).toBe(401);
   });
 });
+
+describe('EZIDINET CONNECT — home in one request', () => {
+  let ctx: Ctx;
+  beforeAll(async () => { ctx = await setup(); });
+  afterAll(() => teardown(ctx));
+
+  it('shows counts, waiting requests, online friends (where allowed), suggestions and notifications', async () => {
+    const [P, Q, R] = [await register(ctx, 'Home1'), await register(ctx, 'Home2'), await register(ctx, 'Home3')];
+    const as = (u: { token: string }) => ctx.api({ token: u.token });
+    for (const u of [P, Q, R]) await as(u).patch(`/api/profiles/${u.profileId}`, { searchable: true });
+    // Q is P's friend and online; R sends P a request.
+    const id = (await as(Q).post('/api/connect/friends/requests', { profileId: P.profileId })).body.friendship.requestId;
+    await as(P).post(`/api/connect/friends/requests/${id}/accept`);
+    await as(Q).post('/api/connect/presence');
+    await as(R).post('/api/connect/friends/requests', { profileId: P.profileId });
+
+    const home = (await as(P).get('/api/connect/home')).body;
+    expect(home.displayName).toContain('Home1');
+    expect(home.counts).toMatchObject({ friends: 1, incomingRequests: 1, followers: 0, following: 0 });
+    expect(home.requests.map((r: { person: { id: string } }) => r.person.id)).toEqual([R.profileId]);
+    expect(home.online.map((p: { id: string }) => p.id)).toEqual([Q.profileId]);
+    expect(home.notifications[0].type).toBe('FRIEND_REQUEST');
+    expect(home.counts.unreadNotifications).toBeGreaterThan(0);
+
+    // Q hides presence → no longer listed as online on P's home.
+    await as(Q).patch('/api/connect/settings', { presenceVisibleTo: 'NOBODY' });
+    expect((await as(P).get('/api/connect/home')).body.online).toEqual([]);
+    expect((await ctx.api(null).get('/api/connect/home')).status).toBe(401);
+  });
+});

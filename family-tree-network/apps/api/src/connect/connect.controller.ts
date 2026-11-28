@@ -10,6 +10,11 @@ import { FriendRequestDto, SettingsDto } from './dto';
 export class ConnectController {
   constructor(private readonly connect: ConnectService) {}
 
+  @Get('home')
+  home(@AuthUserParam() user: AuthUser) {
+    return this.connect.home(user);
+  }
+
   @Get('summary')
   summary(@AuthUserParam() user: AuthUser) {
     return this.connect.summary(user);

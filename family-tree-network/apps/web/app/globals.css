@@ -1550,3 +1550,179 @@ fieldset.plain {
     width: auto;
   }
 }
+
+/* ── CONNECT area (hub navigation + home) ── */
+.area-switch {
+  flex: none;
+}
+.app-connect {
+  grid-template-areas: 'top top top' 'cx cx cx';
+}
+.app [hidden] {
+  display: none !important;
+}
+.cx {
+  grid-area: cx;
+  display: grid;
+  grid-template-columns: 230px 1fr;
+  min-height: 0;
+  overflow: hidden;
+}
+.cx-nav {
+  border-inline-end: 1px solid var(--border);
+  padding: 18px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: var(--surface);
+}
+.cx-nav button {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  font: inherit;
+  text-align: start;
+  padding: 10px 12px;
+  border: 0;
+  border-radius: 12px;
+  background: none;
+  color: var(--text);
+  cursor: pointer;
+}
+.cx-nav button span {
+  width: 20px;
+  text-align: center;
+  color: var(--text-deco);
+}
+.cx-nav button.active {
+  background: var(--surface-alt);
+  font-weight: 600;
+}
+.cx-more {
+  margin-top: 16px;
+  padding-inline: 12px;
+}
+.cx-main {
+  overflow: auto;
+  padding: 24px;
+}
+.cx-main > .panel {
+  max-width: 720px;
+}
+.cx-home {
+  max-width: 980px;
+  display: grid;
+  gap: 16px;
+}
+.cx-welcome h2 {
+  margin: 0 0 4px;
+}
+.cx-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+}
+.cx-stats button {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  min-width: 110px;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  font: inherit;
+  font-size: 13px;
+  color: var(--text-muted, var(--stone-gray));
+  cursor: pointer;
+}
+.cx-stats strong {
+  font-size: 22px;
+  color: var(--text);
+}
+.cx-card {
+  padding: 16px 18px;
+}
+.cx-card h3 {
+  margin: 0 0 10px;
+  font-size: 15px;
+}
+.cx-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.cx-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.cx-faces {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+.cx-face {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: 78px;
+  background: none;
+  border: 0;
+  font: inherit;
+  font-size: 12px;
+  color: inherit;
+  cursor: pointer;
+}
+.cx-face-name {
+  max-width: 78px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cx-notes {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 14px;
+}
+.cx-notes li {
+  padding: 7px 0;
+  border-bottom: 1px solid var(--border);
+}
+.cx-notes li.unread {
+  font-weight: 600;
+}
+@media (max-width: 900px) {
+  .cx {
+    grid-template-columns: 1fr;
+    overflow: visible;
+  }
+  .cx-nav {
+    flex-direction: row;
+    flex-wrap: wrap;
+    border-inline-end: 0;
+    border-bottom: 1px solid var(--border);
+    padding: 10px 12px;
+  }
+  .cx-more {
+    display: none;
+  }
+  .cx-main {
+    padding: 16px 12px;
+    overflow: visible;
+  }
+  .cx-grid {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 1100px) {
+  .app.app-connect {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+    grid-template-areas: 'top' 'cx';
+  }
+}

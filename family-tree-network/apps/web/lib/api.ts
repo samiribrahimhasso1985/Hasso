@@ -351,6 +351,16 @@ export class Api {
     return this.req<QrResolution>('GET', `/qr/${encodeURIComponent(token)}`);
   }
   // EZIDINET CONNECT
+  connectHome() {
+    return this.req<{
+      displayName: string;
+      counts: { incomingRequests: number; followers: number; friends: number; following: number; unreadNotifications: number };
+      requests: FriendRequest[];
+      online: ConnectPerson[];
+      suggestions: Suggestion[];
+      notifications: AppNotification[];
+    }>('GET', '/connect/home');
+  }
   connectSummary() {
     return this.req<{ incomingRequests: number; followers: number; friends: number }>('GET', '/connect/summary');
   }

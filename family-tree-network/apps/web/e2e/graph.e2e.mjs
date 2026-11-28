@@ -483,3 +483,46 @@ test('Notification centre: two accounts — request arrives in the bell, opens F
   await a.page.close();
   await b.page.close();
 });
+
+test('CONNECT Home (tablet): waiting request answered on the home page, counts update, hubs navigate', async () => {
+  const API = process.env.API_URL ?? 'http://localhost:4000/api';
+  const stamp = Date.now();
+  const pass = 'home-test-pass-2026';
+  const reg = async (name) => {
+    const email = `${name.toLowerCase()}-${stamp}@example.test`;
+    const r = await fetch(`${API}/auth/register`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ email, password: pass, displayName: `${name} ${stamp}`, gender: 'UNSPECIFIED', acceptTerms: true, consentSensitiveData: true, confirmMinimumAge: true }) });
+    assert.equal(r.status, 201);
+    return { ...(await r.json()), email };
+  };
+  const A = await reg('Delal');
+  const B = await reg('Baran');
+  await fetch(`${API}/profiles/${B.profileId}`, { method: 'PATCH', headers: { 'content-type': 'application/json', authorization: `Bearer ${B.accessToken}` }, body: JSON.stringify({ searchable: true }) });
+  const sent = await fetch(`${API}/connect/friends/requests`, { method: 'POST', headers: { 'content-type': 'application/json', authorization: `Bearer ${A.accessToken}` }, body: JSON.stringify({ profileId: B.profileId }) });
+  assert.equal(sent.status, 201);
+
+  const page = await browser.newPage({ viewport: { width: 820, height: 1180 } });
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.goto(`${WEB}/app`);
+  await page.click('[data-testid=lang-de]');
+  await page.fill('#login-email', B.email);
+  await page.fill('#login-password', pass);
+  await page.click('[data-testid=login-form] button[type=submit]');
+  await page.click('[data-testid=area-connect]');
+  await page.waitForSelector('[data-testid=cx-requests]');
+  assert.match(await page.textContent('[data-testid=cx-home]'), /Willkommen/);
+  assert.equal(await page.textContent('[data-testid=cx-stat-friends]'), '0');
+  await page.click(`[data-testid=cx-accept-${A.profileId}]`);
+  await page.waitForFunction(() => document.querySelector('[data-testid=cx-stat-friends]')?.textContent === '1');
+  assert.equal(await page.$('[data-testid=cx-requests]'), null);
+  await page.click('[data-testid=cx-nav-connections]');
+  await page.waitForSelector(`[data-testid=cn-row-${A.profileId}]`);
+  await page.click('[data-testid=cx-nav-discover]');
+  await page.waitForSelector('[data-testid=cn-search]');
+  assert.equal(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth), 0);
+  // Back to the network view: the graph is still there.
+  await page.click('[data-testid=area-network]');
+  await page.waitForSelector('[data-testid=graph-canvas] canvas');
+  assert.deepEqual(errors, []);
+  await page.close();
+});
