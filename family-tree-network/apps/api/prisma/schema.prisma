@@ -98,6 +98,8 @@ enum ProfileField {
   CITY
   BIO
   LANGUAGES
+  INTERESTS
+  SKILLS
 }
 
 enum CommunityKind {
@@ -170,6 +172,9 @@ model Profile {
   city        String?   @db.VarChar(80)
   bio         String?   @db.VarChar(1000)
   languages   String[]  @default([])
+  /// Declared by the member for discovery (lower-case tags); never inferred.
+  interests   String[]  @default([])
+  skills      String[]  @default([])
   avatarUrl   String?   @map("avatar_url")
   /// Discoverable in people search. Off by default (EZIDNET decision EZ-5); minors never.
   searchable  Boolean   @default(false)

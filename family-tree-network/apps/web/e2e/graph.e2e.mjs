@@ -635,3 +635,75 @@ test('Events & ÊZÎDÎ Calendar: organizer publishes with the form, another mem
   await o.page.close();
   await g.page.close();
 });
+
+test('CONNECT discovery: a member declares languages/interests in the UI, another finds them by interest and reaches them from an event', async () => {
+  const API = process.env.API_URL ?? 'http://localhost:4000/api';
+  const stamp = Date.now();
+  const pass = 'discover-test-pass-2026';
+  const reg = async (name) => {
+    const email = `${name.toLowerCase()}-${stamp}@example.test`;
+    const r = await fetch(`${API}/auth/register`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ email, password: pass, displayName: `${name} ${stamp}`, gender: 'UNSPECIFIED', acceptTerms: true, consentSensitiveData: true, confirmMinimumAge: true }) });
+    assert.equal(r.status, 201);
+    return { ...(await r.json()), email };
+  };
+  const signIn = async (u, viewport) => {
+    const page = await browser.newPage({ viewport });
+    const errors = [];
+    page.on('pageerror', (e) => errors.push(e.message));
+    await page.goto(`${WEB}/app`);
+    await page.click('[data-testid=lang-en]');
+    await page.fill('#login-email', u.email);
+    await page.fill('#login-password', pass);
+    await page.click('[data-testid=login-form] button[type=submit]');
+    await page.waitForSelector('[data-testid=tab-friends]');
+    return { page, errors };
+  };
+  const ARTIST = await reg('Artist');
+  const FAN = await reg('Fan');
+
+  // Artist declares in the UI: discoverable, Kurmanji, interests and skills.
+  const a = await signIn(ARTIST, { width: 1440, height: 900 });
+  await a.page.click('[data-testid=tab-friends]');
+  await a.page.click('[data-testid=cn-settings]');
+  await a.page.waitForSelector('[data-testid=cn-findme]');
+  await a.page.check('[data-testid=cn-discoverable]');
+  await a.page.check('[data-testid=cn-lang-ku]');
+  await a.page.fill('[data-testid=cn-interests]', 'Folk music, Heritage');
+  await a.page.fill('[data-testid=cn-skills]', `Tembûr ${stamp}`);
+  await a.page.click('[data-testid=cn-findme-save]');
+  await a.page.waitForSelector('[data-testid=cn-findme] .success');
+  assert.equal(await a.page.inputValue('[data-testid=cn-interests]'), 'folk music, heritage');
+
+  // Fan (phone) filters by skill and finds the artist.
+  const f = await signIn(FAN, { width: 390, height: 844 });
+  await f.page.click('[data-testid=tab-friends]');
+  await f.page.click('[data-testid=cn-discover]');
+  await f.page.fill('[data-testid=cn-filter-skill]', `tembûr ${stamp}`);
+  await f.page.waitForSelector(`[data-testid=cn-row-${ARTIST.profileId}]`);
+  assert.equal(await f.page.evaluate(() => document.documentElement.scrollWidth - innerWidth), 0);
+
+  // The artist hides skills → no longer found by that skill.
+  await a.page.selectOption('[data-testid=cn-vis-SKILLS]', 'PRIVATE');
+  await f.page.fill('[data-testid=cn-filter-skill]', '');
+  await f.page.fill('[data-testid=cn-filter-skill]', `tembûr ${stamp}`);
+  await f.page.waitForSelector(`[data-testid=cn-row-${ARTIST.profileId}]`, { state: 'detached' });
+
+  // From an event page, the fan opens the organizer and sends a friend request — same identity everywhere.
+  const ev = await (await fetch(`${API}/events`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', authorization: `Bearer ${ARTIST.accessToken}` },
+    body: JSON.stringify({ title: `Tembûr evening ${stamp}`, category: 'MUSIC', startsAt: new Date(Date.now() + 864e5).toISOString(), endsAt: new Date(Date.now() + 90e6).toISOString(), publish: true }),
+  })).json();
+  await f.page.click('[data-testid=area-connect]');
+  await f.page.click('[data-testid=cx-nav-events]');
+  await f.page.click(`[data-testid=ev-open-${ev.id}]`);
+  await f.page.click('[data-testid=ev-organizer-open]');
+  await f.page.waitForSelector('[data-testid=cn-card]');
+  await f.page.click('[data-testid=cn-add]');
+  await f.page.waitForSelector('[data-testid=cn-cancel]');
+
+  assert.deepEqual(a.errors, []);
+  assert.deepEqual(f.errors, []);
+  await a.page.close();
+  await f.page.close();
+});

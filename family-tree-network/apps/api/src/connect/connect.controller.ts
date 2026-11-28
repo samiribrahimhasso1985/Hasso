@@ -89,8 +89,14 @@ export class ConnectController {
   }
 
   @Get('discover')
-  discover(@AuthUserParam() user: AuthUser, @Query('q') q?: string) {
-    return this.connect.discover(user, q);
+  discover(
+    @AuthUserParam() user: AuthUser,
+    @Query('q') q?: string,
+    @Query('lang') lang?: string,
+    @Query('interest') interest?: string,
+    @Query('skill') skill?: string,
+  ) {
+    return this.connect.discover(user, q, { lang, interest, skill });
   }
 
   @Get('settings')

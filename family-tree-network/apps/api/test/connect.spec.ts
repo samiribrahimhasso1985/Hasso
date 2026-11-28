@@ -218,3 +218,40 @@ describe('EZIDINET CONNECT — home in one request', () => {
     expect((await ctx.api(null).get('/api/connect/home')).status).toBe(401);
   });
 });
+
+describe('EZIDINET CONNECT — discovery by declared languages, interests and skills', () => {
+  let ctx: Ctx;
+  beforeAll(async () => { ctx = await setup(); });
+  afterAll(() => teardown(ctx));
+
+  it('finds people by what they chose to show, respects field privacy, and explains suggestions', async () => {
+    const [ME, MUSIC, CODER, HIDDEN] = [await register(ctx, 'Seeker'), await register(ctx, 'Musician'), await register(ctx, 'Coder'), await register(ctx, 'Quiet')];
+    const as = (u: { token: string }) => ctx.api({ token: u.token });
+    // Tags are normalised (trimmed, lower case, no duplicates).
+    const saved = await as(MUSIC).patch(`/api/profiles/${MUSIC.profileId}`, { searchable: true, languages: ['ku', 'de'], interests: ['  Music ', 'music', 'Heritage'], skills: ['Tembûr'] });
+    expect(saved.body).toMatchObject({ interests: ['music', 'heritage'], skills: ['tembûr'], searchable: true });
+    await as(CODER).patch(`/api/profiles/${CODER.profileId}`, { searchable: true, languages: ['en'], skills: ['web development'], interests: ['music'] });
+    await as(HIDDEN).patch(`/api/profiles/${HIDDEN.profileId}`, { searchable: true, interests: ['music'] });
+    await as(HIDDEN).put(`/api/profiles/${HIDDEN.profileId}/privacy`, { field: 'INTERESTS', visibility: 'PRIVATE' });
+
+    const byInterest = (await as(ME).get('/api/connect/discover?interest=Music')).body.map((p: { id: string }) => p.id).sort();
+    expect(byInterest).toEqual([MUSIC.profileId, CODER.profileId].sort()); // HIDDEN keeps interests private
+    expect((await as(ME).get('/api/connect/discover?skill=web%20development')).body.map((p: { id: string }) => p.id)).toEqual([CODER.profileId]);
+    expect((await as(ME).get('/api/connect/discover?lang=ku')).body.map((p: { id: string }) => p.id)).toEqual([MUSIC.profileId]);
+    expect((await as(ME).get('/api/connect/discover?interest=music&lang=en')).body.map((p: { id: string }) => p.id)).toEqual([CODER.profileId]);
+
+    // Suggestions explain shared public interests; HIDDEN is never suggested for its private interest.
+    await as(ME).patch(`/api/profiles/${ME.profileId}`, { interests: ['music'], languages: ['ku'] });
+    const sug = (await as(ME).get('/api/connect/discover')).body as { id: string; reasons: { sharedInterests: string[]; sharedLanguages: string[] } }[];
+    expect(sug.find((p) => p.id === MUSIC.profileId)?.reasons).toMatchObject({ sharedInterests: ['music'], sharedLanguages: ['ku'] });
+    expect(sug.map((p) => p.id)).not.toContain(HIDDEN.profileId);
+
+    // Profile view applies the same field privacy.
+    expect((await as(ME).get(`/api/profiles/${HIDDEN.profileId}`)).body.interests).toEqual([]);
+    expect((await as(HIDDEN).get(`/api/profiles/${HIDDEN.profileId}`)).body.interests).toEqual(['music']);
+
+    // Validation.
+    expect((await as(ME).patch(`/api/profiles/${ME.profileId}`, { languages: ['Kurdish!'] })).status).toBe(400);
+    expect((await as(ME).patch(`/api/profiles/${ME.profileId}`, { interests: ['x'] })).status).toBe(400);
+  });
+});

@@ -46,7 +46,7 @@ export default function ConnectArea({ api, myProfileId, onChanged, openEventId }
       </nav>
       <section className="cx-main">
         {hub === 'events' ? (
-          <EventsArea api={api} openId={openEventId} />
+          <EventsArea api={api} openId={openEventId} onPerson={(id) => open('connections', 'friends', id)} />
         ) : hub === 'home' ? (
           <Home api={api} onPerson={(id) => open('connections', 'friends', id)} onGo={(h, v) => open(h, v)} onChanged={onChanged} onEvents={() => setHub('events')} />
         ) : (

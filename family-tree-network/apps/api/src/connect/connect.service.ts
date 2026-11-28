@@ -1,5 +1,5 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
-import type { Profile } from '@prisma/client';
+import type { Prisma, Profile } from '@prisma/client';
 import { GraphIndex, type Locale, type ViewerContext } from '@ftn/relationship-engine';
 import { AuditService } from '../audit/audit.service';
 import type { AuthUser } from '../common/auth-user';
@@ -365,7 +365,7 @@ export class ConnectService {
    * Search (q) or suggestions. Only adults who chose to be discoverable; reasons are mutual friends and
    * languages both people made public. Never religion, origin, name, photo or location.
    */
-  async discover(user: AuthUser, q?: string) {
+  async discover(user: AuthUser, q?: string, filters: { lang?: string; interest?: string; skill?: string } = {}) {
     const ctx = await this.viewer(user);
     const myFriends = await friendIdsOf(this.prisma, user.profileId);
     const pending = await this.prisma.relationship.findMany({
@@ -373,20 +373,36 @@ export class ConnectService {
       select: { fromProfileId: true, toProfileId: true },
     });
     const exclude = new Set([user.profileId, ...myFriends, ...ctx.blockedPersonIds, ...pending.flatMap((p) => [p.fromProfileId, p.toProfileId])]);
-    const base = { searchable: true, isMinor: false, deathDate: null, userId: { not: null } };
+    const base: Prisma.ProfileWhereInput = { searchable: true, isMinor: false, deathDate: null, userId: { not: null } };
     const me = await this.prisma.profile.findUniqueOrThrow({ where: { id: user.profileId }, include: { privacy: true } });
+    const mine = { languages: me.languages, interests: me.interests, skills: me.skills };
+
+    // Filters match only what the other person made PUBLIC (missing setting = the field default, PUBLIC).
+    const isPublic = (field: 'LANGUAGES' | 'INTERESTS' | 'SKILLS'): Prisma.ProfileWhereInput => ({ privacy: { none: { field, visibility: { not: 'PUBLIC' } } } });
+    const tag = (x?: string) => x?.trim().toLocaleLowerCase().replace(/\s+/g, ' ');
+    const filterWhere: Prisma.ProfileWhereInput[] = [];
+    if (filters.lang) filterWhere.push({ languages: { has: tag(filters.lang) }, ...isPublic('LANGUAGES') });
+    if (filters.interest) filterWhere.push({ interests: { has: tag(filters.interest) }, ...isPublic('INTERESTS') });
+    if (filters.skill) filterWhere.push({ skills: { has: tag(filters.skill) }, ...isPublic('SKILLS') });
 
     const term = q?.trim() ?? '';
-    if (term.length >= 2) {
+    if (term.length >= 2 || filterWhere.length) {
       const rows = await this.prisma.profile.findMany({
-        where: { ...base, displayName: { contains: term, mode: 'insensitive' }, id: { notIn: [...ctx.blockedPersonIds, user.profileId] } },
+        where: {
+          AND: [
+            base,
+            { id: { notIn: [...ctx.blockedPersonIds, user.profileId] } },
+            ...(term.length >= 2 ? [{ displayName: { contains: term, mode: 'insensitive' as const } }] : []),
+            ...filterWhere,
+          ],
+        },
         orderBy: { displayName: 'asc' },
         take: 30,
       });
-      return this.withReasons(ctx, user.profileId, rows.map((r) => r.id), myFriends, me.languages);
+      return this.withReasons(ctx, user.profileId, rows.map((r) => r.id), myFriends, mine);
     }
 
-    // Friends of friends, ranked by the number of mutual friends.
+    // Suggestions: friends of friends (ranked by mutual friends), then shared public languages, interests and skills.
     const score = new Map<string, number>();
     if (myFriends.size) {
       const rows = await this.prisma.relationship.findMany({
@@ -400,26 +416,25 @@ export class ConnectService {
       });
       for (const r of rows) {
         for (const [a, b] of [[r.fromProfileId, r.toProfileId], [r.toProfileId, r.fromProfileId]]) {
-          if (myFriends.has(a) && !exclude.has(b)) score.set(b, (score.get(b) ?? 0) + 1);
+          if (myFriends.has(a) && !exclude.has(b)) score.set(b, (score.get(b) ?? 0) + 10);
         }
       }
     }
-    // Shared languages — only when I show my languages publicly too.
-    const myLangsPublic = (me.privacy.find((x) => x.field === 'LANGUAGES')?.visibility ?? FIELD_DEFAULTS.LANGUAGES) === 'PUBLIC';
-    if (myLangsPublic && me.languages.length) {
-      const rows = await this.prisma.profile.findMany({
-        where: { ...base, languages: { hasSome: me.languages }, id: { notIn: [...exclude] } },
-        select: { id: true },
-        take: 60,
-      });
-      for (const r of rows) if (!score.has(r.id)) score.set(r.id, 0);
+    const shared: Prisma.ProfileWhereInput[] = [];
+    if (mine.languages.length) shared.push({ languages: { hasSome: mine.languages }, ...isPublic('LANGUAGES') });
+    if (mine.interests.length) shared.push({ interests: { hasSome: mine.interests }, ...isPublic('INTERESTS') });
+    if (mine.skills.length) shared.push({ skills: { hasSome: mine.skills }, ...isPublic('SKILLS') });
+    if (shared.length) {
+      const rows = await this.prisma.profile.findMany({ where: { AND: [base, { id: { notIn: [...exclude] } }, { OR: shared }] }, select: { id: true }, take: 80 });
+      for (const r of rows) score.set(r.id, (score.get(r.id) ?? 0) + 1);
     }
     const candidates = await this.prisma.profile.findMany({ where: { ...base, id: { in: [...score.keys()] } }, select: { id: true } });
     const ids = candidates.map((c) => c.id).sort((a, b) => (score.get(b) ?? 0) - (score.get(a) ?? 0)).slice(0, 20);
-    return this.withReasons(ctx, user.profileId, ids, myFriends, myLangsPublic ? me.languages : []);
+    return this.withReasons(ctx, user.profileId, ids, myFriends, mine);
   }
 
-  private async withReasons(ctx: ViewerContext, me: string, ids: string[], myFriends: Set<string>, myLangs: string[]) {
+  /** Why someone is suggested: mutual friends and what both share — only the other person's PUBLIC fields. */
+  private async withReasons(ctx: ViewerContext, me: string, ids: string[], myFriends: Set<string>, mine: { languages: string[]; interests: string[]; skills: string[] }) {
     const people = await this.people(ctx, ids, me, myFriends);
     const profiles = await this.prisma.profile.findMany({ where: { id: { in: ids } }, include: { privacy: true } });
     const byId = new Map(profiles.map((p) => [p.id, p]));
@@ -427,13 +442,18 @@ export class ConnectService {
     for (const p of people) {
       const theirs = await friendIdsOf(this.prisma, p.id);
       const prof = byId.get(p.id)!;
-      const langsPublic = (prof.privacy.find((x) => x.field === 'LANGUAGES')?.visibility ?? FIELD_DEFAULTS.LANGUAGES) === 'PUBLIC';
+      const pub = (f: 'LANGUAGES' | 'INTERESTS' | 'SKILLS') => (prof.privacy.find((x) => x.field === f)?.visibility ?? FIELD_DEFAULTS[f]) === 'PUBLIC';
       out.push({
         ...p,
         reasons: {
           mutualFriends: [...myFriends].filter((f) => theirs.has(f)).length,
-          sharedLanguages: langsPublic ? prof.languages.filter((l) => myLangs.includes(l)) : [],
+          sharedLanguages: pub('LANGUAGES') ? prof.languages.filter((l) => mine.languages.includes(l)) : [],
+          sharedInterests: pub('INTERESTS') ? prof.interests.filter((l) => mine.interests.includes(l)) : [],
+          sharedSkills: pub('SKILLS') ? prof.skills.filter((l) => mine.skills.includes(l)) : [],
         },
+        /** What the person shows publicly, for "find by skill / interest" results. */
+        interests: pub('INTERESTS') ? prof.interests.slice(0, 6) : [],
+        skills: pub('SKILLS') ? prof.skills.slice(0, 6) : [],
       });
     }
     return out;

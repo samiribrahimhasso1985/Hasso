@@ -21,6 +21,7 @@ export default function EventDetail({
   onEdit,
   onDeleted,
   signInHref,
+  onPerson,
 }: {
   api: Api | null;
   data: EventDetailData;
@@ -29,6 +30,8 @@ export default function EventDetail({
   onEdit?: () => void;
   onDeleted?: () => void;
   signInHref?: string;
+  /** Opens a member in CONNECT (friend request, follow, presence) — the same identity everywhere. */
+  onPerson?: (profileId: string) => void;
 }) {
   const { tx, locale } = useEv();
   const [e, setE] = useState(data);
@@ -138,7 +141,14 @@ export default function EventDetail({
             <h3>{tx(EV.organizer)}</h3>
             <p className="ev-org">
               <img src={photoSrc(e.organizer.avatarUrl) ?? avatarFor(e.organizer.displayName, false)} alt="" width={36} height={36} />
-              <span>{e.hostName && <strong>{e.hostName}</strong>}<span>{e.organizer.displayName}</span></span>
+              <span>
+                {e.hostName && <strong>{e.hostName}</strong>}
+                {onPerson && !e.isOrganizer ? (
+                  <button type="button" className="ev-link" onClick={() => onPerson(e.organizer.id)} data-testid="ev-organizer-open">{e.organizer.displayName}</button>
+                ) : (
+                  <span>{e.organizer.displayName}</span>
+                )}
+              </span>
             </p>
             {e.contact && <p className="ev-muted">{tx(EV.contact)}: <span className="ev-select">{e.contact}</span></p>}
           </section>
@@ -153,7 +163,11 @@ export default function EventDetail({
             <section className="ev-panel" data-testid="ev-organizer-panel">
               <h3>{tx(EV.participants)} · {e.attendees}</h3>
               {attendees && (attendees.length ? (
-                <ul className="ev-attendees">{attendees.map((a) => <li key={a.id}>{a.displayName}</li>)}</ul>
+                <ul className="ev-attendees">
+                  {attendees.map((a) => (
+                    <li key={a.id}>{onPerson ? <button type="button" className="ev-link" onClick={() => onPerson(a.id)}>{a.displayName}</button> : a.displayName}</li>
+                  ))}
+                </ul>
               ) : <p className="ev-muted">{tx(EV.noParticipants)}</p>)}
               <div className="ev-actions">
                 {onEdit && <button type="button" className="ev-btn" onClick={onEdit} data-testid="ev-edit">{tx(EV.edit)}</button>}

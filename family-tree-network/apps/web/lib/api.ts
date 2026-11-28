@@ -78,6 +78,11 @@ export interface ProfileDetail extends PersonSummary {
   city: string | null;
   bio: string | null;
   languages: string[];
+  interests: string[];
+  skills: string[];
+  /** Only for the owner. */
+  searchable?: boolean;
+  privacy?: Record<string, PhotoVisibility>;
   canManage: boolean;
   /** Only for the owner: who may see the photo. */
   photoVisibility?: PhotoVisibility | null;
@@ -176,7 +181,9 @@ export interface FriendRequest {
   mutualFriends: number;
 }
 export interface Suggestion extends ConnectPerson {
-  reasons: { mutualFriends: number; sharedLanguages: string[] };
+  reasons: { mutualFriends: number; sharedLanguages: string[]; sharedInterests: string[]; sharedSkills: string[] };
+  interests: string[];
+  skills: string[];
 }
 export interface ConnectSettings {
   friendRequestsFrom: Audience;
@@ -487,8 +494,15 @@ export class Api {
   following(page = 0) {
     return this.req<Paged<ConnectPerson>>('GET', `/connect/following?page=${page}`);
   }
-  discover(q?: string) {
-    return this.req<Suggestion[]>('GET', `/connect/discover${q ? `?q=${encodeURIComponent(q)}` : ''}`);
+  discover(q?: string, f: { lang?: string; interest?: string; skill?: string } = {}) {
+    const p = new URLSearchParams(Object.entries({ q, ...f }).filter(([, v]) => v).map(([k, v]) => [k, String(v)]));
+    return this.req<Suggestion[]>('GET', `/connect/discover?${p}`);
+  }
+  updateProfile(id: string, body: { languages?: string[]; interests?: string[]; skills?: string[]; searchable?: boolean }) {
+    return this.req<ProfileDetail>('PATCH', `/profiles/${id}`, body);
+  }
+  setFieldPrivacy(id: string, field: 'LANGUAGES' | 'INTERESTS' | 'SKILLS', visibility: PhotoVisibility) {
+    return this.req<ProfileDetail>('PUT', `/profiles/${id}/privacy`, { field, visibility });
   }
   connectSettings() {
     return this.req<ConnectSettings>('GET', '/connect/settings');

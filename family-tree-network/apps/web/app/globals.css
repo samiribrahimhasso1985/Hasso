@@ -1753,3 +1753,15 @@ fieldset.plain {
 html:has(.account-banner) {
   scroll-padding-bottom: 150px;
 }
+/* CONNECT discovery filters & "how others find me" */
+.cn-filters { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin: 8px 0; }
+.cn-filters select, .cn-filters input, .cn-setting input {
+  font: inherit; font-size: 14px; padding: 7px 9px; border-radius: 8px; border: 1px solid var(--line, #ddd8ce); background: #fff; min-width: 0;
+}
+.cn-findme { display: grid; gap: 8px; padding-bottom: 16px; margin-bottom: 16px; border-bottom: 1px solid var(--line, #ddd8ce); }
+.cn-langs { border: 1px solid var(--line, #ddd8ce); border-radius: 12px; padding: 8px 10px; display: flex; flex-wrap: wrap; gap: 4px 12px; }
+.cn-langs legend { font-size: 13px; padding: 0 4px; }
+.cn-lang { font-size: 13px; display: inline-flex; gap: 4px; align-items: center; }
+.cn-vis { font-size: 12px; color: var(--stone-gray, #858078); display: flex; gap: 6px; align-items: center; }
+.cn-vis select { font: inherit; font-size: 12px; padding: 3px 6px; border-radius: 6px; border: 1px solid var(--line, #ddd8ce); background: #fff; }
+@media (max-width: 500px) { .cn-filters { grid-template-columns: 1fr; } }

@@ -16,7 +16,12 @@ export const FIELD_DEFAULTS: Record<ProfileField, Visibility> = {
   CITY: 'FAMILY',
   BIO: 'PUBLIC',
   LANGUAGES: 'PUBLIC',
+  INTERESTS: 'PUBLIC',
+  SKILLS: 'PUBLIC',
 };
+/** Tags as entered by members, normalised for matching (trimmed, lower case, no duplicates). */
+export const normaliseTags = (xs?: string[]) =>
+  xs === undefined ? undefined : [...new Set(xs.map((x) => x.trim().toLocaleLowerCase().replace(/\s+/g, ' ')).filter((x) => x.length >= 2))].slice(0, 20);
 const RANK: Record<Visibility, number> = { PUBLIC: 0, NETWORK: 1, FAMILY: 2, PRIVATE: 3 };
 const asDate = (s?: string) => (s ? new Date(`${s}T00:00:00Z`) : undefined);
 const notFound = () => new AppError(HttpStatus.NOT_FOUND, 'PERSON_NOT_FOUND', 'Person not found');
@@ -75,6 +80,9 @@ export class ProfilesService {
       city: allowed('CITY') ? p.city : null,
       bio: allowed('BIO') ? p.bio : null,
       languages: allowed('LANGUAGES') ? p.languages : [],
+      interests: allowed('INTERESTS') ? p.interests : [],
+      skills: allowed('SKILLS') ? p.skills : [],
+      searchable: own ? p.searchable : undefined,
       canManage: own,
       privacy: own ? Object.fromEntries((Object.keys(FIELD_DEFAULTS) as ProfileField[]).map((f) => [f, level(f)])) : undefined,
       stewards: own ? stewardUserIds.length : undefined,
@@ -142,6 +150,9 @@ export class ProfilesService {
     if (!p || !this.canManage(user, p)) throw notFound();
     const data: Prisma.ProfileUpdateInput = {
       ...dto,
+      languages: dto.languages ? [...new Set(dto.languages)] : undefined,
+      interests: normaliseTags(dto.interests),
+      skills: normaliseTags(dto.skills),
       country: dto.country?.toUpperCase(),
       birthDate: asDate(dto.birthDate),
       searchable: p.isMinor ? false : dto.searchable,

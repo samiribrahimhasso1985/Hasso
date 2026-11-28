@@ -11,6 +11,7 @@ import {
   type ConnectSettings,
   type FriendRequest,
   type Presence,
+  type ProfileDetail,
   type StatusMode,
   type Suggestion,
 } from '../lib/api';
@@ -82,7 +83,12 @@ export default function FriendsPanel({
           {view === 'requests' && <Requests api={api} onOpen={setPerson} onChanged={changed} />}
           {view === 'discover' && <Discover api={api} onOpen={setPerson} />}
           {view === 'followers' && <Follows api={api} onOpen={setPerson} />}
-          {view === 'settings' && <Settings api={api} />}
+          {view === 'settings' && (
+            <>
+              <FindMe api={api} profileId={myProfileId} />
+              <Settings api={api} />
+            </>
+          )}
         </>
       )}
     </div>
@@ -157,25 +163,43 @@ function reasonText(c: ConnectDict, s: Suggestion) {
   const parts = [];
   if (s.reasons.mutualFriends) parts.push(c.mutual(s.reasons.mutualFriends));
   if (s.reasons.sharedLanguages.length) parts.push(`${c.sharedLang} ${s.reasons.sharedLanguages.map((l) => l.toUpperCase()).join(', ')}`);
+  if (s.reasons.sharedInterests?.length) parts.push(`${c.sharedInterests}: ${s.reasons.sharedInterests.join(', ')}`);
+  if (s.reasons.sharedSkills?.length) parts.push(`${c.sharedSkills}: ${s.reasons.sharedSkills.join(', ')}`);
+  if (!parts.length && (s.skills?.length || s.interests?.length)) parts.push([...(s.skills ?? []), ...(s.interests ?? [])].slice(0, 4).join(' · '));
   return parts.join(' · ') || undefined;
 }
 
 function Discover({ api, onOpen }: { api: Api; onOpen: (id: string) => void }) {
   const c = useConnectText();
   const [q, setQ] = useState('');
+  const [lang, setLang] = useState('');
+  const [interest, setInterest] = useState('');
+  const [skill, setSkill] = useState('');
   const [items, setItems] = useState<Suggestion[] | null>(null);
+  const filtering = q.trim().length >= 2 || lang || interest.trim().length >= 2 || skill.trim().length >= 2;
   useEffect(() => {
     const t = setTimeout(() => {
-      api.discover(q.trim().length >= 2 ? q.trim() : undefined).then(setItems).catch(() => setItems([]));
-    }, q ? 300 : 0);
+      api
+        .discover(q.trim().length >= 2 ? q.trim() : undefined, { lang: lang || undefined, interest: interest.trim().length >= 2 ? interest.trim() : undefined, skill: skill.trim().length >= 2 ? skill.trim() : undefined })
+        .then(setItems)
+        .catch(() => setItems([]));
+    }, filtering ? 300 : 0);
     return () => clearTimeout(t);
-  }, [api, q]);
+  }, [api, q, lang, interest, skill, filtering]);
   return (
     <>
       <input className="cn-search" type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder={c.searchPeople} aria-label={c.searchPeople} data-testid="cn-search" />
-      {!q && <h4 className="cn-sub">{c.suggestions}</h4>}
+      <div className="cn-filters">
+        <select value={lang} onChange={(e) => setLang(e.target.value)} aria-label={c.filterLang} data-testid="cn-filter-lang">
+          <option value="">{c.anyLang}</option>
+          {LANG_CODES.map((l) => <option key={l} value={l}>{langName(l)}</option>)}
+        </select>
+        <input value={interest} onChange={(e) => setInterest(e.target.value)} placeholder={c.filterInterest} aria-label={c.filterInterest} data-testid="cn-filter-interest" />
+        <input value={skill} onChange={(e) => setSkill(e.target.value)} placeholder={c.filterSkill} aria-label={c.filterSkill} data-testid="cn-filter-skill" />
+      </div>
+      {!filtering && <h4 className="cn-sub">{c.suggestions}</h4>}
       {!items && <p className="muted">…</p>}
-      {items?.length === 0 && <p className="muted">{q ? c.noResults : c.noSuggestions}</p>}
+      {items?.length === 0 && <p className="muted">{filtering ? c.noResults : c.noSuggestions}</p>}
       <ul className="cn-list" data-testid="cn-discover-list">
         {items?.map((s) => <PersonRow key={s.id} p={s} onOpen={onOpen} extra={reasonText(c, s)} />)}
       </ul>
@@ -201,6 +225,93 @@ function Follows({ api, onOpen }: { api: Api; onOpen: (id: string) => void }) {
       {items?.length === 0 && <p className="muted">{which === 'followers' ? c.noFollowers : c.noFollowing}</p>}
       <ul className="cn-list">{items?.map((p) => <PersonRow key={p.id} p={p} onOpen={onOpen} />)}</ul>
     </>
+  );
+}
+
+/** Languages offered in the picker (ISO 639-1); members choose, nothing is inferred. */
+const LANG_CODES = ['ku', 'ar', 'de', 'en', 'tr', 'hy', 'ka', 'ru', 'fr', 'nl', 'sv', 'fa'];
+const langName = (code: string) => {
+  try {
+    return new Intl.DisplayNames([typeof document !== 'undefined' ? document.documentElement.lang || 'en' : 'en'], { type: 'language' }).of(code) ?? code;
+  } catch {
+    return code;
+  }
+};
+const splitTags = (s: string) => s.split(/[,،]/).map((x) => x.trim()).filter((x) => x.length >= 2);
+
+/** What others may use to find me: discoverable switch, languages, interests, skills — each with its own audience. */
+function FindMe({ api, profileId }: { api: Api; profileId: string }) {
+  const c = useConnectText();
+  const [p, setP] = useState<ProfileDetail | null>(null);
+  const [langs, setLangs] = useState<string[]>([]);
+  const [interests, setInterests] = useState('');
+  const [skills, setSkills] = useState('');
+  const [msg, setMsg] = useState<string | null>(null);
+  const load = useCallback(() => api.profile(profileId).then((x) => {
+    setP(x);
+    setLangs(x.languages);
+    setInterests(x.interests.join(', '));
+    setSkills(x.skills.join(', '));
+  }).catch(() => undefined), [api, profileId]);
+  useEffect(() => { load(); }, [load]);
+  if (!p) return null;
+  const save = async () => {
+    setMsg(null);
+    try {
+      const r = await api.updateProfile(profileId, { languages: langs, interests: splitTags(interests), skills: splitTags(skills) });
+      setP(r);
+      setInterests(r.interests.join(', '));
+      setSkills(r.skills.join(', '));
+      setMsg(c.saved);
+    } catch {
+      setMsg(c.errorGeneric);
+    }
+  };
+  const vis = (field: 'LANGUAGES' | 'INTERESTS' | 'SKILLS') => (
+    <label className="cn-vis">
+      {c.visibleTo}
+      <select value={p.privacy?.[field] ?? 'PUBLIC'} onChange={async (e) => {
+        const v = e.target.value as 'PUBLIC';
+        setP({ ...p, privacy: { ...(p.privacy ?? {}), [field]: v } });
+        setP(await api.setFieldPrivacy(profileId, field, v).catch(() => p));
+      }} data-testid={`cn-vis-${field}`}>
+        {(['PUBLIC', 'NETWORK', 'FAMILY', 'PRIVATE'] as const).map((v) => <option key={v} value={v}>{c[`v_${v}`]}</option>)}
+      </select>
+    </label>
+  );
+  return (
+    <section className="cn-findme" data-testid="cn-findme">
+      <h4 className="cn-sub">{c.findMe}</h4>
+      <p className="small muted">{c.findMeHelp}</p>
+      <label className="check">
+        <input type="checkbox" checked={Boolean(p.searchable)} onChange={async (e) => {
+          const on = e.target.checked;
+          setP({ ...p, searchable: on }); // show the choice at once; the server answer confirms it
+          setP(await api.updateProfile(profileId, { searchable: on }).catch(() => ({ ...p, searchable: !on })));
+        }} data-testid="cn-discoverable" /> {c.discoverable}
+      </label>
+      <fieldset className="cn-langs">
+        <legend>{c.myLanguages}</legend>
+        {LANG_CODES.map((l) => (
+          <label key={l} className="cn-lang">
+            <input type="checkbox" checked={langs.includes(l)} onChange={(e) => setLangs(e.target.checked ? [...langs, l] : langs.filter((x) => x !== l))} data-testid={`cn-lang-${l}`} /> {langName(l)}
+          </label>
+        ))}
+      </fieldset>
+      {vis('LANGUAGES')}
+      <label className="cn-setting">
+        {c.myInterests}
+        <input value={interests} onChange={(e) => setInterests(e.target.value)} placeholder={c.tagsHelp} data-testid="cn-interests" />
+      </label>
+      {vis('INTERESTS')}
+      <label className="cn-setting">
+        {c.mySkills}
+        <input value={skills} onChange={(e) => setSkills(e.target.value)} placeholder={c.tagsHelp} data-testid="cn-skills" />
+      </label>
+      {vis('SKILLS')}
+      <button type="button" className="btn small gold" onClick={save} data-testid="cn-findme-save">{c.saveProfile}</button>
+      {msg && <p className="small success" role="status">{msg}</p>}
+    </section>
   );
 }
 

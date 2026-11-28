@@ -15,7 +15,7 @@ type Tab = 'discover' | 'calendar' | 'mine' | 'staff';
 const CATS: EventCategory[] = ['CULTURAL_FESTIVAL', 'RELIGIOUS_CELEBRATION', 'COMMUNITY_GATHERING', 'HERITAGE_EXHIBITION', 'MUSIC', 'EDUCATIONAL', 'YOUTH', 'CHARITY', 'MEMORIAL', 'ONLINE', 'INTERNATIONAL_MEETUP'];
 
 /** EZIDINET Events & ÊZÎDÎ Calendar hub: discover, calendar, my events, publish, staff tools. */
-export default function EventsArea({ api, openId }: { api: Api; openId?: string | null }) {
+export default function EventsArea({ api, openId, onPerson }: { api: Api; openId?: string | null; onPerson?: (profileId: string) => void }) {
   const { tx } = useEv();
   const [tab, setTab] = useState<Tab>('discover');
   const [scope, setScope] = useState<'mine' | 'saved' | 'registered'>('mine');
@@ -48,7 +48,7 @@ export default function EventsArea({ api, openId }: { api: Api; openId?: string 
   if (editing) {
     body = <EventForm api={api} initial={editing === 'new' ? undefined : editing} onCancel={() => setEditing(null)} onDone={(d) => { setEditing(null); setOpen(d); }} />;
   } else if (open) {
-    body = <EventDetail api={api} data={open} onBack={() => { setOpen(null); load(); }} onChanged={setOpen} onEdit={() => setEditing(open)} onDeleted={() => { setOpen(null); load(); }} />;
+    body = <EventDetail api={api} data={open} onBack={() => { setOpen(null); load(); }} onChanged={setOpen} onEdit={() => setEditing(open)} onDeleted={() => { setOpen(null); load(); }} onPerson={onPerson} />;
   } else if (tab === 'calendar') {
     body = <CalendarSection api={api} onOpenEvent={openEvent} />;
   } else if (tab === 'staff') {
