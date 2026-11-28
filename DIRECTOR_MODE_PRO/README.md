@@ -73,8 +73,14 @@ GitHub Actions: `.github/workflows/android-apk.yml` (repository root) runs the u
 3. **TEST CONNECTION** → the card should show REACHABLE and `✓ Preview`.
 4. Studio → **START PREVIEW** on that card.
 
+## Desktop director console (Windows / macOS / Linux)
+Module `desktop/` (Compose Multiplatform 1.9.3) reuses the shared `link-core/` protocol, so it controls the same camera phones as the Android director.
+- Run from source: `./gradlew :desktop:run` (options: `--lang ar|de|en`, `--connect HOST:PORT --pin NNNNNN`, `--demo N` for simulated DEMO cameras).
+- Installers: `./gradlew :desktop:packageDeb` (Linux, needs `fakeroot`), `packageMsi`/`packageExe` (Windows only), `packageDmg` (macOS only). CI: `.github/workflows/desktop.yml` builds all three and uploads them as artifacts.
+- Discovery uses mDNS (JmDNS `_dmpcam._tcp.local.`); allow the app in the OS firewall if phones do not appear, or add them by address.
+
 ## Multi-phone link (architecture)
-`link/LinkProtocol.kt` (frames, messages, PIN auth) · `link/CameraNodeServer.kt` (camera phone) · `link/DirectorSession.kt` (director) · `link/LinkDiscovery.kt` (Android NSD `_dmpcam._tcp`) · `link/CameraXNodeController.kt` (CameraX on the camera phone) · `ui/link/LinkScreens.kt`.
+`link-core/…/LinkProtocol.kt` (frames, messages, PIN auth) · `link-core/…/CameraNodeServer.kt` (camera phone) · `link-core/…/DirectorSession.kt` (director) · `link/LinkDiscovery.kt` (Android NSD `_dmpcam._tcp`) · `link/CameraXNodeController.kt` (CameraX on the camera phone) · `ui/link/LinkScreens.kt`.
 Full-quality video stays on each camera phone; only ~480 px JPEG preview frames travel to the director. After pairing, commands travel unencrypted on the local network (no secrets are sent).
 
 ## Localization

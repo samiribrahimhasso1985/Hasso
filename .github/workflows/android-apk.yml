@@ -41,7 +41,7 @@ jobs:
         uses: gradle/actions/setup-gradle@v5
 
       - name: Unit tests
-        run: ./gradlew :app:testDebugUnitTest --console=plain
+        run: ./gradlew :link-core:test :app:testDebugUnitTest --console=plain
 
       - name: Build debug APK
         run: ./gradlew :app:assembleDebug --console=plain

@@ -2,7 +2,6 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
-    id("org.jetbrains.kotlin.plugin.serialization")
     id("com.google.devtools.ksp")
 }
 
@@ -63,8 +62,8 @@ dependencies {
     implementation("androidx.media3:media3-exoplayer:1.8.0")
     implementation("androidx.media3:media3-exoplayer-rtsp:1.8.0")
     implementation("androidx.media3:media3-ui:1.8.0")
-    // JSON messages between linked phones (director <-> camera). Same version line as Kotlin 2.2.
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
+    // Multi-phone link protocol, shared with the desktop director console.
+    implementation(project(":link-core"))
     // CameraX: Google's official API for the phone's own cameras (preview, video recording, zoom).
     implementation("androidx.camera:camera-camera2:1.5.1")
     implementation("androidx.camera:camera-lifecycle:1.5.1")
