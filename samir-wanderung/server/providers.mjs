@@ -31,12 +31,22 @@ try {
 export const atlasKey = (category, country, lang, off, lim) => `${category}|${country ?? ''}|${lang}|${off}|${lim}`;
 const trailCache = new Cache(300, 6 * 3600_000);
 
+// Hiking-oriented ranking: nature, peaks, parks, trails and settlements before infrastructure.
+const CLASS_WEIGHT = { natural: 3, waterway: 2.5, water: 2.5, boundary: 2, leisure: 2, tourism: 2, place: 2, mountain_pass: 2, route: 2,
+  landuse: -1, highway: -1, railway: -2, amenity: -1, shop: -2, building: -2, office: -2, power: -2, man_made: -1 };
+const TYPE_BONUS = { peak: 2, volcano: 2, massif: 1.5, national_park: 2, nature_reserve: 1.5, protected_area: 1, waterfall: 2, lake: 1.5,
+  hiking: 2, foot: 1.5, alpine_hut: 1.5, wilderness_hut: 1.5, viewpoint: 1.5, glacier: 2, valley: 1.5, ridge: 1.5, saddle: 1.5, forest: 1.5, wood: 1.5,
+  city: 1, town: 1, village: 0.5, administrative: 0.5 };
+export const rankScore = (r, i) => (CLASS_WEIGHT[r.category] ?? 0) + (TYPE_BONUS[r.type] ?? 0) + (r.importance ?? 0) * 4 - i * 0.15;
+
 export async function geocode({ q, limit = 6, lang = 'en' }) {
   if (typeof q !== 'string' || q.trim().length < 2 || q.length > 200) throw new HttpError(400, 'invalid_query');
   const key = `${lang}|${limit}|${q.trim().toLowerCase()}`;
   const hit = geoCache.get(key); if (hit) return hit;
-  const url = `${NOMINATIM}/search?format=jsonv2&addressdetails=1&extratags=1&namedetails=1&limit=${Math.min(10, +limit || 6)}&q=${encodeURIComponent(q.trim())}`;
-  const data = await nominatimQueue(() => upstream(url, { headers: { 'accept-language': lang } }));
+  const want = Math.min(10, +limit || 6);
+  const url = `${NOMINATIM}/search?format=jsonv2&addressdetails=1&extratags=1&namedetails=1&limit=12&q=${encodeURIComponent(q.trim())}`;
+  const raw = await nominatimQueue(() => upstream(url, { headers: { 'accept-language': lang } }));
+  const data = raw.map((r, i) => ({ r, s: rankScore(r, i) })).sort((a, b) => b.s - a.s).slice(0, want).map((x) => x.r);
   const out = {
     provider: 'nominatim', attribution: 'Data © OpenStreetMap contributors, ODbL 1.0',
     results: data.map((r) => ({
