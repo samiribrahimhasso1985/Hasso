@@ -4,11 +4,14 @@ import { readFileSync, existsSync, statSync } from 'node:fs';
 import { join, extname, normalize } from 'node:path';
 import { HttpError, RateLimiter, clientIp, readJson, send } from './lib.mjs';
 import * as P from './providers.mjs';
+import { readFileSync as readSeed, existsSync as seedExists } from 'node:fs';
+const SEED = new URL('./data/atlas-seed.json', import.meta.url);
+try { if (seedExists(SEED)) P.setAtlasSeed(JSON.parse(readSeed(SEED, 'utf8'))); } catch { /* ignore */ }
 import { chat, aiStatus } from './ai.mjs';
 import { openDb, createSocial } from './social.mjs';
 
 const PORT = +(process.env.PORT || 8787);
-const DIST = join(process.cwd(), 'dist');
+const DIST = process.env.DIST_DIR || join(process.cwd(), 'dist');
 const PROD = process.env.NODE_ENV === 'production';
 const social = createSocial(openDb());
 const providerLimiter = new RateLimiter(60, 1); // per IP
@@ -103,4 +106,10 @@ const server = createServer(async (req, res) => {
   }
 });
 
-server.listen(PORT, () => console.log(`SAMIR WANDERUNG server on http://localhost:${PORT}`));
+const HOST = process.env.HOST || undefined; // desktop app binds to 127.0.0.1 only
+/** Resolves with the bound port (PORT=0 picks a free port — used by the desktop app). */
+export const ready = new Promise((resolve) => server.listen(PORT, HOST, () => {
+  const port = server.address().port;
+  console.log(`SAMIR WANDERUNG server on http://${HOST ?? 'localhost'}:${port}`);
+  resolve(port);
+}));

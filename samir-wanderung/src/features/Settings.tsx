@@ -3,7 +3,7 @@ import { useI18n, LANGS, type Lang } from '../core/i18n';
 import { useStore } from '../core/store';
 import { AttributionList, Btn, Glass, Toggle } from '../ui/components';
 import { deleteAllLocalData, storageEstimate } from '../engines/storage/db';
-import { api } from '../core/api';
+import { api, apiBase, setApiBase, isNativeApp, isDesktopApp, isStandalone } from '../core/api';
 import { PROVIDERS } from '../config/providers';
 
 export default function Settings() {
@@ -12,6 +12,8 @@ export default function Settings() {
   const [status, setStatus] = useState<{ providers: { name: string; ok: boolean; ms?: number; error?: string }[]; ai: { configured: boolean; model: string } } | null>(null);
   const [storage, setStorage] = useState<number | null>(null);
   const [deleted, setDeleted] = useState(false);
+  const [server, setServer] = useState(apiBase());
+  const [serverMsg, setServerMsg] = useState<string | null>(null);
   useEffect(() => { api<typeof status>('/api/status').then(setStatus).catch(() => {}); storageEstimate().then((s) => setStorage(s.usage)); }, []);
 
   return (
@@ -24,6 +26,22 @@ export default function Settings() {
         <Toggle checked={settings.lowPower} onChange={(v) => setSettings({ lowPower: v })} label={t('settings.lowPower')} />
         <Toggle checked={settings.batterySaver} onChange={(v) => setSettings({ batterySaver: v })} label="GPS battery saver (lower accuracy, fewer points)" />
         <p className="text-xs text-slate-500">{t('settings.units')}: metric (km, m, °C).</p>
+      </Glass>
+      <Glass className="p-4 space-y-2" as="section" aria-label="Server">
+        <h2 className="font-display text-white">Server</h2>
+        <p className="text-xs text-slate-400">
+          {isDesktopApp() ? 'Desktop app: a built-in local server is running.' : isNativeApp() ? (isStandalone() ? 'Android app in standalone mode: maps, routing, search, weather and the atlas run directly on this device. Community and AI need a server.' : 'Android app connected to a server.') : 'Web app: using the server it was loaded from.'}
+        </p>
+        <div className="flex gap-2">
+          <input className="field" type="url" inputMode="url" placeholder="https://your-server.example" value={server} onChange={(e) => setServer(e.target.value)} aria-label="Server URL" />
+          <Btn onClick={async () => {
+            setServerMsg(null);
+            if (server && !/^https?:\/\//.test(server)) { setServerMsg('URL must start with https://'); return; }
+            setApiBase(server);
+            try { await api('/api/status'); setServerMsg(server ? '✓ connected' : '✓ standalone / same origin'); } catch (e) { setServerMsg('✕ ' + (e as Error).message); }
+          }}>{t('common.save')}</Btn>
+        </div>
+        {serverMsg && <p className="text-xs text-slate-300">{serverMsg}</p>}
       </Glass>
       <Glass className="p-4 space-y-2">
         <h2 className="font-display text-white">{t('settings.privacy')}</h2>

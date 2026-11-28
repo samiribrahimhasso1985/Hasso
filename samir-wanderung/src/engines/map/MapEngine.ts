@@ -32,6 +32,32 @@ export function webglSupported(): boolean {
   } catch { return false; }
 }
 
+/**
+ * Offline-first tile protocol: for providers that allow offline caching, read the Cache API
+ * (filled by the Offline Maps downloader) before the network. Works without a service worker
+ * (Android WebView, Electron) and does not write browsed tiles to the cache.
+ */
+const OFFLINE_CACHE_NAME = 'sw-offline-tiles-v1';
+const OFFLINE_HOSTS = ['tiles.openfreemap.org', 's3.amazonaws.com'];
+let protocolInstalled = false;
+function installOfflineProtocol() {
+  if (protocolInstalled || typeof caches === 'undefined') return;
+  protocolInstalled = true;
+  maplibregl.addProtocol('cached', async (params, abort) => {
+    const url = params.url.replace(/^cached:\/\//, 'https://');
+    let res: Response | undefined;
+    try { res = await (await caches.open(OFFLINE_CACHE_NAME)).match(url); } catch { /* cache unavailable */ }
+    if (!res) res = await fetch(url, { signal: abort.signal });
+    if (!res.ok && res.status !== 204) throw new Error(`HTTP ${res.status}`);
+    if (params.type === 'json') return { data: await res.json() };
+    return { data: await res.arrayBuffer() };
+  });
+}
+const toCached = (url: string) => {
+  try { const u = new URL(url); if (u.protocol === 'https:' && OFFLINE_HOSTS.includes(u.hostname)) return 'cached://' + url.slice(8); } catch { /* not a URL */ }
+  return url;
+};
+
 let demSource: InstanceType<typeof mlcontour.DemSource> | null = null;
 function getDemSource() {
   if (!demSource) {
@@ -54,8 +80,10 @@ export class MapEngine {
   private markers: maplibregl.Marker[] = [];
 
   constructor(opts: MapEngineOptions) {
+    installOfflineProtocol();
     this.map = new maplibregl.Map({
       container: opts.container,
+      transformRequest: protocolInstalled ? (url: string) => ({ url: toCached(url) }) : undefined,
       style: MAP_STYLE_URL,
       center: opts.center ?? [10.99, 47.42],
       zoom: opts.zoom ?? 11,
@@ -138,7 +166,8 @@ export class MapEngine {
     } catch { /* sky unsupported */ }
   }
 
-  setMode(mode: MapMode) { this.mode = mode; if (this.map.isStyleLoaded()) this.applyMode(); }
+  // applyMode() checks the layers exist; isStyleLoaded() is false while tiles stream in, so do not gate on it.
+  setMode(mode: MapMode) { this.mode = mode; this.applyMode(); }
   getMode() { return this.mode; }
 
   private applyMode() {

@@ -1,9 +1,11 @@
 // Geographic provider proxies: geocoding, routing, elevation, surfaces, weather, trails, atlas.
 import { Cache, HttpError, serialQueue, upstream, validLonLat, isNum } from './lib.mjs';
+// Runs in Node (server) and on-device (standalone APK/desktop fallback), so no Node-only imports here.
+const ENV = globalThis.process?.env ?? {};
 
-const VALHALLA = (process.env.VALHALLA_URL || 'https://valhalla1.openstreetmap.de').replace(/\/$/, '');
-const NOMINATIM = (process.env.NOMINATIM_URL || 'https://nominatim.openstreetmap.org').replace(/\/$/, '');
-const OVERPASS_URLS = (process.env.OVERPASS_URLS || 'https://overpass-api.de/api/interpreter').split(',').map((s) => s.trim()).filter(Boolean);
+const VALHALLA = (ENV.VALHALLA_URL || 'https://valhalla1.openstreetmap.de').replace(/\/$/, '');
+const NOMINATIM = (ENV.NOMINATIM_URL || 'https://nominatim.openstreetmap.org').replace(/\/$/, '');
+const OVERPASS_URLS = (ENV.OVERPASS_URLS || 'https://overpass-api.de/api/interpreter').split(',').map((s) => s.trim()).filter(Boolean);
 async function overpass(query, timeout = 40_000) {
   let last;
   for (let attempt = 0; attempt < 2; attempt++) for (const u of OVERPASS_URLS) {
@@ -12,7 +14,7 @@ async function overpass(query, timeout = 40_000) {
   }
   throw last;
 }
-const OPEN_METEO = process.env.OPEN_METEO_URL || 'https://api.open-meteo.com/v1/forecast';
+const OPEN_METEO = ENV.OPEN_METEO_URL || 'https://api.open-meteo.com/v1/forecast';
 const WIKIDATA_SPARQL = 'https://query.wikidata.org/sparql';
 
 const geoCache = new Cache(2000, 24 * 3600_000);
@@ -20,14 +22,11 @@ const nominatimQueue = serialQueue(1100);
 const valhallaQueue = serialQueue(250);
 const weatherCache = new Cache(500, 15 * 60_000);
 const atlasCache = new Cache(2000, 6 * 3600_000);
-// Seed cache: real Wikidata results fetched by scripts/prefetch-atlas.mjs (kept for 30 days).
-import { readFileSync as _rf, existsSync as _ex } from 'node:fs';
-const SEED_FILE = new URL('./data/atlas-seed.json', import.meta.url);
+// Seed cache: real Wikidata results fetched by scripts/prefetch-atlas.mjs (kept for 30 days). Injected by the host.
 const seed = new Map();
-try {
-  if (_ex(SEED_FILE)) for (const [k, v] of Object.entries(JSON.parse(_rf(SEED_FILE, 'utf8'))))
-    if (Date.now() - Date.parse(v.fetchedAt) < 30 * 86400_000) seed.set(k, v);
-} catch { /* ignore broken seed */ }
+export function setAtlasSeed(obj) {
+  for (const [k, v] of Object.entries(obj ?? {})) if (Date.now() - Date.parse(v.fetchedAt) < 30 * 86400_000) seed.set(k, v);
+}
 export const atlasKey = (category, country, lang, off, lim) => `${category}|${country ?? ''}|${lang}|${off}|${lim}`;
 const trailCache = new Cache(300, 6 * 3600_000);
 

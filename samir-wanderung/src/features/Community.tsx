@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useI18n } from '../core/i18n';
-import { api, ApiError } from '../core/api';
+import { api, apiUrl, ApiError, isStandalone } from '../core/api';
 import { Btn, Empty, ErrorBox, Glass, PlaceSearch, Spinner, Toggle } from '../ui/components';
 import { MapView } from '../ui/MapView';
 import { Journeys } from '../engines/storage/db';
@@ -29,6 +29,7 @@ export default function Community() {
         {me && <div className="text-sm text-slate-300">{me.displayName} <Btn variant="chip" onClick={() => api('/api/auth/logout', { method: 'POST' }).then(refreshMe)}>{t('community.logout')}</Btn></div>}
       </header>
       <p className="text-xs text-slate-400 mb-3">{t('community.noSafety')}</p>
+      {isStandalone() && <p className="text-sm text-amber-200 glass p-3 mb-3" role="status">The community needs a SAMIR WANDERUNG server. Set its address in Settings → Server.</p>}
       <nav className="flex flex-wrap gap-1 mb-4" role="tablist">
         {(['feed', 'events', 'groups', 'map', 'profile', 'notifications', 'guidelines'] as Tab[]).map((x) => (
           <button key={x} role="tab" aria-selected={tab === x} className={`btn btn-chip text-xs ${tab === x ? 'is-active' : ''}`} onClick={() => setTab(x)}>
@@ -169,7 +170,7 @@ function PostCard({ post, me, onChange }: { post: Post; me: User | null; onChang
     <Glass className="p-3 space-y-2" as="section" data-testid="post">
       <div className="flex justify-between text-sm"><span className="text-white">{post.author.displayName}</span><span className="text-xs text-slate-400">{post.visibility} · {new Date(post.createdAt).toLocaleString()}</span></div>
       {post.text && <p className="text-sm whitespace-pre-wrap" dir="auto">{post.text}</p>}
-      {post.media.length > 0 && <div className="grid grid-cols-3 gap-1">{post.media.map((m) => m.match(/\.(mp4|webm)$/) ? <video key={m} src={m} controls className="rounded-lg w-full" /> : <img key={m} src={m} alt="" className="rounded-lg aspect-square object-cover" loading="lazy" />)}</div>}
+      {post.media.length > 0 && <div className="grid grid-cols-3 gap-1">{post.media.map((m) => m.match(/\.(mp4|webm)$/) ? <video key={m} src={apiUrl(m)} controls className="rounded-lg w-full" /> : <img key={m} src={apiUrl(m)} alt="" className="rounded-lg aspect-square object-cover" loading="lazy" />)}</div>}
       {post.stats && <div className="text-xs text-aqua-300">{post.stats.distanceKm} km · ↑{post.stats.ascent} m{post.route ? ` · GPS route (${post.route.length} pts)` : ''}</div>}
       <div className="flex flex-wrap gap-1 text-xs">
         <Btn variant="chip" disabled={!me} aria-pressed={!!post.myReaction} onClick={() => act(() => api(`/api/posts/${post.id}/reactions`, { method: post.myReaction ? 'DELETE' : 'POST', body: { kind: 'like' } }))}>♥ {post.reactions}</Btn>
@@ -417,7 +418,7 @@ function Profile({ me, onChange }: { me: User; onChange: () => void }) {
   return (
     <Glass className="p-4 max-w-xl space-y-2">
       <div className="text-xs text-slate-400">ID #{me.id} · {me.email} (never shown to others) · {me.followers} followers · {me.following} following · {me.completedJourneys} journeys</div>
-      {me.avatar && <img src={me.avatar} alt="" className="w-16 h-16 rounded-full object-cover" />}
+      {me.avatar && <img src={apiUrl(me.avatar)} alt="" className="w-16 h-16 rounded-full object-cover" />}
       <input className="field" value={f.displayName} onChange={(e) => setF({ ...f, displayName: e.target.value })} aria-label="Display name" />
       <textarea className="field" dir="auto" placeholder="Bio" value={f.bio} onChange={(e) => setF({ ...f, bio: e.target.value })} aria-label="Bio" />
       <div className="grid grid-cols-2 gap-2"><input className="field" placeholder="Country" value={f.country} onChange={(e) => setF({ ...f, country: e.target.value })} aria-label="Country" /><input className="field" placeholder="Region (optional)" value={f.region} onChange={(e) => setF({ ...f, region: e.target.value })} aria-label="Region" /></div>

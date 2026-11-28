@@ -6,3 +6,4 @@ server/data/*.db*
 test-results
 *.log
 server/data/media
+release

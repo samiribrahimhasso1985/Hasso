@@ -10,7 +10,7 @@ import { pointAlong } from '../engines/route/geo';
 import { Journeys, uid } from '../engines/storage/db';
 import type { MapEngine } from '../engines/map/MapEngine';
 import type { Place, Route } from '../engines/route/types';
-import { ApiError } from '../core/api';
+import { api, ApiError } from '../core/api';
 import maplibregl from 'maplibre-gl';
 
 export default function Planner() {
@@ -38,8 +38,8 @@ export default function Planner() {
       let name = `${lngLat[1].toFixed(5)}, ${lngLat[0].toFixed(5)}`;
       setPoint(i, { name, coord: lngLat, origin: 'map' });
       try {
-        const r = await fetch(`/api/reverse?lon=${lngLat[0]}&lat=${lngLat[1]}&lang=${lang}`).then((x) => x.json());
-        if (r.name) { name = r.name; setPoint(i, { name, coord: lngLat, origin: 'map', detail: r.displayName }); }
+        const r = await api<{ name: string | null; displayName: string | null }>(`/api/reverse?lon=${lngLat[0]}&lat=${lngLat[1]}&lang=${lang}`);
+        if (r.name) { name = r.name; setPoint(i, { name, coord: lngLat, origin: 'map', detail: r.displayName ?? undefined }); }
       } catch { /* keep coordinate name */ }
     });
     return () => { off(); engine.map.getCanvas().style.cursor = ''; };

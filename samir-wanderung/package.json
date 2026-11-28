@@ -13,10 +13,37 @@
     "start": "NODE_ENV=production node --env-file-if-exists=.env server/index.mjs",
     "test:offline-safe": "SKIP_NETWORK=1 vitest run",
     "e2e": "node tests/e2e/e2e.mjs",
-    "prefetch:atlas": "node scripts/prefetch-atlas.mjs"
+    "prefetch:atlas": "node scripts/prefetch-atlas.mjs",
+    "desktop": "npm run build && electron .",
+    "dist:desktop:linux": "npm run build && electron-builder --linux AppImage",
+    "dist:desktop:win": "npm run build && electron-builder --win nsis portable",
+    "android:sync": "npm run build && cap sync android",
+    "android:apk": "npm run build && cap sync android && cd android && ./gradlew assembleDebug"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^1.14.0",
+    "@anthropic-ai/sdk": "^1.14.0"
+  },
+  "devDependencies": {
+    "@capacitor/android": "^7.4.3",
+    "@capacitor/cli": "^7.4.3",
+    "@types/node": "^22.9.0",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@types/three": "^0.169.0",
+    "@vitejs/plugin-react": "^4.3.3",
+    "autoprefixer": "^10.4.20",
+    "electron": "^37.2.6",
+    "electron-builder": "^26.0.12",
+    "fake-indexeddb": "^6.0.0",
+    "jsdom": "^25.0.1",
+    "postcss": "^8.4.47",
+    "tailwindcss": "^3.4.14",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.10",
+    "vite-plugin-pwa": "^0.20.5",
+    "vite-plugin-static-copy": "^2.0.0",
+    "vitest": "^2.1.4",
+    "@capacitor/core": "^7.4.3",
     "cesium": "^1.122.0",
     "idb": "^8.0.0",
     "maplibre-contour": "^0.0.7",
@@ -26,27 +53,58 @@
     "react-dom": "^18.3.1",
     "three": "^0.169.0"
   },
-  "devDependencies": {
-    "@types/node": "^22.9.0",
-    "@types/react": "^18.3.12",
-    "@types/react-dom": "^18.3.1",
-    "@types/three": "^0.169.0",
-    "@vitejs/plugin-react": "^4.3.3",
-    "autoprefixer": "^10.4.20",
-    "fake-indexeddb": "^6.0.0",
-    "jsdom": "^25.0.1",
-    "postcss": "^8.4.47",
-    "tailwindcss": "^3.4.14",
-    "typescript": "^5.6.3",
-    "vite": "^5.4.10",
-    "vite-plugin-pwa": "^0.20.5",
-    "vite-plugin-static-copy": "^2.0.0",
-    "vitest": "^2.1.4"
-  },
   "overrides": {
     "@zip.js/zip.js": "2.7.54"
   },
   "engines": {
     "node": ">=22.12"
+  },
+  "main": "electron/main.cjs",
+  "description": "SAMIR WANDERUNG \u2014 3D Hiking & Journey Animation",
+  "author": "SAMIR WANDERUNG",
+  "homepage": "https://github.com/samiribrahimhasso1985/Hasso",
+  "build": {
+    "appId": "com.samirwanderung.desktop",
+    "productName": "SAMIR WANDERUNG",
+    "copyright": "SAMIR WANDERUNG",
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
+    "files": [
+      "electron/**",
+      "server/**/*.mjs",
+      "server/data/atlas-seed.json",
+      "dist/**",
+      "package.json",
+      "!**/*.map"
+    ],
+    "asarUnpack": [
+      "server/data/atlas-seed.json"
+    ],
+    "linux": {
+      "target": [
+        "AppImage"
+      ],
+      "category": "Education",
+      "icon": "build/icon.png"
+    },
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ],
+      "icon": "build/icon.png",
+      "signAndEditExecutable": false
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "artifactName": "SAMIR-WANDERUNG-Setup-${version}.${ext}"
+    },
+    "portable": {
+      "artifactName": "SAMIR-WANDERUNG-Portable-${version}.${ext}"
+    }
   }
 }

@@ -1,5 +1,8 @@
 // Small shared helpers for the SAMIR WANDERUNG server (no framework).
-export const UA = process.env.UPSTREAM_USER_AGENT || 'SamirWanderung/0.1 (+https://github.com/samiribrahimhasso1985/Hasso)';
+export const UA = globalThis.process?.env?.UPSTREAM_USER_AGENT || 'SamirWanderung/0.1 (+https://github.com/samiribrahimhasso1985/Hasso)';
+
+// In browsers the User-Agent cannot be set reliably (and would trigger CORS preflights); native HTTP adds its own.
+const IS_NODE = typeof window === 'undefined';
 
 export class HttpError extends Error {
   constructor(status, code, detail) { super(code); this.status = status; this.code = code; this.detail = detail; }
@@ -56,7 +59,7 @@ export async function upstream(url, opts = {}, timeoutMs = 25_000) {
   const ctl = new AbortController();
   const timer = setTimeout(() => ctl.abort(), timeoutMs);
   try {
-    const r = await fetch(url, { ...opts, signal: ctl.signal, headers: { 'user-agent': UA, accept: 'application/json', ...(opts.headers || {}) } });
+    const r = await fetch(url, { ...opts, signal: ctl.signal, headers: { ...(IS_NODE ? { 'user-agent': UA } : {}), accept: 'application/json', ...(opts.headers || {}) } });
     const text = await r.text();
     let data; try { data = JSON.parse(text); } catch { data = text; }
     if (!r.ok) throw new HttpError(r.status === 429 ? 429 : 502, r.status === 429 ? 'provider_rate_limited' : 'provider_error', { status: r.status, body: typeof data === 'string' ? data.slice(0, 300) : data });
@@ -68,7 +71,7 @@ export async function upstream(url, opts = {}, timeoutMs = 25_000) {
 }
 
 export function clientIp(req) {
-  return (process.env.TRUST_PROXY === '1' && req.headers['x-forwarded-for']?.split(',')[0].trim()) || req.socket.remoteAddress || 'unknown';
+  return (globalThis.process?.env?.TRUST_PROXY === '1' && req.headers['x-forwarded-for']?.split(',')[0].trim()) || req.socket.remoteAddress || 'unknown';
 }
 
 export const isNum = (v) => typeof v === 'number' && Number.isFinite(v);
