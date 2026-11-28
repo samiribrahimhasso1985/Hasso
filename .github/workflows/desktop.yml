@@ -1,0 +1,69 @@
+name: Build DIRECTOR MODE PRO Desktop
+
+on:
+  push:
+    branches: [main, master, "ccr-*"]
+    paths:
+      - "DIRECTOR_MODE_PRO/desktop/**"
+      - "DIRECTOR_MODE_PRO/link-core/**"
+      - "DIRECTOR_MODE_PRO/*.gradle.kts"
+      - ".github/workflows/desktop.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Windows installers can only be produced on Windows (jpackage + WiX).
+          - os: windows-latest
+            tasks: ":desktop:packageMsi :desktop:packageExe"
+            artifact: director-mode-pro-desktop-windows
+          - os: macos-latest
+            tasks: ":desktop:packageDmg"
+            artifact: director-mode-pro-desktop-macos
+          - os: ubuntu-latest
+            tasks: ":desktop:packageDeb"
+            artifact: director-mode-pro-desktop-linux
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: DIRECTOR_MODE_PRO
+        shell: bash
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Set up JDK 17 (includes jpackage)
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v5
+
+      # The desktop build is pure JVM; the settings still include :app, which needs an SDK path
+      # only when :app tasks run. Point it at the runner's SDK when present.
+      - name: Android SDK path (configuration only)
+        run: echo "sdk.dir=${ANDROID_HOME:-${ANDROID_SDK_ROOT:-/tmp/no-sdk}}" > local.properties
+
+      - name: Shared link tests
+        run: ./gradlew :link-core:test --console=plain
+
+      - name: Package
+        run: ./gradlew ${{ matrix.tasks }} --console=plain
+
+      - name: Upload installers
+        uses: actions/upload-artifact@v5
+        with:
+          name: ${{ matrix.artifact }}
+          path: |
+            DIRECTOR_MODE_PRO/desktop/build/compose/binaries/main/msi/*.msi
+            DIRECTOR_MODE_PRO/desktop/build/compose/binaries/main/exe/*.exe
+            DIRECTOR_MODE_PRO/desktop/build/compose/binaries/main/dmg/*.dmg
+            DIRECTOR_MODE_PRO/desktop/build/compose/binaries/main/deb/*.deb
+          if-no-files-found: error

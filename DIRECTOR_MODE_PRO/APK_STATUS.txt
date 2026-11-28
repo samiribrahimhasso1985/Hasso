@@ -1,0 +1,23 @@
+DIRECTOR MODE PRO — APK BUILD STATUS (updated 2026-11-26, version 0.5.0)
+
+Project source: present
+Android Gradle project: present (AGP 8.13.2, Gradle wrapper 8.13, Kotlin 2.2.21, SDK 36)
+Automated APK build workflow: .github/workflows/android-apk.yml (repository root)
+Arabic APK build guide: docs/APK_BUILD_GUIDE_AR.md
+
+APK binary status: BUILT in the Claude Code cloud environment with ./gradlew :app:assembleDebug
+Output: app/build/outputs/apk/debug/app-debug.apk (not committed; build it locally or download the CI artifact)
+Verified: aapt2 badging (package com.directormodepro.app, versionName 0.5.0, targetSdk 36), apksigner (debug cert)
+Unit tests: 63 passed, 0 failed (./gradlew :app:testDebugUnitTest)
+Instrumented tests: compiled, NOT run (no emulator/KVM available)
+
+Languages: English (default), Arabic (RTL), German; in-app picker in Settings.
+GitHub Actions build: passing.
+
+Phone cameras: CameraX preview, recording to gallery, zoom (not yet run on a device).
+
+Multi-phone link: director + camera phones over local Wi-Fi (tested on localhost, not yet on 2 real phones).
+
+Functional status: camera-source management + Room storage + generic RTSP receive-only adapter.
+RTSP preview is implemented but has not yet been run on a real device/stream.
+Sony FX3 and DJI Osmo Action 5 Pro are integration targets only. No camera remote control exists.

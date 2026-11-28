@@ -1,0 +1,39 @@
+package com.directormodepro.app
+
+import android.app.Application
+import android.content.Context
+import com.directormodepro.app.camera.adapters.Camera2Availability
+import com.directormodepro.app.camera.adapters.DefaultCameraAdapterFactory
+import com.directormodepro.app.camera.core.CameraAdapterFactory
+import com.directormodepro.app.camera.core.CameraConnectionManager
+import com.directormodepro.app.data.CameraSourceRepository
+import com.directormodepro.app.data.db.DirectorDatabase
+import com.directormodepro.app.data.db.RoomCameraSourceStore
+import com.directormodepro.app.link.DeviceRoleStore
+import com.directormodepro.app.link.DirectorSession
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+
+/** Manual dependency container: small enough that a DI framework is not justified yet. */
+class AppContainer(context: Context) {
+    val database: DirectorDatabase = DirectorDatabase.create(context)
+    val sourceRepository = CameraSourceRepository(RoomCameraSourceStore(database.cameraSources()))
+    val adapterFactory: CameraAdapterFactory = DefaultCameraAdapterFactory(phoneCameras = Camera2Availability(context))
+    val connectionManager = CameraConnectionManager(adapterFactory)
+
+    /** Lives as long as the app process, so linked phones survive tab and screen changes. */
+    val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+    val roleStore = DeviceRoleStore(context)
+    val directorSession: DirectorSession by lazy { DirectorSession(roleStore.deviceLabel, appScope) }
+}
+
+class DirectorModeApplication : Application() {
+    lateinit var container: AppContainer
+        private set
+
+    override fun onCreate() {
+        super.onCreate()
+        container = AppContainer(this)
+    }
+}
