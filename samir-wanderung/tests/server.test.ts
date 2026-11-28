@@ -148,7 +148,7 @@ describe('social API', () => {
   it('rate limits writes', async () => {
     const tasks = [];
     for (let i = 0; i < 40; i++) tasks.push(Promise.resolve().then(() => S.match('POST', '/api/posts')!.fn({ me: carol, body: { text: 'spam ' + i, visibility: 'private' }, query: {}, params: {}, ip: 'same' })).catch((e: { code: string }) => e.code));
-    expect((await Promise.all(tasks)).filter((x) => x === 'rate_limited').length).toBeGreaterThan(0);
+    expect((await Promise.all(tasks)).filter((x: unknown) => x === 'rate_limited').length).toBeGreaterThan(0);
   });
   it('auth required for writes', async () => { await expectErr(call('POST', '/api/posts', null, { text: 'x', visibility: 'public' }), 'auth_required'); });
 });

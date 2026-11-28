@@ -34,9 +34,9 @@ export function MapView({ onReady, className = '', center, zoom, pitch, mode = '
 
   const setMode = (x: MapMode) => { setM(x); engineRef.current?.setMode(x); };
 
-  if (noGl) return <div className={`map-fallback ${className}`}><p>{t('map.webglMissing')}</p>{children}</div>;
+  if (noGl) return <div className={`map-fallback relative ${className}`}><p>{t('map.webglMissing')}</p>{children}</div>;
   return (
-    <div className={`relative ${className}`}>
+    <div className={`${/\b(absolute|fixed)\b/.test(className) ? '' : 'relative '}${className}`}>
       <div ref={ref} className="absolute inset-0" data-testid="map" />
       {showControls && (
         <div className="absolute top-3 end-3 z-10 flex flex-col gap-1.5">

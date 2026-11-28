@@ -80,7 +80,7 @@ export default function Cinematic() {
 
   return (
     <div className="relative h-[calc(100vh-56px)] md:h-screen">
-      <MapView className="absolute inset-0" center={route.coords[0]} zoom={13} pitch={60} onReady={setEngine} showControls={cam === 'free'}>
+      <MapView className="absolute inset-0" center={route.coords[0]} zoom={13} pitch={60} mode="satellite" onReady={setEngine} showControls={cam === 'free'}>
         {!settings.lowPower && <div className="vignette" />}
       </MapView>
 
@@ -105,10 +105,10 @@ export default function Cinematic() {
       <div className="absolute bottom-6 inset-x-3 z-20">
         <Glass className="p-3 max-w-4xl mx-auto space-y-2">
           <div className="flex flex-wrap items-center gap-2">
-            <Btn variant="primary" data-testid="play" onClick={() => p?.toggle()} aria-label={snap?.playing ? t('cine.pause') : t('cine.play')}>
+            <Btn variant="primary" data-testid="play" disabled={!snap} onClick={() => p?.toggle()} aria-label={snap?.playing ? t('cine.pause') : t('cine.play')}>
               {snap?.playing ? '❚❚ ' + t('cine.pause') : '▶ ' + (snap && snap.time > 0 && !snap.ended ? t('cine.resume') : t('cine.play'))}
             </Btn>
-            <Btn onClick={() => p?.restart()} data-testid="restart">↺ {t('cine.restart')}</Btn>
+            <Btn onClick={() => p?.restart()} data-testid="restart" disabled={!snap}>↺ {t('cine.restart')}</Btn>
             <div className="flex gap-1" role="group" aria-label={t('cine.speed')}>
               {SPEEDS.map((s) => <button key={s} className={`btn btn-chip text-xs ${snap?.speed === s ? 'is-active' : ''}`} aria-pressed={snap?.speed === s} onClick={() => p?.setSpeed(s as Speed)}>{s}x</button>)}
             </div>

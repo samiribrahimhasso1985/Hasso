@@ -38,8 +38,9 @@ export default function Home() {
   return (
     <div className="relative">
       {/* Hero: real 3D terrain of the Wetterstein range (Zugspitze) */}
-      <MapView className="h-[62vh] md:h-[72vh]" center={[10.985, 47.421]} zoom={12.2} pitch={68} onReady={setEngine}>
+      <MapView className="h-[62vh] md:h-[72vh]" center={[10.985, 47.421]} zoom={12.4} pitch={70} mode="satellite" onReady={setEngine}>
         <div className="vignette" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-56 bg-gradient-to-b from-ink-950/90 via-ink-950/50 to-transparent" />
         <div className="absolute inset-x-0 top-0 p-4 md:p-8 pointer-events-none">
           <h1 className="font-display text-3xl md:text-6xl font-bold tracking-[0.15em] text-white drop-shadow-lg">SAMIR <span className="text-aqua-400">WANDERUNG</span></h1>
           <p className="mt-2 text-xs md:text-sm tracking-[0.3em] text-slate-200/90">{t('brand.tagline')}</p>

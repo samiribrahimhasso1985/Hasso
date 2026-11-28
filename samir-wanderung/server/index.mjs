@@ -86,7 +86,11 @@ const server = createServer(async (req, res) => {
     if (existsSync(DIST)) {
       let file = normalize(join(DIST, decodeURIComponent(url.pathname)));
       if (!file.startsWith(DIST)) throw new HttpError(400, 'bad_path');
-      if (!existsSync(file) || statSync(file).isDirectory()) file = join(DIST, 'index.html');
+      if (!existsSync(file) || statSync(file).isDirectory()) {
+        // Missing build assets must 404 (not return index.html), so stale clients fail cleanly.
+        if (extname(url.pathname)) throw new HttpError(404, 'not_found');
+        file = join(DIST, 'index.html');
+      }
       const ext = extname(file);
       res.writeHead(200, { 'content-type': MIME[ext] || 'application/octet-stream', 'cache-control': file.includes('/assets/') ? 'public, max-age=31536000, immutable' : 'no-cache' });
       return res.end(readFileSync(file));

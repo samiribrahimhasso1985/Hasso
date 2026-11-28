@@ -48,7 +48,7 @@ export class PlaybackController {
   private tick = (now: number) => {
     if (!this.playing) return;
     // Clamp dt so a backgrounded tab does not jump far ahead on return.
-    const dt = Math.min(0.1, (now - this.last) / 1000);
+    const dt = Math.min(0.25, (now - this.last) / 1000);
     this.last = now;
     this.time = Math.min(this.duration, this.time + dt * this.speed);
     this.frameSubs.forEach((f) => f(this.time));

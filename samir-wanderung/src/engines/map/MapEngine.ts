@@ -70,6 +70,8 @@ export class MapEngine {
       ...(opts.pixelRatio ? { pixelRatio: opts.pixelRatio } : {}),
     } as maplibregl.MapOptions);
     if (opts.lowPower) this.exaggeration = 1.0;
+    // Inspection hook for automated tests and diagnostics (no data beyond the map state).
+    (opts.container as HTMLElement & { __swEngine?: MapEngine }).__swEngine = this;
 
     this.readyPromise = new Promise((resolve) => {
       this.map.once('load', () => { this.installSources(); resolve(); });
